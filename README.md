@@ -1,11 +1,11 @@
 # SUCoin-Fundraising
 
 ## To Run Frontend:
-###In frontend_react 
+### In frontend_react 
 
   run: npm i 
 
-###In /src/contracts_hardhat 
+### In /src/contracts_hardhat 
 
   run:
   
@@ -13,11 +13,11 @@
   
   npx hardhat compile
 
-###In frontend_react 
+### In frontend_react 
 
   run: npm start
 
 ## To Run Backend:
-###In backend_dotnet 
+### In backend_dotnet 
 
   run: dotnet run
