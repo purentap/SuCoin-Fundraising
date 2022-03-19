@@ -66,7 +66,7 @@ namespace SU_COIN_BACK_END.Controllers
             }
             return Ok(response);
         }
-
+        
         [HttpPost("Add")]
         public async Task<IActionResult> AddProject(ProjectDTO project) {
             ServiceResponse<string> response = await _projectService.AddProject(project);
@@ -76,7 +76,7 @@ namespace SU_COIN_BACK_END.Controllers
             }
             return Ok(response);
         }
-
+        
         [HttpPut("Rate/{id}/{rating}")]
         public async Task<IActionResult> RateProject(int id, double rating) {
             ServiceResponse<ProjectDTO> response = await _projectService.RateProject(id, rating);

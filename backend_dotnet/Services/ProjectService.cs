@@ -44,7 +44,9 @@ namespace SU_COIN_BACK_END.Services {
        
         public async Task<ServiceResponse<string>> AddProject(ProjectDTO project)
         {
+
             ServiceResponse<string> response = new ServiceResponse<string>();
+            
             try{
                 if(await ProjectNameExists(project.ProjectName)){
                     response.Success = false;
@@ -115,6 +117,7 @@ namespace SU_COIN_BACK_END.Services {
         {
             ServiceResponse<List<ProjectDTO>> response = new ServiceResponse<List<ProjectDTO>>();
             try{
+                 Console.WriteLine("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA:" , GetUserRole());
                 List<Project> projects = new List<Project>();
                 if(GetUserRole() != "Admin" && GetUserRole() != "Whitelist"){
                     projects = await _context.Projects.Where(c => c.Status == "Approved").ToListAsync();

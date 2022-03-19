@@ -84,6 +84,7 @@ namespace SU_COIN_BACK_END.Services
                             response.Success = true;
                             response.Message = MessageConstants.USER_LOGIN_SUCCES;
                             bool isWhitelisted = await _chainInteractionService.IsWhiteListed(user.Address);
+                            Console.WriteLine("BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB:" + isWhitelisted.ToString() );
                             if(user.Role != "Whitelist" && isWhitelisted && user.Role != "Admin"){
                                 user.Role = "Whitelist";
                             }else if(user.Role == "Whitelist" && !isWhitelisted && user.Role != "Admin"){
