@@ -6,7 +6,7 @@ import "@openzeppelin/contracts/utils/math/Math.sol";
 
 
 
-abstract contract Auction is Ownable{                                         //Abstract Contract for all auction types
+abstract contract AuctionTrial is Ownable{                                    //Abstract Contract for all auction types
 
     ERC20 public projectToken;                                                //Auctioned coin
     ERC20 public bidCoin;                                                     //Coin used for buying auction coins (Sucoin)
@@ -33,6 +33,7 @@ abstract contract Auction is Ownable{                                         //
         bidCoin = ERC20(_bidCoin);
         numberOfTokensToBeDistributed = _numberOfTokensToBeDistributed;    
         rate = _rate;
+        
     }
                                                                             //Create the auction if the auction creator already deposited the coins or have given approval
     function startAuction(uint maximumAuctionTimeInHours) external virtual onlyOwner() {
