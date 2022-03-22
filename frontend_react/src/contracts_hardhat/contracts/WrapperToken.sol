@@ -2,8 +2,6 @@
 pragma solidity ^0.8.9;
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
-//Token for SuCoin
-//Add BiLira contract as underlying token
 contract WrapperToken is ERC20{
     ERC20 public immutable underlying;
 
@@ -39,7 +37,6 @@ contract WrapperToken is ERC20{
         underlying = ERC20(_underlying);
     }
 
-    //Transfers amount of BiLira to the contract and mints amount of SuCoin to the account
     function depositFor(address account, uint256 amount) public RejectZeroAddress(account) RejectZeroAmount(amount) returns (bool) {
         underlying.transferFrom(msg.sender, address(this), amount);
         _mint(account, amount);
@@ -47,9 +44,8 @@ contract WrapperToken is ERC20{
         return true;
     }
 
-    //Burns amount of SuCoin from the sender and transfers amount of BiLira to account
     function withdrawTo(address account, uint256 amount) public RejectZeroAddress(account) RejectZeroAmount(amount) returns(bool){
-        _burn(msg.sender, amount);    
+        _burn(msg.sender, amount);
         underlying.transfer(account, amount);
         emit Burn(msg.sender, amount);
         return true;

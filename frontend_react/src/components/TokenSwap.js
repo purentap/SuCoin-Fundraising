@@ -27,8 +27,8 @@ import { ethers } from 'ethers';
 import wrapperTokenABI from '../contracts_hardhat/artifacts/contracts/WrapperToken.sol/WrapperToken.json';
 import TokenABI from '../contracts_hardhat/artifacts/contracts/Token.sol/Token.json';
 
-const wrapperTokenAddress = "0x69287F3b368FB0fa6fAcCD997059f13eFdFD9FBD";
-const BiLiraAddress = "0x9e540eAb02Fa5256F9eE8191E239Cd369BB3CE32";
+const wrapperTokenAddress = "0xa011037b3EF5EFd8e98D619e4E2fB8CB0a6acE9E";
+const BiLiraAddress = "0xc8a80f82876C20903aa8eE1e55fa9782Aa9Ed3c3";
 
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
