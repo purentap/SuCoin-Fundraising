@@ -40,7 +40,7 @@ namespace SU_COIN_BACK_END.Services
             _mapper = mapper;
             _context = context;
             _httpContextAccessor = httpContextAccessor;
-            var url = "https://api.avax-test.network/ext/bc/C/rpc";
+            var url = "https://speedy-nodes-nyc.moralis.io/7918f6b4c7b9adebcdeb036e/avalanche/testnet";
             _web3 = new Web3(url);
         }
 
