@@ -157,7 +157,7 @@ const Auctions = () => {
         } catch (error) {
             setToastshow(true)
             setToastheader("Catched an error")
-            setToasttext(error?.message)
+            setToasttext(error)
             return false;
         }
     }, [])
