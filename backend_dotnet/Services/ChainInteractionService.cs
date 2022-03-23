@@ -48,8 +48,16 @@ namespace SU_COIN_BACK_END.Services
             ServiceResponse<List<EventLog<ProjectRegisterEventDTO>>> response = new ServiceResponse<List<EventLog<ProjectRegisterEventDTO>>>();
             try{
                 var registerEventHandler = _web3.Eth.GetEvent<ProjectRegisterEventDTO>(ContractConstants.RegisterContractAddress);
-                var filterAllRegisterEvents = registerEventHandler.CreateFilterInput(GetUserAddress());
+                var limitBlocks = 2048;
+                var latestBlockNumber = (await _web3.Eth.Blocks.GetBlockNumber.SendRequestAsync()).HexValue;
+                var blockNumberInt = Convert.ToInt32(latestBlockNumber , 16);
+                var fromBlock = new Nethereum.RPC.Eth.DTOs.BlockParameter(new Nethereum.Hex.HexTypes.HexBigInteger(blockNumberInt-limitBlocks+1));
+                //var filterAllRegisterEvents = registerEventHandler.CreateFilterInput(GetUserAddress());
+
+
+                var filterAllRegisterEvents = registerEventHandler.CreateFilterInput(GetUserAddress(),fromBlock: fromBlock);
                 var allEvents = await registerEventHandler.GetAllChangesAsync(filterAllRegisterEvents);
+                Console.WriteLine(allEvents);
                 if(allEvents != null){
                     response.Message = "Ok";
                     response.Success = true;
@@ -68,6 +76,8 @@ namespace SU_COIN_BACK_END.Services
         public async Task<ServiceResponse<List<EventLog<WhitelistInsertEventDTO>>>> GetWhiteListInsertEventLogs(string address){
             ServiceResponse<List<EventLog<WhitelistInsertEventDTO>>> response = new ServiceResponse<List<EventLog<WhitelistInsertEventDTO>>>();
             try{
+                 
+            
                 var whitelistInsertEventHandler = _web3.Eth.GetEvent<WhitelistInsertEventDTO>(ContractConstants.RegisterContractAddress);
                 var filterAllWhitelistEvents = whitelistInsertEventHandler.CreateFilterInput(address);
                 var allEvents = await whitelistInsertEventHandler.GetAllChangesAsync(filterAllWhitelistEvents);
@@ -109,7 +119,14 @@ namespace SU_COIN_BACK_END.Services
 
         public async Task<bool> IsWhiteListed(string address){
             try{
-                ServiceResponse<List<EventLog<WhitelistInsertEventDTO>>> response_one = await GetWhiteListInsertEventLogs(address);
+                var abi = @"[{""inputs"":[{""name"":"""",""type"":""address"",""internalType"":""address"",}],""name"":""whitelist"",""outputs"":[{""name"":"""",""type"":""bool"",""internalType"":""bool"",}],""type"":""function"",""stateMutability"": ""view"",}]";
+
+                var contract = _web3.Eth.GetContract(abi,ContractConstants.RegisterContractAddress);
+                var isWl = await contract.GetFunction("whitelist").CallAsync<Boolean>(address);
+                return isWl;
+
+
+                /* ServiceResponse<List<EventLog<WhitelistInsertEventDTO>>> response_one = await GetWhiteListInsertEventLogs(address);
                 ServiceResponse<List<EventLog<WhitelistRemoveEventDTO>>> response_two = await GetWhiteListRemoveEventLogs(address);
                 if (response_one.Data.Count == 0 && response_two.Data.Count == 0){
                     return false;
@@ -117,7 +134,7 @@ namespace SU_COIN_BACK_END.Services
                     return false;
                 }else{
                     return true;
-                }
+                } */
             }catch(Exception e){
                 return false;
             }
