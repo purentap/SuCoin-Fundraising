@@ -22,14 +22,13 @@ contract CappedAuctionTrial is AuctionTrial {
     constructor(
         address _token, 
         address _bidCoin, 
-        uint _rate
-        //Maestro _maestro,
-         //bytes32 projectHash
+        uint _rate,
+        address _maestro,
+         bytes32 projectHash
          )
-        AuctionTrial(_bidCoin)
+        AuctionTrial(_bidCoin,_maestro,_token,projectHash)
         {
-        //maestroSC = Maestro(_maestro);
-        //maestroSC.AssignAuction(msg.sender, projectHash, _token, "DutchAuction");
+
       
         projectToken = ERC20Mintable(_token);
         require(_rate >= 1,"1 Token should at least worth 1 sucoin bits");

@@ -23,8 +23,9 @@ import ProjectRegister from '../abi/project.json'
 import Cookies from 'js-cookie'
 import axios from "axios"
 import abi from '../abi/project.json'
-import { ethers } from 'ethers';
+import { ethers, FixedNumber } from 'ethers';
 import Token from '../contracts_hardhat/artifacts/contracts/Token.sol/Token.json';
+import { numberToFixedNumber } from '../helpers';
 
 const CreateTokens = () => {
     const [tokenName, setTokenName] = useState();
@@ -35,16 +36,21 @@ const CreateTokens = () => {
     const [toastText, setToasttext] = useState();
     const [toastHeader, setToastheader] = useState();
 
+
+
     const action1 = async () => {
         try {
+            const decimals = 18                                                             //Erc 20 default
             const provider = await new ethers.providers.Web3Provider(window.ethereum);
             const signer = await provider.getSigner();
+     
+            const totalSupplyDecimals = numberToFixedNumber(totalSupply,decimals)
 
             let TokenFactory = new ethers.ContractFactory(Token.abi, Token.bytecode, signer);
             setToastshow(true)
             setToastheader("Signing the Transaction")
             setToasttext("Please sign the transaction from your wallet.")
-            var tokenSC = await TokenFactory.deploy(tokenName, tokenSymbol, totalSupply, await signer.getAddress());
+            var tokenSC = await TokenFactory.deploy(tokenName, tokenSymbol, totalSupplyDecimals, await signer.getAddress());
 
             setToastshow(false)
             setToastshow(true)

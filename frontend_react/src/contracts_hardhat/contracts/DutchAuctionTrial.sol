@@ -16,11 +16,11 @@ contract DutchAuctionTrial is CappedAuctionTrial {
         address _bidCoin, 
         uint _numberOfTokensToBeDistributed
         ,uint _rate,
-        //Maestro _maestro,
-         //bytes32 projectHash
+        address _maestro,
+         bytes32 projectHash,
          uint _finalRate
          )
-        CappedAuctionTrial(_token,_bidCoin,_numberOfTokensToBeDistributed,_rate)
+        CappedAuctionTrial(_token,_bidCoin,_numberOfTokensToBeDistributed,_rate,_maestro,projectHash)
         {
 
         finalRate = _finalRate;

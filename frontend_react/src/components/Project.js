@@ -44,7 +44,7 @@ details part 2
 
 `;
 
-const Project = () => {
+const Project = ({navigation}) => {
   const { projectId } = useParams();
   const [state, setState] = useState({ status: "default" })
   const [markdown, setMarkdown] = useState(mkdStr);
@@ -54,6 +54,7 @@ const Project = () => {
   const [isOwner, setIsowner] = useState(false);
   const [owner, setOwner] = useState();
   const [signer, setSigner] = useState()
+  const [hash,setHash] = useState("")
 
   const [project, setProject] = useState({
     rating: 0,
@@ -63,6 +64,8 @@ const Project = () => {
     projectName: "",
     status: "",
   });
+
+ 
 
   useEffect(async () => {
     const apiInstance = axios.create({
@@ -92,8 +95,8 @@ const Project = () => {
     const signer = await provider.getSigner()
     const registerContract = await new ethers.Contract(abi.address, ethersAbi.abi, signer)
 
-    const hash = "0x" + await CryptoJS.SHA256(project.fileHex).toString()
-    const projInfo = await registerContract.projectsRegistered(hash)
+    const hashResult = "0x" + await CryptoJS.SHA256(project.fileHex).toString()
+    const projInfo = await registerContract.projectsRegistered(hashResult)
 
     if (await registerContract.whitelist(await signer.getAddress())) {
       setIswhitelisted(true)
@@ -104,6 +107,7 @@ const Project = () => {
     }
     setOwner(await projInfo.proposer)
     setSigner(await signer.getAddress())
+    setHash(hashResult)
 
   }, [project])
 
@@ -171,7 +175,9 @@ const Project = () => {
               <Col style={{ justifyContent: "center", alignItems: "center" }}>
                 <Button variant="dark" onClick={() => navigate("/createAuction",
                   {
-                    hash: "hey"
+                    state:{
+                    hash: hash
+                    }
                   })}> Create Auction</Button>
               </Col>
 

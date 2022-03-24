@@ -39,7 +39,7 @@ import wrapperTokenABI from '../../contracts_hardhat/artifacts/contracts/Wrapper
 
 const BiLiraAddress = "0xc8a80f82876C20903aa8eE1e55fa9782Aa9Ed3c3";
 
-const maestro = { address: "0x4ED02B5dA043d8c9882f11B9784D67f2a7E9cC7C" }
+const maestro = { address: "0x55FF6D799A83296698C86fc823bcEbbC35c253cE" }
 const SUCoin = { address: "0xa011037b3EF5EFd8e98D619e4E2fB8CB0a6acE9E" }
 
 const AuctionInfo = ({ auction, projectId, price, tokenDist, deposit }) => {

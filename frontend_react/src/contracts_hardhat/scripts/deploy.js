@@ -14,17 +14,13 @@ async function main() {
   // await hre.run('compile');
 
   // We get the contract to deploy
-  const TokenDistribution = await hre.ethers.getContractFactory("TokenDistribution");
-  const Token = await hre.ethers.getContractFactory("Token");
-  const tokenDistribution = await TokenDistribution.deploy();
-  const SUCoin = await Token.deploy("SUCoin", "SU", 1000000, 0);
-  const ProjectToken = await Token.deploy("Project", "PRJ", 1000);
-  await tokenDistribution.deployed()
-  await SUCoin.deployed()
-  await ProjectToken.deployed()
-  
+  const MAESTRO = await hre.ethers.getContractFactory("Maestro");
+  const maestro = await MAESTRO.deploy("0xAAE65915AcEbde8cdEDB675F097AE115E54B562B")
 
-  console.log("TokenDistribution deployed to:", tokenDistribution.address);
+  await maestro.deployed()
+
+
+  console.log("Maestro deployed to:", maestro.address);
 
 }
 

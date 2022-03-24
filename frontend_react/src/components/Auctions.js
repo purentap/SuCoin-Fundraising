@@ -31,6 +31,7 @@ import CappedParcelLimitFCFS from '../contracts_hardhat/artifacts/contracts/Capp
 import CappedAuctionWRedistribution from '../contracts_hardhat/artifacts/contracts/CappedAuctionWRedistribution.sol/CappedAuctionWRedistribution.json';
 import DutchAuction from '../contracts_hardhat/artifacts/contracts/DutchAuction.sol/DutchAuction.json';
 import TokenABI from '../contracts_hardhat/artifacts/contracts/Token.sol/Token.json';
+import DutchAuctionTrial from "../contracts_hardhat/artifacts/contracts/DutchAuctionTrial.sol/DutchAuctionTrial.json"
 
 const options = [
     { value: 'fens', label: 'FENS' },
@@ -38,7 +39,7 @@ const options = [
     { value: 'fman', label: 'FMAN' }
 ]
 
-const MaestroAddress = "0x4ED02B5dA043d8c9882f11B9784D67f2a7E9cC7C";
+const MaestroAddress = "0x55FF6D799A83296698C86fc823bcEbbC35c253cE";
 const CappedFCFSAddress = "0x43f691a5D43Dd8edbDa222c6a0de967E52a23db2"
 
 const IDs = []
@@ -111,6 +112,7 @@ const Auctions = () => {
             var filter = await Maestro.filters.CreateAuctionEvent();
 
             var allCreateAuctionEvents = await Maestro.queryFilter(filter);
+            console.log(allCreateAuctionEvents)
             var allAuctions = [];
             for (let index = 0; index < allCreateAuctionEvents.length; index++) {
                 let aucAddress = allCreateAuctionEvents[index].args.auction;
@@ -121,19 +123,9 @@ const Auctions = () => {
                 let tokenSC = await new ethers.Contract(Project.token, TokenABI.abi, provider);
                 let tokenSymbol = await tokenSC.symbol();
                 let tokenName = await tokenSC.name();
-                let auctionSc = await new ethers.Contract(aucAddress, (auctionType == 'CappedFCFS' ? CappedFCFS.abi : (auctionType == 'CappedAuctionWRedistribution' ? CappedAuctionWRedistribution.abi : (auctionType == "CappedParcelLimitFCFSAuction" ? CappedParcelLimitFCFS.abi : (auctionType == "DutchAuction" ? DutchAuction : DutchAuction)))), provider);
-                let isFinished = await auctionSc.isFinished();
-                let isStarted = await auctionSc.isStarted();
-                var status;
-                if (isStarted && !isFinished) {
-                    status = "Ongoing";
-                }
-                else if (isStarted && isFinished) {
-                    status = "Finished";
-                } else if (!isStarted) {
-                    status = "notStarted";
-                }
-
+                let auctionSc = await new ethers.Contract(aucAddress, (auctionType == 'CappedFCFS' ? CappedFCFS.abi : (auctionType == 'CappedAuctionWRedistribution' ? CappedAuctionWRedistribution.abi : (auctionType == "CappedParcelLimitFCFSAuction" ? CappedParcelLimitFCFS.abi : (auctionType == "DutchAuction" ? DutchAuctionTrial.abi : DutchAuctionTrial.abi)))), provider);
+                const status = ["notStarted","Ongoing","Finished"][await auctionSc.status()]
+           
                 var id
                 result.data.data.forEach(proj => {
                     //console.log("XX", auct.fileHash, " VS ", "0x" + CryptoJS.SHA256(proj.fileHex).toString())
@@ -157,7 +149,7 @@ const Auctions = () => {
         } catch (error) {
             setToastshow(true)
             setToastheader("Catched an error")
-            setToasttext(error)
+            setToasttext(error?.message)
             return false;
         }
     }, [])
