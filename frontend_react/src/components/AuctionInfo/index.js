@@ -36,6 +36,7 @@ import CappedAuctionWRedistribution from '../../contracts_hardhat/artifacts/cont
 import DutchAuction from '../../contracts_hardhat/artifacts/contracts/DutchAuction.sol/DutchAuction.json';
 import TokenABI from '../../contracts_hardhat/artifacts/contracts/Token.sol/Token.json';
 import wrapperTokenABI from '../../contracts_hardhat/artifacts/contracts/WrapperToken.sol/WrapperToken.json';
+import {numberToFixedNumber  } from '../../helpers'; 
 
 const BiLiraAddress = "0x8f5736aF17F2F071B476Fd9cFD27a1Bd8D7E7F15";
 
@@ -94,8 +95,8 @@ const AuctionInfo = ({ auction, projectId, price, tokenDist, deposit }) => {
       const provider = await new ethers.providers.Web3Provider(window.ethereum);
       const signer = await provider.getSigner();
 
-      //const value = ethers.utils.parseUnits(amount, 18);
-      const value = amount;
+      
+      const value = numberToFixedNumber(amount)
 
 
       var auctionSC = await new ethers.Contract(auction.auctionAddress, CappedFCFS.abi, signer);

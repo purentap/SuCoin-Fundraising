@@ -39,7 +39,7 @@ import { fixedNumberToNumber } from '../helpers';
 
 import TokenABI from '../contracts_hardhat/artifacts/contracts/Token.sol/Token.json';
 import { WalletSwitcher } from '../User';
-const MaestroAddress = "0x55FF6D799A83296698C86fc823bcEbbC35c253cE";
+const MaestroAddress = "0x1cFc7B3ec115cF51DB35AEC04Ce902dd1Cb3625b";
 const CappedFCFSAddress = "0x43f691a5D43Dd8edbDa222c6a0de967E52a23db2"
 
 const mkdStr = `# {Freelance Finder Version 2}
@@ -173,6 +173,7 @@ const Auction = () => {
 
                 allAuctions.push({ "id": id, "auctionAddress": aucAddress, "fileHash": fileHash, "auctionType": auctionType, "creator": creator, "tokenSymbol": tokenSymbol, tokenName: tokenName, status: status, tokenAddress: Project.token });
             }
+            console.log(allAuctions)
             setAuctions(allAuctions)
             
         } catch (error) {
@@ -186,6 +187,7 @@ const Auction = () => {
             const provider = await new ethers.providers.Web3Provider(window.ethereum)
             const signer = await provider.getSigner()
             var auctionDetails;
+            
             auctions.forEach(element => {
                 if (element.id == projectId) {
 
