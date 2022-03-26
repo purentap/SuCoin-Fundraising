@@ -155,16 +155,16 @@ const AuctionInfo = ({ auction, projectId, price, tokenDist, deposit }) => {
             <div className='rating-directors'>
               <div className='rating-directors'>
                 <h3>Total Supply</h3>
-                <div className='score'>{tokenDist}</div>
+                <div className='score'>{Number(tokenDist).toFixed(2)}</div>
               </div>
               <div className='rating-directors'>
                 <h3>Token Price</h3>
-                <div className='score'>{price}</div>
+                <div className='score'>{Number(price).toFixed(5)}</div>
               </div>
 
               <div className='rating-directors'>
                 <h3>Tokens Left</h3>
-                <div className='score'>{tokenDist - deposit}</div>
+                <div className='score'>{Number(tokenDist - deposit).toFixed(3)}</div>
               </div>
             </div>
 
