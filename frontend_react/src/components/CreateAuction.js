@@ -41,10 +41,10 @@ import TokenABI from '../contracts_hardhat/artifacts/contracts/Token.sol/Token.j
 import { numberToFixedNumber } from '../helpers'; 
 
 
-const BiLiraAddress = "0xc8a80f82876C20903aa8eE1e55fa9782Aa9Ed3c3";
+const BiLiraAddress = "0x8f5736aF17F2F071B476Fd9cFD27a1Bd8D7E7F15";
 
-const maestro = { address: "0x55FF6D799A83296698C86fc823bcEbbC35c253cE" }
-const SUCoin = { address: "0xa011037b3EF5EFd8e98D619e4E2fB8CB0a6acE9E" }
+const maestro = { address: "0xb6e466F4F0ab1e2dA2E8237F38B2eCf6278894Ce" }
+const SUCoin = { address: "0xb6e466F4F0ab1e2dA2E8237F38B2eCf6278894Ce" }
 
 const CreateAuction = () => {
 

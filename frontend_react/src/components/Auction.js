@@ -88,7 +88,7 @@ const Auction = () => {
             "tokenSymbol": "Lira",
             "tokenName": "BiLira",
             "status": "notStarted",
-            "tokenAddress": "0xc8a80f82876C20903aa8eE1e55fa9782Aa9Ed3c3"
+            "tokenAddress": "0x8f5736aF17F2F071B476Fd9cFD27a1Bd8D7E7F15"
         },
         {
             "auctionAddress": "0x38a758A743Df330182Aa3988090d40b791823255",
@@ -98,7 +98,7 @@ const Auction = () => {
             "tokenSymbol": "Lira",
             "tokenName": "BiLira",
             "status": "notStarted",
-            "tokenAddress": "0xc8a80f82876C20903aa8eE1e55fa9782Aa9Ed3c3"
+            "tokenAddress": "0x8f5736aF17F2F071B476Fd9cFD27a1Bd8D7E7F15"
         }
     ]);
 
