@@ -39,33 +39,14 @@ const options = [
     { value: 'fman', label: 'FMAN' }
 ]
 
-const MaestroAddress = "0x55FF6D799A83296698C86fc823bcEbbC35c253cE";
+const MaestroAddress = "0x1cFc7B3ec115cF51DB35AEC04Ce902dd1Cb3625b";
 const CappedFCFSAddress = "0x43f691a5D43Dd8edbDa222c6a0de967E52a23db2"
 
 const IDs = []
 
 const Auctions = () => {
     const [auctions, setAuctions] = useState([
-        {
-            "auctionAddress": "0x98f2C2aFB088bE9378a4dEb2672Af309E9b65329",
-            "fileHash": "0xa190d2b3a3323f420e5df6078d27bf6d7d76144aea19e32cb66ff61b4ad07d2d",
-            "auctionType": "CappedFCFS",
-            "creator": "0xDE02A36403d7a38eB9D6a8568599Ef6CDf18315b",
-            "tokenSymbol": "Lira",
-            "tokenName": "BiLira",
-            "status": "notStarted",
-            "tokenAddress": "0xc8a80f82876C20903aa8eE1e55fa9782Aa9Ed3c3"
-        },
-        {
-            "auctionAddress": "0x38a758A743Df330182Aa3988090d40b791823255",
-            "fileHash": "0x4fd063a659cd3fe36b2ae58f30c5b7e36e5b0e10fcc2e447ebd76a5443ea2689",
-            "auctionType": "CappedFCFS",
-            "creator": "0xDE02A36403d7a38eB9D6a8568599Ef6CDf18315b",
-            "tokenSymbol": "Lira",
-            "tokenName": "BiLira",
-            "status": "notStarted",
-            "tokenAddress": "0xc8a80f82876C20903aa8eE1e55fa9782Aa9Ed3c3"
-        }
+      
     ]);
 
     const [var2, setVar2] = useState();

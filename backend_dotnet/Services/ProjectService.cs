@@ -209,7 +209,8 @@ namespace SU_COIN_BACK_END.Services {
                     response.Message = MessageConstants.PROJECT_PERMISSION_MANAGE_DENIED;
                     return response;
                 }
-                if(await ProjectNameExists(project.ProjectName)){
+                var sameNameProjectId = await IdFromProjectName(project.ProjectName);
+                if(sameNameProjectId > 0 && sameNameProjectId != project.ProjectID){
                     response.Success = false;
                     response.Message = "Project name already exists please choose another name";
                     return response;
@@ -441,6 +442,15 @@ namespace SU_COIN_BACK_END.Services {
                 return true;
             }
             return false;
+        }
+
+         public async Task<int> IdFromProjectName(string projectName)
+        {
+            return await _context.Projects
+                    .Where(x => x.ProjectName == projectName)
+                    .Select(u => u.ProjectID)
+                    .FirstOrDefaultAsync();
+
         }
     }
 }

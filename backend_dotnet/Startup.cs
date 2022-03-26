@@ -68,6 +68,8 @@ namespace SU_COIN_BACK_END
                     ValidateAudience = false
                 };
             });
+
+          
             services.AddSingleton<IHttpContextAccessor,HttpContextAccessor>();
             services.AddScoped<IProjectService, ProjectService>();
             services.AddSingleton(typeof(IConverter), new SynchronizedConverter(new PdfTools()));

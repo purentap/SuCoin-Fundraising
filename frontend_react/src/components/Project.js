@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import BreadCrumb from './BreadCrumb';
 import Grid from './Grid';
 import Spinner from './Spinner';
-import ProjectInfo from './ProjectInfo';
+import ProjectInfo from './ProjectInfo/index';
 import ProjectInfoBar from './ProjectInfoBar';
 import Actor from './ProjectMember';
 import MDEditor from '@uiw/react-md-editor';

@@ -1,4 +1,6 @@
 import { BigNumber, FixedNumber } from "ethers";
+const CryptoJS = require('crypto-js');
+
 
 export const isPersistedState = stateName => {
   const sessionState = sessionStorage.getItem(stateName);
@@ -14,3 +16,5 @@ export const fixedNumberToNumber = (amount) => {
   const defaultDecimals = 18
   return FixedNumber.fromValue(amount,defaultDecimals)
 }
+
+export const hexToHash = (fileHex) => ("0x" + CryptoJS.SHA256(fileHex)).toString()
