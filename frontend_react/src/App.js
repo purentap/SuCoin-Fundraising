@@ -13,7 +13,7 @@ import Auction from './components/Auction';
 import CreateTokens from './components/CreateTokens';
 import CreateAuction from './components/CreateAuction';
 import TokenSwap from './components/TokenSwap';
-import ProfilePage from './components/ProfilePage';
+import Profile from './components/Profile';
 
 // Context
 import { WalletSwitcher, UserContext } from './User';
