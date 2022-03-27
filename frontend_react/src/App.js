@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { Profiler, useContext, useState } from 'react';
 // Routing
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 // Components
@@ -13,6 +13,7 @@ import Auction from './components/Auction';
 import CreateTokens from './components/CreateTokens';
 import CreateAuction from './components/CreateAuction';
 import TokenSwap from './components/TokenSwap';
+import ProfilePage from './components/ProfilePage';
 
 // Context
 import { WalletSwitcher, UserContext } from './User';
@@ -42,6 +43,7 @@ const App = () => {
           <Route path='/tokenSwap' element={<TokenSwap />} />
           <Route path='/projects/:projectId' element={<Project />} />
           <Route path='/auction/:projectId' element={<Auction />} />
+          <Route path = '/profile' element = {<ProfilePage />} />
           <Route path='/*' element={<NotFound />} />
         </Routes>
         <GlobalStyle />
