@@ -43,7 +43,7 @@ const App = () => {
           <Route path='/tokenSwap' element={<TokenSwap />} />
           <Route path='/projects/:projectId' element={<Project />} />
           <Route path='/auction/:projectId' element={<Auction />} />
-          <Route path = '/profile' element = {<ProfilePage />} />
+          <Route path = '/profile' element = {<Profile />} />
           <Route path='/*' element={<NotFound />} />
         </Routes>
         <GlobalStyle />
