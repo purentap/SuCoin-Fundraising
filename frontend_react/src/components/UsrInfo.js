@@ -3,18 +3,18 @@ import { Box} from '@chakra-ui/react'
 
 
 
-function UsrInfo({name,surname,mail,status}) {
+function UsrInfo({name,surname,mailAddress,status,username}) {
 
     console.log(name)
   
 
   return (
-      <Center height="35%">
+      <Center height="300px">
 <Box height="100%"  bgColor="gray">
         <Flex height="100%" flexDir="column">
             <Center flex={1}>
             <Text whiteSpace="pre-wrap">
-                {`Name: ${name}\nSurname: ${surname}\nMail: ${mail}`}
+                {`Username:${username}\nName: ${name}\nSurname: ${surname}\nMail: ${mailAddress}`}
             </Text>
             </Center>
             <Spacer/>

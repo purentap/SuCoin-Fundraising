@@ -33,43 +33,55 @@ const getAllProjects = async () => {
 
 } 
 
+const getUserInfo = async() => {
+  const apiInstance = axios.create({
+    baseURL: "https://localhost:5001",
+  });
+  apiInstance.defaults.headers.common[
+    "Authorization"
+  ] = `Bearer ${Cookies.get("token")}`;
+  return new Promise((resolve, reject) => {
+    apiInstance
+      .get("/User/Get")
+      .then((res) => {
+        console.log("response: ", res.data);
+        resolve(res);
+      })
+      .catch((e) => {
+        const err = "Unable to get the user";
+        reject(err);
+      });
+  });
+}
+
+
+
+const isActiveUserProject = (project,wantedHashes,wantedAddress) => {
+
+  const hash =  hexToHash(project?.fileHex)
+
+
+  return ((project.proposerAddress == wantedAddress) && (wantedHashes.includes(hash)))
+
+
+
+}
+
 
 const Profile = () => {
+  
 
-  const getAllUserProjectHashes = async (provider,address) => {
-    var Register = await new ethers.Contract(abi.address, abi.abi, provider);
-  
-    var filter = await Register.filters.Register(address)
-  
-  
-    return (await Register.queryFilter(filter)).map(project => project.data);
-  }
-  
-  const getAllProjects = async () => {
-  
-    apiInstance.defaults.headers.common["Authorization"] = `Bearer ${Cookies.get('token')}`
-  
-    return await apiInstance.get("/Project/Get");
-  
-  } 
+
 
   const [projects,setProjects] =  useState([
     
   ])
 
+  const [userInfo,setUserInfo] = useState({})
 
-  const isActiveUserProject = (project,wantedHashes,wantedAddress) => {
+ 
+  console.log(userInfo)
 
-    const hash =  hexToHash(project?.fileHex)
-
-
-    return ((project.proposerAddress == wantedAddress) && (wantedHashes.includes(hash)))
-
-
-
-  }
-  
-  
 
   useEffect(async () => {
     //Needed for blockchain connections
@@ -86,7 +98,20 @@ const Profile = () => {
     const allProjects = (await getAllProjects())?.data?.data
     const wantedProjects = allProjects.filter(project => isActiveUserProject(project,hashes,address))
   
-    setProjects(wantedProjects)
+    setProjects(wantedProjects) 
+
+    //Pürenin kodunu koy
+    try {
+      setUserInfo((await getUserInfo())?.data?.data)
+
+      
+    }
+    catch (error) {
+      console.log("aaaaaaaaaaaaa")
+    }
+
+
+    
 
   },[])
 
@@ -100,7 +125,7 @@ width="90%"
   m={20}
 >
 <GridItem colSpan={2}>
-    <UsrInfo {...UsrInfo} ></UsrInfo>
+    <UsrInfo {...userInfo} ></UsrInfo>
 </GridItem>
 
   <GridItem colSpan={4} >
