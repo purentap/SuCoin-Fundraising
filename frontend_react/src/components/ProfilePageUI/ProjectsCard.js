@@ -101,11 +101,13 @@ function ProjectsCard({
         </Center>
       </GridItem>
 
-      <GridItem  ml = "150px" rowStart={4} rowEnd = {5} colStart = {1} colEnd = {6}>
+      <GridItem  ml="20px" mr= "20px" rowStart={4} rowEnd = {5} colStart = {1} colEnd = {7}>
         <HStack spacing={10} height="100%">
           <Button
             variant="ghost"
             textColor="white"
+            height = "80%"
+            width = "40%"
             background-color="#F8F8FF"
             color="#2f2d2e"
             border="2px solid #8e00b9"
@@ -125,6 +127,8 @@ function ProjectsCard({
           <Button
             variant="ghost"
             textColor="white"
+            height = "80%"
+            width = "40%"
             background-color="#F8F8FF"
             color="#2f2d2e"
             border="2px solid #8e00b9"
@@ -144,6 +148,8 @@ function ProjectsCard({
           <Button
             variant="ghost"
             textColor="white"
+            height = "80%"
+            width = "40%"
             background-color="#F8F8FF"
             color="#2f2d2e"
             border="2px solid #8e00b9"
@@ -163,6 +169,8 @@ function ProjectsCard({
           <Button
             variant="ghost"
             textColor="white"   
+            height = "80%"
+            width = "40%"
            background-color="#F8F8FF"
             color="#2f2d2e"
             border="2px solid #8e00b9"
