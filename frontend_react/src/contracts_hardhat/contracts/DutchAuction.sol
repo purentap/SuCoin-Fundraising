@@ -74,7 +74,7 @@ contract DutchAuction{
         sucoin = ERC20(_sucoinaddress);
         projectToken = ERC20(_token);
         maestroSC = Maestro(_maestro);
-        maestroSC.AssignAuction(msg.sender, projectHash, _token, "DutchAuction");
+        //maestroSC.AssignAuction(msg.sender, projectHash, _token, "DutchAuction");
     }
 
     function startAuction(uint periodInDays) public isAdmin(true){

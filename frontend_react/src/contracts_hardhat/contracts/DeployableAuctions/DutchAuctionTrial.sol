@@ -1,6 +1,6 @@
 pragma solidity ^0.8.0;
 // SPDX-License-Identifier: MIT
-import "contracts/CappedAuctionTrial.sol";
+import "./CappedAuctionTrial.sol";
 
 
 //Dutch Auction is just capped auction with constant decreasing price 
@@ -16,11 +16,9 @@ contract DutchAuctionTrial is CappedAuctionTrial {
         address _bidCoin, 
         uint _numberOfTokensToBeDistributed
         ,uint _rate,
-        address _maestro,
-         bytes32 projectHash,
          uint _finalRate
          )
-        CappedAuctionTrial(_token,_bidCoin,_numberOfTokensToBeDistributed,_rate,_maestro,projectHash)
+        CappedAuctionTrial(_token,_bidCoin,_numberOfTokensToBeDistributed,_rate)
         {
 
         finalRate = _finalRate;

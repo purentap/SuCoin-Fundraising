@@ -71,7 +71,7 @@ contract CappedParcelLimitFCFSAuction{
         numberOfTokensToBeDistributed = _numberOfTokensToBeDistributed;
         limit = _limit;
         maestroSC = Maestro(_maestro);
-        maestroSC.AssignAuction(msg.sender, projectHash, _token, "CappedParcelLimitFCFS");
+        //maestroSC.AssignAuction(msg.sender, projectHash, _token, "CappedParcelLimitFCFS");
     }
 
     function startAuction(uint periodInDays) public isAdmin(true){

@@ -31,7 +31,15 @@ import CappedParcelLimitFCFS from '../contracts_hardhat/artifacts/contracts/Capp
 import CappedAuctionWRedistribution from '../contracts_hardhat/artifacts/contracts/CappedAuctionWRedistribution.sol/CappedAuctionWRedistribution.json';
 import DutchAuction from '../contracts_hardhat/artifacts/contracts/DutchAuction.sol/DutchAuction.json';
 import TokenABI from '../contracts_hardhat/artifacts/contracts/Token.sol/Token.json';
-import DutchAuctionTrial from "../contracts_hardhat/artifacts/contracts/DutchAuctionTrial.sol/DutchAuctionTrial.json"
+
+import AuctionTrial from '../contracts_hardhat/artifacts/contracts/AuctionTrial.sol/AuctionTrial.json';
+
+
+import DutchAuctionTrial from '../contracts_hardhat/artifacts/contracts/DeployableAuctions/DutchAuctionTrial.sol/DutchAuctionTrial.json';
+
+import CappedAuctionTrial from '../contracts_hardhat/artifacts/contracts/DeployableAuctions/CappedAuctionTrial.sol/CappedAuctionTrial.json';
+
+import UncappedAuctionTrial from '../contracts_hardhat/artifacts/contracts/DeployableAuctions/UncappedAuctionTrial.sol/UncappedAuctionTrial.json';
 
 const options = [
     { value: 'fens', label: 'FENS' },
@@ -39,7 +47,7 @@ const options = [
     { value: 'fman', label: 'FMAN' }
 ]
 
-const MaestroAddress = "0x1cFc7B3ec115cF51DB35AEC04Ce902dd1Cb3625b";
+const MaestroAddress = "0xD25Bf7F0C712859F6e5ea48aB5c82174f81Bd233";
 const CappedFCFSAddress = "0x43f691a5D43Dd8edbDa222c6a0de967E52a23db2"
 
 const IDs = []
@@ -104,9 +112,9 @@ const Auctions = () => {
                 let tokenSC = await new ethers.Contract(Project.token, TokenABI.abi, provider);
                 let tokenSymbol = await tokenSC.symbol();
                 let tokenName = await tokenSC.name();
-                let auctionSc = await new ethers.Contract(aucAddress, (auctionType == 'CappedFCFS' ? CappedFCFS.abi : (auctionType == 'CappedAuctionWRedistribution' ? CappedAuctionWRedistribution.abi : (auctionType == "CappedParcelLimitFCFSAuction" ? CappedParcelLimitFCFS.abi : (auctionType == "DutchAuction" ? DutchAuctionTrial.abi : DutchAuctionTrial.abi)))), provider);
+                let auctionSc = await new ethers.Contract(aucAddress, AuctionTrial.abi, provider);
                 const status = ["notStarted","Ongoing","Finished"][await auctionSc.status()]
-           
+                
                 var id
                 result.data.data.forEach(proj => {
                     //console.log("XX", auct.fileHash, " VS ", "0x" + CryptoJS.SHA256(proj.fileHex).toString())

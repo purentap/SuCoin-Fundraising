@@ -34,12 +34,15 @@ import CappedFCFS from '../contracts_hardhat/artifacts/contracts/CappedFCFSAucti
 import CappedParcelLimitFCFS from '../contracts_hardhat/artifacts/contracts/CappedParcelLimitFCFSAuction.sol/CappedParcelLimitFCFSAuction.json';
 import CappedAuctionWRedistribution from '../contracts_hardhat/artifacts/contracts/CappedAuctionWRedistribution.sol/CappedAuctionWRedistribution.json';
 import DutchAuction from '../contracts_hardhat/artifacts/contracts/DutchAuction.sol/DutchAuction.json';
-import DutchAuctionTrial from '../contracts_hardhat/artifacts/contracts/DutchAuctionTrial.sol/DutchAuctionTrial.json';
-import { fixedNumberToNumber } from '../helpers'; 
+import DutchAuctionTrial from '../contracts_hardhat/artifacts/contracts/DeployableAuctions/DutchAuctionTrial.sol/DutchAuctionTrial.json';
+
+import CappedAuctionTrial from '../contracts_hardhat/artifacts/contracts/DeployableAuctions/CappedAuctionTrial.sol/CappedAuctionTrial.json';
+
+import UncappedAuctionTrial from '../contracts_hardhat/artifacts/contracts/DeployableAuctions/UncappedAuctionTrial.sol/UncappedAuctionTrial.json';import { fixedNumberToNumber } from '../helpers'; 
 
 import TokenABI from '../contracts_hardhat/artifacts/contracts/Token.sol/Token.json';
 import { WalletSwitcher } from '../User';
-const MaestroAddress = "0x1cFc7B3ec115cF51DB35AEC04Ce902dd1Cb3625b";
+const MaestroAddress = "0xD25Bf7F0C712859F6e5ea48aB5c82174f81Bd233";
 const CappedFCFSAddress = "0x43f691a5D43Dd8edbDa222c6a0de967E52a23db2"
 
 const mkdStr = `# {Freelance Finder Version 2}
@@ -199,9 +202,8 @@ const Auction = () => {
             });
             console.log("AUCTIONS", await auctionDetails)
             setAuction(auctionDetails)
-            setTimeout(function () {
-                //do what you need here
-            }, 4000);
+           
+
 
             //var auctionDetails = { "auctionAddress": aucAddress, "fileHash": fileHash, "auctionType": auctionType, "creator": creator, "tokenSymbol": tokenSymbol, tokenName: tokenName, status: status, tokenAddress: Project.token };
             let tokenSC = await new ethers.Contract(auctionDetails.tokenAddress, TokenABI.abi, provider);

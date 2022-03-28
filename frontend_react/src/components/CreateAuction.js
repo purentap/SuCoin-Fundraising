@@ -30,11 +30,12 @@ import {ethers} from 'ethers';
 import ethersAbi from '../contracts_hardhat/artifacts/contracts/ProjectRegister.sol/ProjectRegister.json'
 
 import MaestroABI from '../contracts_hardhat/artifacts/contracts/Maestro.sol/Maestro.json';
-import CappedFCFS from '../contracts_hardhat/artifacts/contracts/CappedFCFSAuction.sol/CappedFCFSAuction.json';
-import CappedParcelLimitFCFS from '../contracts_hardhat/artifacts/contracts/CappedParcelLimitFCFSAuction.sol/CappedParcelLimitFCFSAuction.json';
-import CappedAuctionWRedistribution from '../contracts_hardhat/artifacts/contracts/CappedAuctionWRedistribution.sol/CappedAuctionWRedistribution.json';
-import DutchAuction from '../contracts_hardhat/artifacts/contracts/DutchAuction.sol/DutchAuction.json';
-import DutchAuctionTrial from '../contracts_hardhat/artifacts/contracts/DutchAuctionTrial.sol/DutchAuctionTrial.json';
+
+import DutchAuctionTrial from '../contracts_hardhat/artifacts/contracts/DeployableAuctions/DutchAuctionTrial.sol/DutchAuctionTrial.json';
+
+import CappedAuctionTrial from '../contracts_hardhat/artifacts/contracts/DeployableAuctions/CappedAuctionTrial.sol/CappedAuctionTrial.json';
+
+import UncappedAuctionTrial from '../contracts_hardhat/artifacts/contracts/DeployableAuctions/UncappedAuctionTrial.sol/UncappedAuctionTrial.json';
 
 import TokenABI from '../contracts_hardhat/artifacts/contracts/Token.sol/Token.json';
 
@@ -43,7 +44,7 @@ import { numberToFixedNumber } from '../helpers';
 
 const BiLiraAddress = "0x8f5736aF17F2F071B476Fd9cFD27a1Bd8D7E7F15";
 
-const maestro = { address: "0x1cFc7B3ec115cF51DB35AEC04Ce902dd1Cb3625b" }
+const maestro = { address: "0xD25Bf7F0C712859F6e5ea48aB5c82174f81Bd233" }
 const SUCoin = { address: "0xb6e466F4F0ab1e2dA2E8237F38B2eCf6278894Ce" }
 
 const CreateAuction = () => {
@@ -56,32 +57,22 @@ const CreateAuction = () => {
     const [isLoading, setLoading] = useState(false)
     const [auctionTypes, setAuctiontypes] = useState([
         {
-            id: 0,
-            name: "Dutch Auction",
-            description: "this is DUTCH Auction"
+            id: 1,
+            name: "First come First Server",
+            description: "An auction where there is limited number of tokens being sold from the same price"
         },
         {
-            id: 1,
-            name: "First Come First Served",
-            description: "This is First come first served"
-        }
-        ,
-        {
             id: 2,
-            name: "Weighted",
-            description: "this Weighted"
+            name: "Dutch Auction",
+            description: "This is an auction where a limited coins being sold while coin price decreases by time"
         }
         ,
         {
             id: 3,
-            name: "Parcel Limit",
-            description: "this is Parcel Limit"
-        },
-        {
-            id: 4,
-            name: "Dutch Auction Trial",
-            description: "An Auction where price decrease constantly"
+            name: "Uncapped Auction",
+            description: "This is an auction where unlimited number of coins being sold for the same price"
         }
+
     ]);
 
     const [auction, setAuction] = useState("")
@@ -116,32 +107,36 @@ const CreateAuction = () => {
         const tokenDistributedDecimal = numberToFixedNumber(TokensToBeDesitributed,sucoinDecimals)
         const priceDecimal = numberToFixedNumber(tokenPrice,sucoinDecimals);
 
+        let contract;
+
 
         if (id == 0) {
-            const DutchAuction_ = new ethers.ContractFactory(DutchAuction.abi, DutchAuction.bytecode, signer);
-            let auction = await DutchAuction_.deploy(10, 1, tokenAddress, TokensToBeDesitributed, SUCoin.address, 2, maestro.address, auction.fileHash);
-            await auction.deployed();
+            const Capped = new ethers.ContractFactory(CappedAuctionTrial.abi, CappedAuctionTrial.bytecode, signer);    
+            let auction = await Capped.deploy(tokenAddress,SUCoin.address,tokenDistributedDecimal,priceDecimal);
+            contract = await auction.deployed();
         }
         else if (id == 1) {
-            const CappedFCFSAuction = new ethers.ContractFactory(CappedFCFS.abi, CappedFCFS.bytecode, signer);
-            let auction = await CappedFCFSAuction.deploy(tokenPrice, tokenAddress, SUCoin.address, TokensToBeDesitributed, maestro.address, auction.fileHash);
-            await auction.deployed();
+            const Dutch = new ethers.ContractFactory(DutchAuctionTrial.abi, DutchAuctionTrial.bytecode, signer);    
+            let auction = await Dutch.deploy(tokenAddress,SUCoin.address,tokenDistributedDecimal,priceDecimal,1);
+            contract = await auction.deployed();
         }
         else if (id == 2) {
-            const CappedFixedPriceProportionalAuction = new ethers.ContractFactory(CappedAuctionWRedistribution.abi, CappedAuctionWRedistribution.bytecode, signer);
-            let auction = await CappedFixedPriceProportionalAuction.deploy(tokenPrice, tokenAddress, SUCoin.address, TokensToBeDesitributed, maestro.address, auction.fileHash);
-            await auction.deployed();
+            const Uncapped = new ethers.ContractFactory(UncappedAuctionTrial.abi, UncappedAuctionTrial.bytecode, signer);    
+            let auction = await Uncapped.deploy(tokenAddress,SUCoin.address,priceDecimal);
+            contract = await auction.deployed();
         }
-        else if (id == 3) {
-            const CappedParcelLimitFCFSAuction = new ethers.ContractFactory(CappedParcelLimitFCFS.abi, CappedParcelLimitFCFS.bytecode, signer);
-            let auction = await CappedParcelLimitFCFSAuction.deploy(tokenPrice, tokenAddress, SUCoin.address, TokensToBeDesitributed, 1000, maestro.address, auction.fileHash);
-            await auction.deployed();
-        }
-        else if (id == 4) {
-            const Dutch = new ethers.ContractFactory(DutchAuctionTrial.abi, DutchAuctionTrial.bytecode, signer);    
-            let auction = await Dutch.deploy(tokenAddress,SUCoin.address,tokenDistributedDecimal,priceDecimal,maestro.address,hash ?? "fail",0);
-            await auction.deployed();
-        }
+        else return;
+
+
+
+        const MAESTRO = new ethers.ContractFactory(MaestroABI.abi, MaestroABI.bytecode, signer);
+
+        const maestroContract = MAESTRO.attach(maestro.address);
+
+        await maestroContract.AssignAuction(contract.address,hash,tokenAddress);
+
+
+     
     }
 
 

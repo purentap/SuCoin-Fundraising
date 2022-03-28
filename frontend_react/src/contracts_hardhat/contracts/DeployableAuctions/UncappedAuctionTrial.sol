@@ -5,7 +5,7 @@ import "contracts/ERC20Mintable.sol";
 
 
 
-contract CappedAuctionTrial is AuctionTrial {
+contract UncappedAuctionTrial is AuctionTrial {
     ERC20Mintable public projectToken;                                         //Auctioned coin
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");            //Constant for checking minter role
 
@@ -18,15 +18,15 @@ contract CappedAuctionTrial is AuctionTrial {
     event TokenBought(address indexed buyer,uint usedBidCoinAmount , uint boughtTokenAmount );        //Logs bought auction tokens
 
 
+    
     //Maestro public maestroSCa;
     constructor(
         address _token, 
         address _bidCoin, 
-        uint _rate,
-        address _maestro,
-         bytes32 projectHash
+        uint _rate
+
          )
-        AuctionTrial(_bidCoin,_maestro,_token,projectHash)
+        AuctionTrial(_bidCoin)
         {
 
       

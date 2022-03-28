@@ -67,7 +67,7 @@ contract CappedFCFSAuction{
         sucoin = ERC20(_sucoin);
         numberOfTokensToBeDistributed = _numberOfTokensToBeDistributed;
         maestroSC = Maestro(_maestro);
-        maestroSC.AssignAuction(msg.sender, projectHash, _token, "CappedFCFS");
+        //maestroSC.AssignAuction(msg.sender, projectHash, _token, "CappedFCFS");
     }
 
     function startAuction(uint periodInDays) public isAdmin(true){

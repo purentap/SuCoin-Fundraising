@@ -14,17 +14,14 @@ contract CappedAuctionTrial is AuctionTrial {
 
     event TokenBought(address indexed buyer,uint usedBidCoinAmount , uint boughtTokenAmount );        //Logs bought auction tokens
 
-
     //Maestro public maestroSCa;
     constructor(
         address _token, 
         address _bidCoin, 
         uint _numberOfTokensToBeDistributed,
-        uint _rate,
-        address _maestro,
-         bytes32 projectHash
+        uint _rate
          )
-        AuctionTrial(_bidCoin,_maestro,_token,projectHash)
+        AuctionTrial(_bidCoin)
         {
 
       
