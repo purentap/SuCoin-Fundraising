@@ -210,7 +210,8 @@ const Auction = () => {
             let tokenSymbol = await tokenSC.symbol();
             let tokenName = await tokenSC.name();
             var totalSupply = await tokenSC.totalSupply();
-            if (auctionDetails.auctionType == "CappedFCFS") {
+
+            if (auctionDetails.auctionType == "CappedAuctionTrial") {
                 let auctionSc = await new ethers.Contract(auctionDetails.auctionAddress, CappedFCFS.abi, provider);
                 let price = await auctionSc.price();
                 let numberOfTokenToBeDistributed = await auctionSc.numberOfTokensToBeDistributed();
@@ -219,20 +220,14 @@ const Auction = () => {
 
 
                 console.log(price, numberOfTokenToBeDistributed, totalDeposited)
-            } else if (auctionDetails.auctionType == "CappedAuctionWRedistribution") {
+            } else if (auctionDetails.auctionType == "UncappedAuctionTrial") {
                 let auctionSc = await new ethers.Contract(auctionDetails.auctionAddress, CappedAuctionWRedistribution.abi, provider);
                 let price = await auctionSc.price();
                 let numberOfTokenToBeDistributed = await auctionSc.numberOfTokensToBeDistributed();
                 let totalDeposited = auctionSc.totalDeposited();
                 let end = await auctionSc.end();
-            } else if (auctionDetails.auctionType == "CappedParcelLimitFCFS") {
-                let auctionSc = await new ethers.Contract(auctionDetails.auctionAddress, CappedParcelLimitFCFS.abi, provider);
-                let price = await auctionSc.price();
-                let numberOfTokenToBeDistributed = await auctionSc.numberOfTokensToBeDistributed();
-                let totalDeposited = auctionSc.totalDeposited();
-                let end = await auctionSc.end();
-                let limit = await auctionSc.limit();
-            } else if (auctionDetails.auctionType == "DutchAuction") {
+            } 
+             else if (auctionDetails.auctionType == "DutchAuctionTrial") {
                 let auctionSc = await new ethers.Contract(auctionDetails.auctionAddress, DutchAuctionTrial.abi, provider);
                 let startingPrice = fixedNumberToNumber(await auctionSc.rate())
                 console.log(FixedNumber.from(await auctionSc.rate()))
@@ -240,7 +235,6 @@ const Auction = () => {
                 let finalPrice = fixedNumberToNumber(await auctionSc.finalRate())
                 let numberOfTokenToBeDistributed = fixedNumberToNumber(await auctionSc.numberOfTokensToBeDistributed());
                 let soldTokens = fixedNumberToNumber(await auctionSc.soldProjectTokens());
-                console.log(numberOfTokenToBeDistributed)
 
 
                 setSoldTokens( soldTokens)
@@ -332,8 +326,8 @@ const Auction = () => {
     return (
         <div>
             {
-                auctionType == "DutchAuction" ?
-
+                ((auctionType == "DutchAuctionTrial") || (auctionType == "CappedAuctionTrial"))?
+ 
                     <div>
                         <AuctionInfo projectId={projectId} auction={auction} price={price} tokenDist={tokenDist} deposit={soldToken} />
                         {price}
