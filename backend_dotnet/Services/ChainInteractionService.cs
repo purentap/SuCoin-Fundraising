@@ -29,7 +29,7 @@ namespace SU_COIN_BACK_END.Services
 {
     public class ChainInteractionService : IChainInteractionService
     {
-         private readonly IMapper _mapper;
+        private readonly IMapper _mapper;
         private readonly DataContext _context;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly Web3 _web3;
@@ -44,100 +44,136 @@ namespace SU_COIN_BACK_END.Services
             _web3 = new Web3(url);
         }
 
-        public async Task<ServiceResponse<List<EventLog<ProjectRegisterEventDTO>>>> GetRegisterEventLogs(){
+        public async Task<ServiceResponse<List<EventLog<ProjectRegisterEventDTO>>>> GetRegisterEventLogs()
+        {
             ServiceResponse<List<EventLog<ProjectRegisterEventDTO>>> response = new ServiceResponse<List<EventLog<ProjectRegisterEventDTO>>>();
-            try{
+            try
+            {
                 var registerEventHandler = _web3.Eth.GetEvent<ProjectRegisterEventDTO>(ContractConstants.RegisterContractAddress);
                 var filterAllRegisterEvents = registerEventHandler.CreateFilterInput(GetUserAddress());
                 var allEvents = await registerEventHandler.GetAllChangesAsync(filterAllRegisterEvents);
-                if(allEvents != null){
+                if (allEvents != null) // user registered projects so far
+                {
                     response.Message = "Ok";
                     response.Success = true;
                     response.Data = allEvents;
-                }else{
+                }
+                else
+                {
                     response.Success = false;
                     response.Message = MessageConstants.EVENT_NOT_FOUND;
-                }  
-            }catch(Exception e){
+                }
+            }
+            catch (Exception e)
+            {
                 response.Success = false;
                 response.Message = e.Message;
             }
             return response;
         }
 
-        public async Task<ServiceResponse<List<EventLog<WhitelistInsertEventDTO>>>> GetWhiteListInsertEventLogs(string address){
+        public async Task<ServiceResponse<List<EventLog<WhitelistInsertEventDTO>>>> GetWhiteListInsertEventLogs(string address)
+        {
             ServiceResponse<List<EventLog<WhitelistInsertEventDTO>>> response = new ServiceResponse<List<EventLog<WhitelistInsertEventDTO>>>();
-            try{
+            try
+            {
                 var whitelistInsertEventHandler = _web3.Eth.GetEvent<WhitelistInsertEventDTO>(ContractConstants.RegisterContractAddress);
                 var filterAllWhitelistEvents = whitelistInsertEventHandler.CreateFilterInput(address);
                 var allEvents = await whitelistInsertEventHandler.GetAllChangesAsync(filterAllWhitelistEvents);
-                if(allEvents != null){
+                if (allEvents != null) // user has been inserted into the whitelist before
+                {
                     response.Message = "Ok";
                     response.Success = true;
                     response.Data = allEvents;
-                }else{
+                }
+                else
+                {
                     response.Success = false;
                     response.Message = MessageConstants.EVENT_NOT_FOUND;
                 }  
-            }catch(Exception e){
+            }
+            catch (Exception e)
+            {
                 response.Success = false;
                 response.Message = e.Message;
             }
             return response;
         }
 
-        public async Task<ServiceResponse<List<EventLog<WhitelistRemoveEventDTO>>>> GetWhiteListRemoveEventLogs(string address){
+        public async Task<ServiceResponse<List<EventLog<WhitelistRemoveEventDTO>>>> GetWhiteListRemoveEventLogs(string address)
+        {
             ServiceResponse<List<EventLog<WhitelistRemoveEventDTO>>> response = new ServiceResponse<List<EventLog<WhitelistRemoveEventDTO>>>();
-            try{
+            try
+            {
                 var whitelistRemoveEventHandler = _web3.Eth.GetEvent<WhitelistRemoveEventDTO>(ContractConstants.RegisterContractAddress);
                 var filterAllWhitelistEvents = whitelistRemoveEventHandler.CreateFilterInput(address);
                 var allEvents = await whitelistRemoveEventHandler.GetAllChangesAsync(filterAllWhitelistEvents);
-                if(allEvents != null){
+                if (allEvents != null) // user has beem removed from the whitelist before
+                {
                     response.Message = "Ok";
                     response.Success = true;
                     response.Data = allEvents;
-                }else{
+                }
+                else
+                {
                     response.Success = false;
                     response.Message = MessageConstants.EVENT_NOT_FOUND;
                 }  
-            }catch(Exception e){
+            } 
+            catch (Exception e)
+            {
                 response.Success = false;
                 response.Message = e.Message;
             }
             return response;
         }
 
-        public async Task<bool> IsWhiteListed(string address){
-            try{
-                ServiceResponse<List<EventLog<WhitelistInsertEventDTO>>> response_one = await GetWhiteListInsertEventLogs(address);
-                ServiceResponse<List<EventLog<WhitelistRemoveEventDTO>>> response_two = await GetWhiteListRemoveEventLogs(address);
-                if (response_one.Data.Count == 0 && response_two.Data.Count == 0){
+        public async Task<bool> IsWhiteListed(string address)
+        {
+            try
+            {
+                ServiceResponse<List<EventLog<WhitelistInsertEventDTO>>> response_inserts = await GetWhiteListInsertEventLogs(address);
+                ServiceResponse<List<EventLog<WhitelistRemoveEventDTO>>> response_removes = await GetWhiteListRemoveEventLogs(address);
+                int numberOfInserts = response_inserts.Data.Count;
+                int numberOfRemoves = response_removes.Data.Count;
+                bool isRemoved = (numberOfInserts == numberOfRemoves);
+                bool notJoinedBefore = (numberOfInserts == 0 && numberOfRemoves == 0);
+                if (isRemoved || notJoinedBefore) // user is not whitelisted
+                {
                     return false;
-                }else if (response_one.Data.Count == response_two.Data.Count){
-                    return false;
-                }else{
-                    return true;
-                }
-            }catch(Exception e){
+                }    
+                return true;           
+            } 
+            catch (Exception e)
+            {
+                string error = e.Message;
+                Console.WriteLine("Error: {0}",error);
                 return false;
             }
         }
     
-        public async Task<ServiceResponse<List<EventLog<ProjectEvaluationEventDTO>>>> GetProjectEvaluationEventLogs(){
+        public async Task<ServiceResponse<List<EventLog<ProjectEvaluationEventDTO>>>> GetProjectEvaluationEventLogs()
+        {
             ServiceResponse<List<EventLog<ProjectEvaluationEventDTO>>> response = new ServiceResponse<List<EventLog<ProjectEvaluationEventDTO>>>();
-            try{
+            try
+            {
                 var whitelistInsertEventHandler = _web3.Eth.GetEvent<ProjectEvaluationEventDTO>(ContractConstants.RegisterContractAddress);
                 var filterAllProjEvalEvents = whitelistInsertEventHandler.CreateFilterInput();
                 var allEvents = await whitelistInsertEventHandler.GetAllChangesAsync(filterAllProjEvalEvents);
-                if(allEvents != null){
+                if (allEvents != null) // projects have been evaluated before
+                {
                     response.Message = "Ok";
                     response.Success = true;
                     response.Data = allEvents;
-                }else{
+                }
+                else
+                {
                     response.Success = false;
                     response.Message = MessageConstants.EVENT_NOT_FOUND;
                 }  
-            }catch(Exception e){
+            }
+            catch (Exception e)
+            {
                 response.Success = false;
                 response.Message = e.Message;
             }

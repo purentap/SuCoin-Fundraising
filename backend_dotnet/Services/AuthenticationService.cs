@@ -20,6 +20,7 @@ using Nethereum.Signer;
 using AutoMapper;
 using SU_COIN_BACK_END.Data;
 using System.Security.Cryptography;
+using SU_COIN_BACK_END.Constants.UserRoleConstants;
 
 namespace SU_COIN_BACK_END.Services
 {
@@ -43,9 +44,11 @@ namespace SU_COIN_BACK_END.Services
         public async Task<ServiceResponse<int>> GetNonce(string address)
         {
             ServiceResponse<int> response = new ServiceResponse<int>();
-            try{
+            try
+            {
                 User user = await _context.Users.FirstOrDefaultAsync(c => c.Address == address);
-                if(user == null){
+                if (user == null)
+                {
                     response.Success = false;
                     response.Message = MessageConstants.USER_NOT_FOUND;
                     return response;
@@ -53,20 +56,23 @@ namespace SU_COIN_BACK_END.Services
                 RNGCryptoServiceProvider csp = new RNGCryptoServiceProvider();
                 byte[] randomNumber = new byte[32];
                 csp.GetBytes(randomNumber);
-                if (BitConverter.IsLittleEndian){
+                if (BitConverter.IsLittleEndian)
+                {
                     Array.Reverse(randomNumber);
                 }
-                int i = Math.Abs(BitConverter.ToInt32(randomNumber, 0));
-                Console.WriteLine("int: {0}", i);
-                user.Nonce = i;
+                int nonce = Math.Abs(BitConverter.ToInt32(randomNumber, 0)); // randomly assigned nonce value
+                Console.WriteLine("Nonce: {0}", nonce);
+                user.Nonce = nonce;
                 _context.Users.Update(user);
                 await _context.SaveChangesAsync();
                 response.Success = true;
                 response.Message = "Ok";
-                response.Data = i;
-            }catch(Exception e){
+                response.Data = nonce;
+            }
+            catch (Exception e)
+            {
                 response.Success = false;
-                response.Message = e.Message;      
+                response.Message = e.Message;
             }
             return response;
         }
@@ -74,39 +80,60 @@ namespace SU_COIN_BACK_END.Services
         public async Task<ServiceResponse<string>> Login(UserLoginRequest request)
         {   
             ServiceResponse<string> response = new ServiceResponse<string>();
-            try{  
+            try
+            {  
                 User user = await _context.Users.FirstOrDefaultAsync(c => c.Address == request.Address);
                 if (user != null)
-                {   if(user.Nonce != null){
+                {   
+                    if (user.Nonce != null) 
+                    {
                         var signer = new EthereumMessageSigner();
-                        var addressRec = signer.EncodeUTF8AndEcRecover("LOGIN: "+ user.Nonce.ToString(), request.SignedMessage);
-                        if(request.Address == addressRec){
+                        var addressRec = signer.EncodeUTF8AndEcRecover("LOGIN: " + user.Nonce.ToString(), request.SignedMessage);
+                        if (request.Address == addressRec) // verification of the user signature
+                        { 
                             response.Success = true;
                             response.Message = MessageConstants.USER_LOGIN_SUCCES;
-                            bool isWhitelisted = await _chainInteractionService.IsWhiteListed(user.Address);
-                            Console.WriteLine("BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB:" + isWhitelisted.ToString() );
-                            if(user.Role != "Whitelist" && isWhitelisted && user.Role != "Admin"){
-                                user.Role = "Whitelist";
-                            }else if(user.Role == "Whitelist" && !isWhitelisted && user.Role != "Admin"){
-                                user.Role = "Base";
+                            bool isWhitelistedInChain = await _chainInteractionService.IsWhiteListed(user.Address);
+                            Console.WriteLine("Whitelist status:" + isWhitelistedInChain.ToString());
+                            string currentRole = user.Role;
+                            if (currentRole != UserRoleConstants.ADMIN) 
+                            {
+                                bool isWhitelistedInDatabase = (currentRole == UserRoleConstants.WHITELIST);
+                                if (!isWhitelistedInDatabase && isWhitelistedInChain) 
+                                {
+                                    currentRole = UserRoleConstants.WHITELIST;
+                                }
+                                else if (isWhitelistedInDatabase && !isWhitelistedInChain) 
+                                {
+                                    currentRole = UserRoleConstants.BASE;
+                                }
+                                user.Role = currentRole;
                             }
                             response.Data = GenerateToken(user);
                             user.Nonce = null;
                             _context.Users.Update(user);
                             await _context.SaveChangesAsync();
-                        }else{
+                        }
+                        else
+                        {
                             response.Success = false;
                             response.Message = String.Format(MessageConstants.SIGNATURE_REJECTED, request.Address);
                         }  
-                    }else{
+                    }
+                    else
+                    {
                         response.Success = false;
                         response.Message = MessageConstants.NONCE_NOT_FOUND;
                     }
-                }else{
+                }
+                else
+                {
                     response.Success = false;
                     response.Message = MessageConstants.USER_NOT_FOUND;
                 }
-            }catch(Exception e){
+            }
+            catch (Exception e)
+            {
                 response.Success = false;
                 response.Message = e.Message;
             }
@@ -116,7 +143,8 @@ namespace SU_COIN_BACK_END.Services
         public async Task<ServiceResponse<string>> Register(UserRegisterRequest request)
         {
             ServiceResponse<string> response = new ServiceResponse<string>();
-            try{
+            try
+            {
                 var signer = new EthereumMessageSigner();
                 var addressRec = signer.EncodeUTF8AndEcRecover("REGISTER", request.SignedMessage);
                 if (await UserExists(addressRec))
@@ -125,20 +153,30 @@ namespace SU_COIN_BACK_END.Services
                     response.Message = MessageConstants.USER_EXIST;
                     return response;
                 }
-                if (await UserNameExists(request.Username))
+                else if (await UserNameExists(request.Username))
                 {
                     response.Success = false;
                     response.Message = MessageConstants.USER_NAME_EXIST;
                     return response;
                 }
-                User user = new User{Name=request.Name,Surname= request.Surname,Username= request.Username, 
-                    MailAddress=request.MailAddress, Address = addressRec};
 
-                    await _context.Users.AddAsync(user);
-                    await _context.SaveChangesAsync();
+                User user = new User 
+                {
+                    Name = request.Name,
+                    Surname = request.Surname,
+                    Username = request.Username, 
+                    MailAddress = request.MailAddress, 
+                    Address = addressRec
+                };
+
+                await _context.Users.AddAsync(user);
+                await _context.SaveChangesAsync();
+
                 response.Message = MessageConstants.USER_REGISTER_SUCCESS;
-                response.Success  =true;
-            }catch(Exception e){
+                response.Success = true;
+            }
+            catch (Exception e)
+            {
                 response.Success = false;
                 response.Message = e.Message;
             }
@@ -161,8 +199,8 @@ namespace SU_COIN_BACK_END.Services
             }
             return false;
         }
-        private string GenerateToken(User user){
-
+        private string GenerateToken(User user)
+        {
            List<Claim> claims = new List<Claim>
             {
                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
@@ -171,7 +209,8 @@ namespace SU_COIN_BACK_END.Services
                 new Claim(ClaimTypes.Surname, user.Address)
             };
 
-            SymmetricSecurityKey key = new SymmetricSecurityKey(
+            SymmetricSecurityKey key = new SymmetricSecurityKey
+            (
                 Encoding.UTF8.GetBytes(_configuration.GetSection("AppSettings:Token").Value)
             );
 

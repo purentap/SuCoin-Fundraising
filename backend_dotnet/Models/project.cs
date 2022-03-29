@@ -1,4 +1,4 @@
-using System;
+using SU_COIN_BACK_END.Constants.ProjectStatusConstants;
 
 namespace SU_COIN_BACK_END.Models
 {
@@ -11,9 +11,9 @@ namespace SU_COIN_BACK_END.Models
         public string FileHex {get; set;} = "";
         public int TxnID {get; set;} = -1;
         public string ProjectDescription {get; set;}
-        public string ImageUrl{get; set;} = null;
-        public double Rating{get; set;} = 0;
-        public string Status {get; set;}= "Pending";
+        public string ImageUrl {get; set;} = null;
+        public double Rating {get; set;} = 0;
+        public string Status {get; set;} = ProjectStatusConstants.PENDING;
         public string MarkDown {get; set;} = "";
         public string? ProposerAddress {get; set;} = null;
     }

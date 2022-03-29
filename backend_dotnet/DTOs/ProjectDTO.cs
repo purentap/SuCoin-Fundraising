@@ -9,8 +9,8 @@ namespace SU_COIN_BACK_END.DTOs
         public int ProjectID {get; set;}
         public string ProjectName {get; set;}
         public string ProjectDescription {get; set;}
-        public string ImageUrl{get; set;}= null;
-        public Nullable<double> Rating{get; set;}= null;
+        public string ImageUrl {get; set;} = null;
+        public Nullable<double> Rating {get; set;} = null;
         public string Status {get; set;} = "Pending";
         public string MarkDown {get; set;} = "";
         public string fileHex {get; set;} = "";
