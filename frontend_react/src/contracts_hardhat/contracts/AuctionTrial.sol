@@ -3,6 +3,8 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/math/Math.sol";
+import "contracts/Maestro.sol";
+
 
 
 
@@ -12,7 +14,9 @@ abstract contract AuctionTrial is Ownable{                                    //
     uint public startTime;                                                    //Auction Start time in timestamp
     uint  public latestEndTime;                                               //Latest Auction end time in timestamp
     enum AuctionStatus{OFF,RUNNING,ENDED} 
-    AuctionStatus public status;                                              //Current status of the auction                              
+    AuctionStatus public status;                                              //Current status of the auction         
+    Maestro public maestroSC;
+                     
 
 
     event BidSubmission(address indexed sender, uint amount);              //Logs bidder and bid amount in bidCoin
@@ -21,13 +25,14 @@ abstract contract AuctionTrial is Ownable{                                    //
 
 
                                                                               //Gets and sets auction information
-    constructor(address _bidCoin) {
+    constructor(address _bidCoin,address _maestro,address _token,bytes32 projectHash) {
      
 
         status = AuctionStatus.OFF;
         bidCoin = ERC20(_bidCoin);
-     
-        
+        maestroSC = Maestro(_maestro);
+        maestroSC.AssignAuction(msg.sender, projectHash, _token, "DutchAuction");
+ 
     }
 
     function auctionStartCheckConditions(uint maximumAuctionTimeInHours) internal virtual {

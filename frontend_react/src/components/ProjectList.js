@@ -35,52 +35,10 @@ const Projects = (props) => {
 }
 
 var pj = [
-  {
-    id: 0,
-    title: "Freelance Finder",
-    faculty: "FENS",
-    date: "date"
-  },
-  {
-    id: 1,
-    title: "SuCoin",
-    faculty: "FENS"
-  },
-  {
-    id: 2,
-    title: "Virtual Tour of Sabanci",
-    faculty: "FENS"
-  },
-  {
-    id: 3,
-    title: "Real-time Marketing",
-    faculty: "FMAN"
-  },
+ 
 ]
 
-var pj2 = [
-  {
-    id: 0,
-    title: "XXFreelance Finder",
-    faculty: "FENS",
-    date: "date"
-  },
-  {
-    id: 1,
-    title: "XXSuCoin",
-    faculty: "FENS"
-  },
-  {
-    id: 2,
-    title: "XXVirtual Tour of Sabanci",
-    faculty: "FENS"
-  },
-  {
-    id: 3,
-    title: "XXReal-time Marketing",
-    faculty: "FMAN"
-  },
-]
+
 
 const ProjectList = () => {
   const [error, setError] = useState(false);

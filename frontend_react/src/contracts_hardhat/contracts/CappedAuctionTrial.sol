@@ -20,14 +20,13 @@ contract CappedAuctionTrial is AuctionTrial {
         address _token, 
         address _bidCoin, 
         uint _numberOfTokensToBeDistributed,
-        uint _rate
-        //Maestro _maestro,
-         //bytes32 projectHash
+        uint _rate,
+        address _maestro,
+         bytes32 projectHash
          )
-        AuctionTrial(_bidCoin)
+        AuctionTrial(_bidCoin,_maestro,_token,projectHash)
         {
-        //maestroSC = Maestro(_maestro);
-        //maestroSC.AssignAuction(msg.sender, projectHash, _token, "DutchAuction");
+
       
 
         require(_numberOfTokensToBeDistributed > 0,"Auction cannot happen because there are no tokens to auction");

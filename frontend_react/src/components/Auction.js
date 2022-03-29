@@ -25,7 +25,7 @@ import Col from 'react-bootstrap/Col'
 import Container from 'react-bootstrap/Col'
 import Cookies from 'js-cookie'
 
-import { ethers } from 'ethers';
+import { ethers, FixedNumber } from 'ethers';
 import ethersAbi from '../contracts_hardhat/artifacts/contracts/ProjectRegister.sol/ProjectRegister.json'
 import abi from '../abi/project.json'
 
@@ -34,9 +34,12 @@ import CappedFCFS from '../contracts_hardhat/artifacts/contracts/CappedFCFSAucti
 import CappedParcelLimitFCFS from '../contracts_hardhat/artifacts/contracts/CappedParcelLimitFCFSAuction.sol/CappedParcelLimitFCFSAuction.json';
 import CappedAuctionWRedistribution from '../contracts_hardhat/artifacts/contracts/CappedAuctionWRedistribution.sol/CappedAuctionWRedistribution.json';
 import DutchAuction from '../contracts_hardhat/artifacts/contracts/DutchAuction.sol/DutchAuction.json';
+import DutchAuctionTrial from '../contracts_hardhat/artifacts/contracts/DutchAuctionTrial.sol/DutchAuctionTrial.json';
+import { fixedNumberToNumber } from '../helpers'; 
+
 import TokenABI from '../contracts_hardhat/artifacts/contracts/Token.sol/Token.json';
 import { WalletSwitcher } from '../User';
-const MaestroAddress = "0x4ED02B5dA043d8c9882f11B9784D67f2a7E9cC7C";
+const MaestroAddress = "0x1cFc7B3ec115cF51DB35AEC04Ce902dd1Cb3625b";
 const CappedFCFSAddress = "0x43f691a5D43Dd8edbDa222c6a0de967E52a23db2"
 
 const mkdStr = `# {Freelance Finder Version 2}
@@ -70,7 +73,7 @@ const Auction = () => {
 
     const [price, setPrice] = useState();
     const [tokenDist, setTokenDist] = useState();
-    const [deposit, setDeposit] = useState();
+    const [soldToken, setSoldTokens] = useState();
 
 
 
@@ -85,7 +88,7 @@ const Auction = () => {
             "tokenSymbol": "Lira",
             "tokenName": "BiLira",
             "status": "notStarted",
-            "tokenAddress": "0xc8a80f82876C20903aa8eE1e55fa9782Aa9Ed3c3"
+            "tokenAddress": "0x8f5736aF17F2F071B476Fd9cFD27a1Bd8D7E7F15"
         },
         {
             "auctionAddress": "0x38a758A743Df330182Aa3988090d40b791823255",
@@ -95,7 +98,7 @@ const Auction = () => {
             "tokenSymbol": "Lira",
             "tokenName": "BiLira",
             "status": "notStarted",
-            "tokenAddress": "0xc8a80f82876C20903aa8eE1e55fa9782Aa9Ed3c3"
+            "tokenAddress": "0x8f5736aF17F2F071B476Fd9cFD27a1Bd8D7E7F15"
         }
     ]);
 
@@ -133,6 +136,7 @@ const Auction = () => {
             setProjects(result.data.data)
 
 
+            
 
             const provider = await new ethers.providers.Web3Provider(window.ethereum);
             var Maestro = await new ethers.Contract(MaestroAddress, MaestroABI.abi, provider);
@@ -150,18 +154,10 @@ const Auction = () => {
                 let tokenSC = await new ethers.Contract(Project.token, TokenABI.abi, provider);
                 let tokenSymbol = await tokenSC.symbol();
                 let tokenName = await tokenSC.name();
-                let auctionSc = await new ethers.Contract(aucAddress, (auctionType == 'CappedFCFS' ? CappedFCFS.abi : (auctionType == 'CappedAuctionWRedistribution' ? CappedAuctionWRedistribution.abi : (auctionType == "CappedParcelLimitFCFSAuction" ? CappedParcelLimitFCFS.abi : (auctionType == "DutchAuction" ? DutchAuction : DutchAuction)))), provider);
-                let isFinished = await auctionSc.isFinished();
-                let isStarted = await auctionSc.isStarted();
-                var status;
-                if (isStarted && !isFinished) {
-                    status = "Ongoing";
-                }
-                else if (isStarted && isFinished) {
-                    status = "Finished";
-                } else if (!isStarted) {
-                    status = "notStarted";
-                }
+                let auctionSc = await new ethers.Contract(aucAddress, (auctionType == 'CappedFCFS' ? CappedFCFS.abi : (auctionType == 'CappedAuctionWRedistribution' ? CappedAuctionWRedistribution.abi : (auctionType == "CappedParcelLimitFCFSAuction" ? CappedParcelLimitFCFS.abi : (auctionType == "DutchAuction" ? DutchAuctionTrial.abi : DutchAuctionTrial.abi)))), provider);
+            
+                const status = ["notStarted","Ongoing","Finished"][await auctionSc.status()]
+
 
                 var id
                 result.data.data.forEach(proj => {
@@ -174,12 +170,13 @@ const Auction = () => {
                     }
                 })
 
+
                 allAuctions.push({ "id": id, "auctionAddress": aucAddress, "fileHash": fileHash, "auctionType": auctionType, "creator": creator, "tokenSymbol": tokenSymbol, tokenName: tokenName, status: status, tokenAddress: Project.token });
             }
+            console.log(allAuctions)
             setAuctions(allAuctions)
-            console.log(allAuctions);
+            
         } catch (error) {
-
             return false;
         }
     }, [])
@@ -187,10 +184,10 @@ const Auction = () => {
     useEffect(async () => {
         try {
 
-
             const provider = await new ethers.providers.Web3Provider(window.ethereum)
             const signer = await provider.getSigner()
             var auctionDetails;
+            
             auctions.forEach(element => {
                 if (element.id == projectId) {
 
@@ -217,9 +214,7 @@ const Auction = () => {
                 let numberOfTokenToBeDistributed = await auctionSc.numberOfTokensToBeDistributed();
                 let totalDeposited = await auctionSc.totalDeposited();
                 let end = await auctionSc.end();
-                setPrice(price.toString())
-                setTokenDist(numberOfTokenToBeDistributed.toString())
-                setDeposit(totalDeposited.toString())
+
 
                 console.log(price, numberOfTokenToBeDistributed, totalDeposited)
             } else if (auctionDetails.auctionType == "CappedAuctionWRedistribution") {
@@ -236,18 +231,26 @@ const Auction = () => {
                 let end = await auctionSc.end();
                 let limit = await auctionSc.limit();
             } else if (auctionDetails.auctionType == "DutchAuction") {
-                let auctionSc = await new ethers.Contract(auctionDetails.auctionAddress, DutchAuction.abi, provider);
-                let startingPrice = await auctionSc.startingPrice();
-                let priceDeductionRate = await auctionSc.priceDeductionRate();
-                let numberOfTokenToBeDistributed = await auctionSc.numberOfTokensToBeDistributed();
-                let totalDeposited = auctionSc.totalDeposited();
-                let end = await auctionSc.end();
-                let limit = await auctionSc.limit();
-                let minPrice = await auctionSc.minPrice();
-                let currrentPrice = await auctionSc.finalPrice();
+                let auctionSc = await new ethers.Contract(auctionDetails.auctionAddress, DutchAuctionTrial.abi, provider);
+                let startingPrice = fixedNumberToNumber(await auctionSc.rate())
+                console.log(FixedNumber.from(await auctionSc.rate()))
+                let currrentPrice = fixedNumberToNumber(await auctionSc.currentRate());
+                let finalPrice = fixedNumberToNumber(await auctionSc.finalRate())
+                let numberOfTokenToBeDistributed = fixedNumberToNumber(await auctionSc.numberOfTokensToBeDistributed());
+                let soldTokens = fixedNumberToNumber(await auctionSc.soldProjectTokens());
+                console.log(numberOfTokenToBeDistributed)
+
+
+                setSoldTokens( soldTokens)
+
+                setPrice(currrentPrice.toString())
+                setTokenDist(numberOfTokenToBeDistributed.toString())
+
+               
+
             }
         } catch (error) {
-
+            console.log(error)
         }
     }, [auctions])
 
@@ -322,13 +325,15 @@ const Auction = () => {
     }
     const navigate = useNavigate();
 
+
+
     return (
         <div>
             {
-                auctionType == "CappedFCFS" ?
+                auctionType == "DutchAuction" ?
 
                     <div>
-                        <AuctionInfo projectId={projectId} auction={auction} price={price} tokenDist={tokenDist} deposit={deposit} />
+                        <AuctionInfo projectId={projectId} auction={auction} price={price} tokenDist={tokenDist} deposit={soldToken} />
                         {price}
                     </div>
 

@@ -21,7 +21,7 @@ namespace SU_COIN_BACK_END.Data
             new MySqlServerVersion(new Version(8, 0, 11)))
                 .UseLoggerFactory(LoggerFactory.Create(b => b
                 .AddConsole()
-                .AddFilter(level => level <= LogLevel.Information)))
+                .AddFilter("Microsoft.EntityFrameworkCore", LogLevel.Warning)))
                 .EnableSensitiveDataLogging()
                 .EnableDetailedErrors();
      }

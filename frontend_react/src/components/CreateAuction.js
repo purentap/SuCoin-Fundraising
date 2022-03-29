@@ -1,6 +1,6 @@
 import React, { useState, useContext, useCallback } from 'react';
 import { useDropzone } from 'react-dropzone'
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import API from '../API';
 import Select from 'react-select'
 import { jsPDF } from "jspdf";
@@ -26,7 +26,7 @@ import ProjectRegister from '../abi/project.json'
 import Cookies from 'js-cookie'
 import axios from "axios"
 import abi from '../abi/project.json'
-import { ethers } from 'ethers';
+import {ethers} from 'ethers';
 import ethersAbi from '../contracts_hardhat/artifacts/contracts/ProjectRegister.sol/ProjectRegister.json'
 
 import MaestroABI from '../contracts_hardhat/artifacts/contracts/Maestro.sol/Maestro.json';
@@ -34,15 +34,25 @@ import CappedFCFS from '../contracts_hardhat/artifacts/contracts/CappedFCFSAucti
 import CappedParcelLimitFCFS from '../contracts_hardhat/artifacts/contracts/CappedParcelLimitFCFSAuction.sol/CappedParcelLimitFCFSAuction.json';
 import CappedAuctionWRedistribution from '../contracts_hardhat/artifacts/contracts/CappedAuctionWRedistribution.sol/CappedAuctionWRedistribution.json';
 import DutchAuction from '../contracts_hardhat/artifacts/contracts/DutchAuction.sol/DutchAuction.json';
+import DutchAuctionTrial from '../contracts_hardhat/artifacts/contracts/DutchAuctionTrial.sol/DutchAuctionTrial.json';
+
 import TokenABI from '../contracts_hardhat/artifacts/contracts/Token.sol/Token.json';
 
+import { numberToFixedNumber } from '../helpers'; 
 
-const BiLiraAddress = "0xc8a80f82876C20903aa8eE1e55fa9782Aa9Ed3c3";
 
-const maestro = { address: "0x4ED02B5dA043d8c9882f11B9784D67f2a7E9cC7C" }
-const SUCoin = { address: "0xa011037b3EF5EFd8e98D619e4E2fB8CB0a6acE9E" }
+const BiLiraAddress = "0x8f5736aF17F2F071B476Fd9cFD27a1Bd8D7E7F15";
+
+const maestro = { address: "0x1cFc7B3ec115cF51DB35AEC04Ce902dd1Cb3625b" }
+const SUCoin = { address: "0xb6e466F4F0ab1e2dA2E8237F38B2eCf6278894Ce" }
 
 const CreateAuction = () => {
+
+    const hash = useLocation()?.state?.hash
+
+
+
+    
     const [isLoading, setLoading] = useState(false)
     const [auctionTypes, setAuctiontypes] = useState([
         {
@@ -66,6 +76,11 @@ const CreateAuction = () => {
             id: 3,
             name: "Parcel Limit",
             description: "this is Parcel Limit"
+        },
+        {
+            id: 4,
+            name: "Dutch Auction Trial",
+            description: "An Auction where price decrease constantly"
         }
     ]);
 
@@ -76,7 +91,18 @@ const CreateAuction = () => {
 
 
 
-    const action1 = () => {
+    const action1 = async () => {
+        const provider = await new ethers.providers.Web3Provider(window.ethereum);
+
+        const signer = await provider.getSigner();
+
+        const MAESTRO = new ethers.ContractFactory(MaestroABI.abi, MaestroABI.bytecode, signer);
+
+        const maestroContract = MAESTRO.attach(maestro.address)
+
+        const address = await signer.getAddress()
+
+        await maestroContract.assignToken(tokenAddress,hash)
 
 
     }
@@ -84,9 +110,12 @@ const CreateAuction = () => {
 
 
     const deployAuction = async (id) => {
-
+        const sucoinDecimals = 18  //todo get this value from blockchain
         const provider = await new ethers.providers.Web3Provider(window.ethereum);
         const signer = await provider.getSigner();
+        const tokenDistributedDecimal = numberToFixedNumber(TokensToBeDesitributed,sucoinDecimals)
+        const priceDecimal = numberToFixedNumber(tokenPrice,sucoinDecimals);
+
 
         if (id == 0) {
             const DutchAuction_ = new ethers.ContractFactory(DutchAuction.abi, DutchAuction.bytecode, signer);
@@ -106,6 +135,11 @@ const CreateAuction = () => {
         else if (id == 3) {
             const CappedParcelLimitFCFSAuction = new ethers.ContractFactory(CappedParcelLimitFCFS.abi, CappedParcelLimitFCFS.bytecode, signer);
             let auction = await CappedParcelLimitFCFSAuction.deploy(tokenPrice, tokenAddress, SUCoin.address, TokensToBeDesitributed, 1000, maestro.address, auction.fileHash);
+            await auction.deployed();
+        }
+        else if (id == 4) {
+            const Dutch = new ethers.ContractFactory(DutchAuctionTrial.abi, DutchAuctionTrial.bytecode, signer);    
+            let auction = await Dutch.deploy(tokenAddress,SUCoin.address,tokenDistributedDecimal,priceDecimal,maestro.address,hash ?? "fail",0);
             await auction.deployed();
         }
     }
@@ -182,7 +216,7 @@ const CreateAuction = () => {
                                             </Container>
 
 
-                                            <LoadingButton show={isLoading} text={"Submit to Chain"} variant="dark" onClick={() => { deployAuction() }}>Deploy Auction </LoadingButton>
+                                            <LoadingButton show={isLoading} text={"Submit to Chain"} variant="dark" func={() => { deployAuction(index) }}>Deploy Auction </LoadingButton>
                                         </Accordion.Body>
                                     </Accordion.Item>
                                 </Accordion>

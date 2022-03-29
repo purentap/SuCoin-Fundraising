@@ -36,11 +36,12 @@ import CappedAuctionWRedistribution from '../../contracts_hardhat/artifacts/cont
 import DutchAuction from '../../contracts_hardhat/artifacts/contracts/DutchAuction.sol/DutchAuction.json';
 import TokenABI from '../../contracts_hardhat/artifacts/contracts/Token.sol/Token.json';
 import wrapperTokenABI from '../../contracts_hardhat/artifacts/contracts/WrapperToken.sol/WrapperToken.json';
+import {numberToFixedNumber  } from '../../helpers'; 
 
-const BiLiraAddress = "0xc8a80f82876C20903aa8eE1e55fa9782Aa9Ed3c3";
+const BiLiraAddress = "0x8f5736aF17F2F071B476Fd9cFD27a1Bd8D7E7F15";
 
-const maestro = { address: "0x4ED02B5dA043d8c9882f11B9784D67f2a7E9cC7C" }
-const SUCoin = { address: "0xa011037b3EF5EFd8e98D619e4E2fB8CB0a6acE9E" }
+const maestro = { address: "0x1cFc7B3ec115cF51DB35AEC04Ce902dd1Cb3625b" }
+const SUCoin = { address: "0xb6e466F4F0ab1e2dA2E8237F38B2eCf6278894Ce" }
 
 const AuctionInfo = ({ auction, projectId, price, tokenDist, deposit }) => {
 
@@ -94,8 +95,8 @@ const AuctionInfo = ({ auction, projectId, price, tokenDist, deposit }) => {
       const provider = await new ethers.providers.Web3Provider(window.ethereum);
       const signer = await provider.getSigner();
 
-      //const value = ethers.utils.parseUnits(amount, 18);
-      const value = amount;
+      
+      const value = numberToFixedNumber(amount)
 
 
       var auctionSC = await new ethers.Contract(auction.auctionAddress, CappedFCFS.abi, signer);
@@ -154,16 +155,16 @@ const AuctionInfo = ({ auction, projectId, price, tokenDist, deposit }) => {
             <div className='rating-directors'>
               <div className='rating-directors'>
                 <h3>Total Supply</h3>
-                <div className='score'>{tokenDist}</div>
+                <div className='score'>{Number(tokenDist).toFixed(2)}</div>
               </div>
               <div className='rating-directors'>
                 <h3>Token Price</h3>
-                <div className='score'>{price}</div>
+                <div className='score'>{Number(price).toFixed(5)}</div>
               </div>
 
               <div className='rating-directors'>
                 <h3>Tokens Left</h3>
-                <div className='score'>{tokenDist - deposit}</div>
+                <div className='score'>{Number(tokenDist - deposit).toFixed(3)}</div>
               </div>
             </div>
 

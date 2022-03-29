@@ -42,6 +42,7 @@ const ProjectInfo = ({ project, status, isWhitelisted, isOwner, projectId, setPr
 
 
 
+
   useEffect(async () => {
     const CryptoJS = require('crypto-js');
 
