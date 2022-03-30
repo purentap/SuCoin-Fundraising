@@ -38,6 +38,28 @@ abstract contract AuctionTrial is Ownable{                                    //
  
     }
 
+     function manualFinish() public stateUpdate() isFinished(){}
+
+
+
+    modifier stateUpdate() {
+        if (status == AuctionStatus.RUNNING && block.timestamp >= latestEndTime)
+            finalize();
+        _;
+    }
+
+    modifier isFinished() {
+        require(status == AuctionStatus.ENDED,"Auction has not finished yet");
+        _;
+    }  
+
+    modifier isRunning() {
+        require(status == AuctionStatus.RUNNING,"Auction is not running");
+        _;
+
+    }
+
+
     function auctionStartCheckConditions(uint maximumAuctionTimeInHours) internal virtual {
         require(status == AuctionStatus.OFF,"Auction already started or already ended");
         require(maximumAuctionTimeInHours > 0,"Auction Time must be longer");
@@ -65,16 +87,12 @@ abstract contract AuctionTrial is Ownable{                                    //
 
 
 
-     function bid(uint bidCoinBits)  external  virtual {
+     function bid(uint bidCoinBits)  external  virtual stateUpdate() isFinished() {
 
         emit BidSubmission(msg.sender, bidCoinBits);
 
-        require(status == AuctionStatus.RUNNING,"Auction is not active");
-        if (block.timestamp >= latestEndTime) 
-            //todo Buyer won't lose sucoin but won't be able to buy tokens either if code goes to here, need a way to notify the buyer
-            finalize();
-        else 
-            handleValidTimeBid(bidCoinBits);
+   
+        handleValidTimeBid(bidCoinBits);
      }
   
 

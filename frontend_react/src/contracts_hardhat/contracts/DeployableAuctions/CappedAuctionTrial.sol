@@ -47,6 +47,10 @@ contract CappedAuctionTrial is AuctionTrial {
     
     }
 
+    function tokenBuyLogic(address buyer,uint  projectTokenBits) virtual internal{
+        projectToken.transfer(buyer , projectTokenBits);
+    }
+
     function swap(address buyer,uint bidCoinBits,uint projectTokenBits) private {
         
       
@@ -60,15 +64,16 @@ contract CappedAuctionTrial is AuctionTrial {
 
         //Check and process if buyer have the coins to do the swap
 
-       require(bidCoin.transferFrom(buyer, owner(), bidCoinBits),"Buyer does not have enough bid coin");
+       bidCoin.transferFrom(buyer, owner(), bidCoinBits);
 
       
 
         //Send project tokens to buyer
        //No need for approval from the contracts side
+
+       tokenBuyLogic(buyer, projectTokenBits);
     
 
-       require(projectToken.transfer(buyer , projectTokenBits),"Something went wrong");
        soldProjectTokens += projectTokenBits;
 
 
@@ -78,11 +83,9 @@ contract CappedAuctionTrial is AuctionTrial {
 
     }
 
-    function withDraw() external onlyOwner {  //Must be used by owner if your coins not bought prior to ending time and no one tried bidding after ending time
-        require(status == AuctionStatus.RUNNING,"Auction is not active");
-        require(block.timestamp >= latestEndTime,"Until auction time ends you can not withdraw your tokens");
-        finalize();
-    }
+
+
+
 
 
     //In a normal capped auction rate is constant so this function does nothing
@@ -136,40 +139,7 @@ contract CappedAuctionTrial is AuctionTrial {
 
     }
 
- /*    function bid(uint bidCoinBits) override external  {
 
-        emit BidSubmission(msg.sender, bidCoinBits);
-
-        require(status == AuctionStatus.RUNNING,"Auction is not active");
-        if (block.timestamp >= latestEndTime) 
-            //todo Buyer won't lose sucoin but won't be able to buy tokens either if code goes to here, need a way to notify the buyer
-            finalize();
-        else {
-        //Contract needs to have tokens for bids
-        uint buyableProjectTokens = numberOfTokensToBeDistributed - soldProjectTokens;
-        require(buyableProjectTokens > 0,"No coins left for the auction");
-        
-
-        setCurrentRate();
-        uint totalCost = currentRate * (buyableProjectTokens / 10 ** projectToken.decimals());
-        
-
-      
-
-    
-        //Check how many coins buyer can buy with his money (amount) 
-        if (bidCoinBits >= totalCost) {
-        //Buyer is able to buy all the remaining tokens and auction must finish when all coins are bought
-         swap(msg.sender,totalCost, buyableProjectTokens);
-         finalize();
-        } 
-        else {
-            //Buyer is able to buy some tokens
-           swap(msg.sender,bidCoinBits, (buyableProjectTokens * bidCoinBits / totalCost));
-        }
-        }
-
-    } */
 
 
 }
