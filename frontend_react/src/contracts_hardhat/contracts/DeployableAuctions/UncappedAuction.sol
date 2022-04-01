@@ -1,11 +1,11 @@
 pragma solidity ^0.8.0;
 // SPDX-License-Identifier: MIT
-import "contracts/AuctionTrial.sol";
+import "contracts/AbstractAuctions/Auction.sol";
 import "contracts/ERC20Mintable.sol";
 
 
 
-contract UncappedAuctionTrial is AuctionTrial {
+contract UncappedAuction is Auction {
     ERC20Mintable public projectToken;                                         //Auctioned coin
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");            //Constant for checking minter role
 
@@ -26,7 +26,7 @@ contract UncappedAuctionTrial is AuctionTrial {
         uint _rate
 
          )
-        AuctionTrial(_bidCoin)
+        Auction(_bidCoin)
         {
 
       
@@ -44,45 +44,29 @@ contract UncappedAuctionTrial is AuctionTrial {
     
     }
 
-    function swap(address buyer,uint bidCoinBits,uint projectTokenBits) private {
-        
-      
-       
+    function tokenBuyLogic(uint bidCoinBits) internal virtual override {
+            uint boughtTokens = bidCoinBits / rate;
 
-        //Check if buyer has approved this contracts bid coin usage
-
-       uint allowance = bidCoin.allowance(buyer,address(this));
-      
-       require(allowance >= bidCoinBits,"Approved bid coin amount is not enough");
-
-        //Check and process if buyer have the coins to do the swap
-
-
-      
-        bidCoin.transferFrom(buyer, owner(), bidCoinBits);
-        //Send project tokens to buyer
-       //No need for approval from the contracts side
-    
-
-       projectToken.mint(buyer , projectTokenBits);
-       soldProjectTokens += projectTokenBits;
+            projectToken.mint(msg.sender , boughtTokens);
+            soldProjectTokens += boughtTokens;
 
 
         
-        emit TokenBought(buyer, bidCoinBits, projectTokenBits);
+            emit TokenBought(msg.sender, bidCoinBits, boughtTokens);
+        }
 
 
-    }
+ 
 
-    function withDraw() external onlyOwner {  //Must be used by owner if your coins not bought prior to ending time and no one tried bidding after ending time
-        require(status == AuctionStatus.RUNNING,"Auction is not active");
-        require(block.timestamp >= latestEndTime,"Until auction time ends you can not withdraw your tokens");
-        finalize();
-    }
+ 
+
+   
 
 
     function handleValidTimeBid(uint bidCoinBits) internal virtual override {
-        swap(msg.sender,bidCoinBits, (bidCoinBits / rate) * 10 ** projectToken.decimals());
+        bidCoinBits = handleRemainder(bidCoinBits, rate);
+
+        swap(bidCoinBits);
 
     }
 

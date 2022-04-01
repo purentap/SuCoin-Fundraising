@@ -1,18 +1,24 @@
 pragma solidity ^0.8.0;
 // SPDX-License-Identifier: MIT
-import "./OBCappedAuctionTrial.sol";
+import "./OBFCFSAuction.sol";
 
 
 //This is just order book capped auction but users have buy limit
-contract CappedLimitAuctionTrial is OBCappedAuctionTrial {
+contract FCFSLimitAuction is OBFCFSAuction {
 
     uint maxTokensPerUser;
 
-
-    function tokenBuyLogic(address buyer,uint  projectTokenBits) override internal{
-        require(projectTokenBits + biddingBook[buyer] <= maxTokensPerUser,"You are trying to buy more than your limit");
-        biddingBook[buyer] += projectTokenBits;
+    modifier limitControl(uint bidCoinBits) {
+        require((biddingBook[msg.sender] + bidCoinBits / currentRate) <= maxTokensPerUser,"You are trying to buy more than your limit");
+        _;
     }
+
+
+    function tokenBuyLogic(uint bidCoinBits) internal virtual override limitControl(bidCoinBits){
+        super.tokenBuyLogic(bidCoinBits);
+    }
+
+    
 
     
 
@@ -24,7 +30,7 @@ contract CappedLimitAuctionTrial is OBCappedAuctionTrial {
         uint _maxTokensPerUser
         
          )
-        OBCappedAuctionTrial(_token,_bidCoin,_numberOfTokensToBeDistributed,_rate)
+        OBFCFSAuction(_token,_bidCoin,_numberOfTokensToBeDistributed,_rate)
         {
             require(_maxTokensPerUser > 0,"Users should be able to buy tokens");
             maxTokensPerUser = _maxTokensPerUser;

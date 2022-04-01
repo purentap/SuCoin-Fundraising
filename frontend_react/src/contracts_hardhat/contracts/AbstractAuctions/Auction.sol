@@ -7,7 +7,7 @@ import "@openzeppelin/contracts/utils/math/Math.sol";
 
 
 
-abstract contract AuctionTrial is Ownable{                                    //Abstract Contract for all auction types
+abstract contract Auction is Ownable{                                    //Abstract Contract for all auction types
 
     ERC20 public bidCoin;                                                     //Coin used for buying auction coins (Sucoin)
     uint public startTime;                                                    //Auction Start time in timestamp
@@ -38,7 +38,7 @@ abstract contract AuctionTrial is Ownable{                                    //
  
     }
 
-     function manualFinish() public stateUpdate() isFinished(){}
+     function manualFinish() public  stateUpdate() isFinished(){}
 
 
 
@@ -59,6 +59,11 @@ abstract contract AuctionTrial is Ownable{                                    //
 
     }
 
+   function handleRemainder(uint bidCoinBits,uint currentRate) internal virtual returns (uint) {
+        uint remainder = bidCoinBits -  (bidCoinBits / currentRate) * currentRate;
+        return bidCoinBits - remainder;
+
+    }
 
     function auctionStartCheckConditions(uint maximumAuctionTimeInHours) internal virtual {
         require(status == AuctionStatus.OFF,"Auction already started or already ended");
@@ -87,13 +92,41 @@ abstract contract AuctionTrial is Ownable{                                    //
 
 
 
-     function bid(uint bidCoinBits)  external  virtual stateUpdate() isFinished() {
+     function bid(uint bidCoinBits)  external  virtual stateUpdate() isRunning() {
 
         emit BidSubmission(msg.sender, bidCoinBits);
 
    
         handleValidTimeBid(bidCoinBits);
      }
+
+     function tokenBuyLogic(uint bidCoinBits) internal virtual;
+
+     function swap(uint bidCoinBits) internal virtual {
+        
+      
+       
+
+        //Check if buyer has approved this contracts bid coin usage
+
+       uint allowance = bidCoin.allowance(msg.sender,address(this));
+      
+       require(allowance >= bidCoinBits,"Approved bid coin amount is not enough");
+
+     
+
+        //Check and process if buyer have the coins to do the swap
+
+       bidCoin.transferFrom(msg.sender, owner(), bidCoinBits);
+
+        //Send project tokens to buyer
+       //No need for approval from the contracts side
+
+       tokenBuyLogic(bidCoinBits);
+       
+
+
+    }
   
 
     

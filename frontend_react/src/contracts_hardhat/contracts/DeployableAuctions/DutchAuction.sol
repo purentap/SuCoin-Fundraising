@@ -1,10 +1,10 @@
 pragma solidity ^0.8.0;
 // SPDX-License-Identifier: MIT
-import "./CappedAuctionTrial.sol";
+import "./FCFSAuction.sol";
 
 
-//Dutch Auction is just capped auction with constant decreasing price 
-contract DutchAuctionTrial is CappedAuctionTrial {
+//Dutch Auction is just FCFS auction with constant decreasing price 
+contract DutchAuction is FCFSAuction {
 
     uint public finalRate;                              
 
@@ -18,7 +18,7 @@ contract DutchAuctionTrial is CappedAuctionTrial {
         ,uint _rate,
          uint _finalRate
          )
-        CappedAuctionTrial(_token,_bidCoin,_numberOfTokensToBeDistributed,_rate)
+        FCFSAuction(_token,_bidCoin,_numberOfTokensToBeDistributed,_rate)
         {
 
         finalRate = _finalRate;
