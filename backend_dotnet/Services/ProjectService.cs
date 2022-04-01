@@ -193,7 +193,6 @@ namespace SU_COIN_BACK_END.Services {
                 if (project != null)
                 {
                     string userRole = GetUserRole();
-                    //if(GetUserRole() == "Admin" || GetUserRole() == "Whitelist" || project.Status == "Approved"){
                     if (userRole == UserRoleConstants.ADMIN || userRole == UserRoleConstants.WHITELIST || project.Status == ProjectStatusConstants.APPROVED) 
                     {
                         response.Data = _mapper.Map<ProjectDTO>(project);
@@ -237,7 +236,7 @@ namespace SU_COIN_BACK_END.Services {
                 {
                     int userID = GetUserId();
                     Ratings rating = await _context.Ratings.FirstOrDefaultAsync(
-                                        c => c.UserID == userID && c.ProjectID == projectID);
+                        c => c.UserID == userID && c.ProjectID == projectID);
 
                     if (rating != null)
                     {
@@ -307,7 +306,7 @@ namespace SU_COIN_BACK_END.Services {
                     dbProject.ImageUrl = project.ImageUrl;
                     _context.Projects.Update(dbProject);
                     await _context.SaveChangesAsync();
-                    response.Data = _mapper.Map<ProjectDTO>(dbProject)       ;
+                    response.Data = _mapper.Map<ProjectDTO>(dbProject);
                     response.Success = true;
                     response.Message = "Ok" ;              
                 }
@@ -508,15 +507,15 @@ namespace SU_COIN_BACK_END.Services {
             ServiceResponse<List<ProjectDTO>> response = new ServiceResponse<List<ProjectDTO>>();
             try
             {
-                List<ProjectPermission> projects = await _context.ProjectPermissions
-                    .Where(c => c.UserID == GetUserId() && c.IsAccepted).ToListAsync();
-                List<Project> allProjects = new List<Project>();
+                List<ProjectPermission> projectPermissions = await _context.ProjectPermissions
+                    .Where(c => c.UserID == GetUserId() && c.IsAccepted).ToListAsync(); // all project permissions of the logged in user
+                List<Project> allProjects = new List<Project>(); // all permissioned projects of the logged in user
 
-                if (projects != null)
+                if (projectPermissions != null)
                 {
-                    for (int i = 0; i < projects.Count; i++)
+                    for (int i = 0; i < projectPermissions.Count; i++)
                     {
-                        Project project = await _context.Projects.FirstOrDefaultAsync(c => c.ProjectID == projects[i].ProjectID);
+                        Project project = await _context.Projects.FirstOrDefaultAsync(c => c.ProjectID == projectPermissions[i].ProjectID);
                         allProjects.Add(project);
                     }
 
