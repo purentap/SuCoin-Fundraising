@@ -232,8 +232,8 @@ const RegisterModal = (props) => {
       let req = await axios.put('https://localhost:5001/Authentication/Register', {
         name: fname,
         surname: surname,
-        username: mail,
-        mailAddress: password,
+        username: username,
+        mailAddress: mail,
         signedMessage: sign,
       }, config)
       alert("YYSUCCESS")
