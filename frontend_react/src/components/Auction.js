@@ -38,6 +38,11 @@ import FCFSAuction from '../contracts_hardhat/artifacts/contracts/DeployableAuct
 
 import FCFSLimitAuction from '../contracts_hardhat/artifacts/contracts/DeployableAuctions/FCFSLimitAuction.sol/FCFSLimitAuction.json';
 
+import OBFCFSAuction from '../contracts_hardhat/artifacts/contracts/DeployableAuctions/OBFCFSAuction.sol/OBFCFSAuction.json';
+
+
+
+import PseudoCappedAuction from '../contracts_hardhat/artifacts/contracts/DeployableAuctions/PseudoCappedAuction.sol/PseudoCappedAuction.json';
 
 import UncappedAuction from '../contracts_hardhat/artifacts/contracts/DeployableAuctions/UncappedAuction.sol/UncappedAuction.json';
 
@@ -97,6 +102,25 @@ const Auction = () => {
         status: "",
     });
 
+    const getAbi = (type) => {
+       switch (type) {
+           case "DuthcAuction":
+               return DutchAuction.abi;
+            case "FCFSAuction":
+                return FCFSAuction.abi;
+            case "FCFSLimitAuction":
+                return FCFSLimitAuction.abi;
+            case "UncappedAuction":
+                return UncappedAuction.abi;
+            case "PseudoCappedAuction":
+                return PseudoCappedAuction.abi;
+            case "OBFCFSAuction":
+                return OBFCFSAuction.abi;
+            default:
+                return null;
+       } 
+    }
+
     useEffect(async () => {
         try {
             const CryptoJS = require('crypto-js');
@@ -140,7 +164,7 @@ const Auction = () => {
                 let tokenSC = await new ethers.Contract(Project.token, TokenABI.abi, provider);
                 let tokenSymbol = await tokenSC.symbol();
                 let tokenName = await tokenSC.name();
-                let auctionSc = await new ethers.Contract(aucAddress, (auctionType == 'FCFSAuction' ? FCFSAuction.abi : (auctionType == 'FCFSLimitAuction' ? FCFSLimitAuction.abi : ((auctionType == "DutchAuction" ? DutchAuction.abi : DutchAuction.abi)))), provider);
+                let auctionSc = await new ethers.Contract(aucAddress, getAbi(auctionType), provider);
             
                 const status = ["notStarted","Ongoing","Finished"][await auctionSc.status()]
 
@@ -307,7 +331,7 @@ const Auction = () => {
     return (
         <div>
             {
-                ((auctionType == "DutchAuction") || (auctionType == "FCFSAuction"))?
+                (getAbi(auctionType) != null) ?
  
                     <div>
                         <AuctionInfo projectId={projectId} auction={auction} price={price} tokenDist={tokenDist} deposit={soldToken} />

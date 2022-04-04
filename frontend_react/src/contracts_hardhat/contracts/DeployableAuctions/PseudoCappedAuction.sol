@@ -7,7 +7,7 @@ import "contracts/AbstractAuctions/CappedTokenAuction.sol";
 //with regars to sucoin holdings
 //There is good chance users will get less than normal amount for their sucoin using this auction
 
-contract PseudoCappedAuctionTrial is CappedTokenAuction {
+contract PseudoCappedAuction is CappedTokenAuction {
 
 
     uint public currentRate;

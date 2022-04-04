@@ -37,6 +37,11 @@ import FCFSAuction from '../contracts_hardhat/artifacts/contracts/DeployableAuct
 
 import FCFSLimitAuction from '../contracts_hardhat/artifacts/contracts/DeployableAuctions/FCFSLimitAuction.sol/FCFSLimitAuction.json';
 
+import OBFCFSAuction from '../contracts_hardhat/artifacts/contracts/DeployableAuctions/OBFCFSAuction.sol/OBFCFSAuction.json';
+
+
+
+import PseudoCappedAuction from '../contracts_hardhat/artifacts/contracts/DeployableAuctions/PseudoCappedAuction.sol/PseudoCappedAuction.json';
 
 import UncappedAuction from '../contracts_hardhat/artifacts/contracts/DeployableAuctions/UncappedAuction.sol/UncappedAuction.json';
 
@@ -61,20 +66,37 @@ const CreateAuction = () => {
     const [auctionTypes, setAuctiontypes] = useState([
         {
             id: 1,
-            name: "First come First Server",
+            name: "First come First Serve",
             description: "An auction where there is limited number of tokens being sold from the same price"
         },
         {
             id: 2,
-            name: "Dutch Auction",
+            name: "Dutch",
             description: "This is an auction where a limited coins being sold while coin price decreases by time"
         }
         ,
         {
             id: 3,
-            name: "Uncapped Auction",
+            name: "Uncapped",
             description: "This is an auction where unlimited number of coins being sold for the same price"
-        }
+        },
+        {
+            id: 4,
+            name: "First come First Serve Limit",
+            description: "This is a FCFS Auction but there is a limit of tokens an investor can buy"
+        },
+        {
+            id: 5,
+            name: "Pseudo Capped",
+            description: "This is an auction where there is a limited amount of tokens but investors can invest unlimited amount of sucoins"
+        },
+        {
+            id: 6,
+            name: "Order Book First Come First Server",
+            description: "Order book version (investors get their tokens when auction ends) of  First Come First Serve"
+        },
+        
+
 
     ]);
 
@@ -101,6 +123,7 @@ const CreateAuction = () => {
 
     }
 
+   
 
 
     const deployAuction = async (id) => {
@@ -114,8 +137,8 @@ const CreateAuction = () => {
 
 
         if (id == 0) {
-            const Capped = new ethers.ContractFactory(FCFSAuction.abi, FCFSAuction.bytecode, signer);    
-            let auction = await Capped.deploy(tokenAddress,SUCoin.address,tokenDistributedDecimal,priceDecimal);
+            const FCFS = new ethers.ContractFactory(FCFSAuction.abi, FCFSAuction.bytecode, signer);    
+            let auction = await FCFS.deploy(tokenAddress,SUCoin.address,tokenDistributedDecimal,priceDecimal);
             contract = await auction.deployed();
         }
         else if (id == 1) {
@@ -128,6 +151,28 @@ const CreateAuction = () => {
             let auction = await Uncapped.deploy(tokenAddress,SUCoin.address,priceDecimal);
             contract = await auction.deployed();
         }
+
+        else if (id == 3) {
+            const FCFSLimit = new ethers.ContractFactory(FCFSLimitAuction.abi, FCFSLimitAuction.bytecode, signer);    
+            let auction = await FCFSLimitAuction.deploy(tokenAddress,SUCoin.address,tokenDistributedDecimal,priceDecimal,1000);
+            contract = await auction.deployed();
+        }
+
+        else if (id == 4) {
+            const PseudoCappedAuction = new ethers.ContractFactory(PseudoCappedAuction.abi, PseudoCappedAuction.bytecode, signer);    
+            let auction = await PseudoCappedAuction.deploy(tokenAddress,SUCoin.address,tokenDistributedDecimal);
+            contract = await auction.deployed();
+        }
+
+        else if (id == 5) {
+            const OBFCFSAuction = new ethers.ContractFactory(OBFCFSAuction.abi, OBFCFSAuction.bytecode, signer);    
+            let auction = await OBFCFSAuction.deploy(tokenAddress,SUCoin.address,tokenDistributedDecimal,priceDecimal);
+            contract = await auction.deployed();
+        }
+
+
+    
+
         else return;
 
 
