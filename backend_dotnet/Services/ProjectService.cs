@@ -151,7 +151,7 @@ namespace SU_COIN_BACK_END.Services {
             try
             {
                 string userRole = GetUserRole();
-                Console.WriteLine("User role:" , userRole);
+                Console.WriteLine($"User role: {userRole}"); // Debuging
                 List<Project> projects = new List<Project>();
 
                 if (userRole == UserRoleConstants.ADMIN || userRole == UserRoleConstants.WHITELIST)
