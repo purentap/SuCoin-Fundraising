@@ -26,20 +26,12 @@ import Cookies from 'js-cookie'
 import axios from "axios"
 import { ethers } from 'ethers';
 import MaestroABI from '../contracts_hardhat/artifacts/contracts/Maestro.sol/Maestro.json';
-import CappedFCFS from '../contracts_hardhat/artifacts/contracts/CappedFCFSAuction.sol/CappedFCFSAuction.json';
-import CappedParcelLimitFCFS from '../contracts_hardhat/artifacts/contracts/CappedParcelLimitFCFSAuction.sol/CappedParcelLimitFCFSAuction.json';
-import CappedAuctionWRedistribution from '../contracts_hardhat/artifacts/contracts/CappedAuctionWRedistribution.sol/CappedAuctionWRedistribution.json';
-import DutchAuction from '../contracts_hardhat/artifacts/contracts/DutchAuction.sol/DutchAuction.json';
+
 import TokenABI from '../contracts_hardhat/artifacts/contracts/Token.sol/Token.json';
 
-import AuctionTrial from '../contracts_hardhat/artifacts/contracts/AuctionTrial.sol/AuctionTrial.json';
+import AuctionTrial from '../contracts_hardhat/artifacts/contracts/AbstractAuctions/Auction.sol/Auction.json';
 
 
-import DutchAuctionTrial from '../contracts_hardhat/artifacts/contracts/DeployableAuctions/DutchAuctionTrial.sol/DutchAuctionTrial.json';
-
-import CappedAuctionTrial from '../contracts_hardhat/artifacts/contracts/DeployableAuctions/CappedAuctionTrial.sol/CappedAuctionTrial.json';
-
-import UncappedAuctionTrial from '../contracts_hardhat/artifacts/contracts/DeployableAuctions/UncappedAuctionTrial.sol/UncappedAuctionTrial.json';
 
 const options = [
     { value: 'fens', label: 'FENS' },

@@ -31,11 +31,14 @@ import ethersAbi from '../contracts_hardhat/artifacts/contracts/ProjectRegister.
 
 import MaestroABI from '../contracts_hardhat/artifacts/contracts/Maestro.sol/Maestro.json';
 
-import DutchAuctionTrial from '../contracts_hardhat/artifacts/contracts/DeployableAuctions/DutchAuctionTrial.sol/DutchAuctionTrial.json';
+import DutchAuction from '../contracts_hardhat/artifacts/contracts/DeployableAuctions/DutchAuction.sol/DutchAuction.json';
 
-import CappedAuctionTrial from '../contracts_hardhat/artifacts/contracts/DeployableAuctions/CappedAuctionTrial.sol/CappedAuctionTrial.json';
+import FCFSAuction from '../contracts_hardhat/artifacts/contracts/DeployableAuctions/FCFSAuction.sol/FCFSAuction.json';
 
-import UncappedAuctionTrial from '../contracts_hardhat/artifacts/contracts/DeployableAuctions/UncappedAuctionTrial.sol/UncappedAuctionTrial.json';
+import FCFSLimitAuction from '../contracts_hardhat/artifacts/contracts/DeployableAuctions/FCFSLimitAuction.sol/FCFSLimitAuction.json';
+
+
+import UncappedAuction from '../contracts_hardhat/artifacts/contracts/DeployableAuctions/UncappedAuction.sol/UncappedAuction.json';
 
 import TokenABI from '../contracts_hardhat/artifacts/contracts/Token.sol/Token.json';
 
@@ -111,17 +114,17 @@ const CreateAuction = () => {
 
 
         if (id == 0) {
-            const Capped = new ethers.ContractFactory(CappedAuctionTrial.abi, CappedAuctionTrial.bytecode, signer);    
+            const Capped = new ethers.ContractFactory(FCFSAuction.abi, FCFSAuction.bytecode, signer);    
             let auction = await Capped.deploy(tokenAddress,SUCoin.address,tokenDistributedDecimal,priceDecimal);
             contract = await auction.deployed();
         }
         else if (id == 1) {
-            const Dutch = new ethers.ContractFactory(DutchAuctionTrial.abi, DutchAuctionTrial.bytecode, signer);    
+            const Dutch = new ethers.ContractFactory(DutchAuction.abi, DutchAuction.bytecode, signer);    
             let auction = await Dutch.deploy(tokenAddress,SUCoin.address,tokenDistributedDecimal,priceDecimal,1);
             contract = await auction.deployed();
         }
         else if (id == 2) {
-            const Uncapped = new ethers.ContractFactory(UncappedAuctionTrial.abi, UncappedAuctionTrial.bytecode, signer);    
+            const Uncapped = new ethers.ContractFactory(UncappedAuction.abi, UncappedAuction.bytecode, signer);    
             let auction = await Uncapped.deploy(tokenAddress,SUCoin.address,priceDecimal);
             contract = await auction.deployed();
         }

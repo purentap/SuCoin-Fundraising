@@ -30,20 +30,22 @@ import ethersAbi from '../contracts_hardhat/artifacts/contracts/ProjectRegister.
 import abi from '../abi/project.json'
 
 import MaestroABI from '../contracts_hardhat/artifacts/contracts/Maestro.sol/Maestro.json';
-import CappedFCFS from '../contracts_hardhat/artifacts/contracts/CappedFCFSAuction.sol/CappedFCFSAuction.json';
-import CappedParcelLimitFCFS from '../contracts_hardhat/artifacts/contracts/CappedParcelLimitFCFSAuction.sol/CappedParcelLimitFCFSAuction.json';
-import CappedAuctionWRedistribution from '../contracts_hardhat/artifacts/contracts/CappedAuctionWRedistribution.sol/CappedAuctionWRedistribution.json';
-import DutchAuction from '../contracts_hardhat/artifacts/contracts/DutchAuction.sol/DutchAuction.json';
-import DutchAuctionTrial from '../contracts_hardhat/artifacts/contracts/DeployableAuctions/DutchAuctionTrial.sol/DutchAuctionTrial.json';
 
-import CappedAuctionTrial from '../contracts_hardhat/artifacts/contracts/DeployableAuctions/CappedAuctionTrial.sol/CappedAuctionTrial.json';
 
-import UncappedAuctionTrial from '../contracts_hardhat/artifacts/contracts/DeployableAuctions/UncappedAuctionTrial.sol/UncappedAuctionTrial.json';import { fixedNumberToNumber } from '../helpers'; 
+import DutchAuction from '../contracts_hardhat/artifacts/contracts/DeployableAuctions/DutchAuction.sol/DutchAuction.json';
+
+import FCFSAuction from '../contracts_hardhat/artifacts/contracts/DeployableAuctions/FCFSAuction.sol/FCFSAuction.json';
+
+import FCFSLimitAuction from '../contracts_hardhat/artifacts/contracts/DeployableAuctions/FCFSLimitAuction.sol/FCFSLimitAuction.json';
+
+
+import UncappedAuction from '../contracts_hardhat/artifacts/contracts/DeployableAuctions/UncappedAuction.sol/UncappedAuction.json';
+
+import { fixedNumberToNumber } from '../helpers'; 
 
 import TokenABI from '../contracts_hardhat/artifacts/contracts/Token.sol/Token.json';
 import { WalletSwitcher } from '../User';
 const MaestroAddress = "0xD25Bf7F0C712859F6e5ea48aB5c82174f81Bd233";
-const CappedFCFSAddress = "0x43f691a5D43Dd8edbDa222c6a0de967E52a23db2"
 
 const mkdStr = `# {Freelance Finder Version 2}
 ## Project Abstact
@@ -83,26 +85,7 @@ const Auction = () => {
     const [auctionType, setAuctiontype] = useState();
 
     const [auctions, setAuctions] = useState([
-        {
-            "auctionAddress": "0x98f2C2aFB088bE9378a4dEb2672Af309E9b65329",
-            "fileHash": "0xa190d2b3a3323f420e5df6078d27bf6d7d76144aea19e32cb66ff61b4ad07d2d",
-            "auctionType": "CappedFCFS",
-            "creator": "0xDE02A36403d7a38eB9D6a8568599Ef6CDf18315b",
-            "tokenSymbol": "Lira",
-            "tokenName": "BiLira",
-            "status": "notStarted",
-            "tokenAddress": "0x8f5736aF17F2F071B476Fd9cFD27a1Bd8D7E7F15"
-        },
-        {
-            "auctionAddress": "0x38a758A743Df330182Aa3988090d40b791823255",
-            "fileHash": "0x4fd063a659cd3fe36b2ae58f30c5b7e36e5b0e10fcc2e447ebd76a5443ea2689",
-            "auctionType": "CappedFCFS",
-            "creator": "0xDE02A36403d7a38eB9D6a8568599Ef6CDf18315b",
-            "tokenSymbol": "Lira",
-            "tokenName": "BiLira",
-            "status": "notStarted",
-            "tokenAddress": "0x8f5736aF17F2F071B476Fd9cFD27a1Bd8D7E7F15"
-        }
+      
     ]);
 
     const [project, setProject] = useState({
@@ -157,7 +140,7 @@ const Auction = () => {
                 let tokenSC = await new ethers.Contract(Project.token, TokenABI.abi, provider);
                 let tokenSymbol = await tokenSC.symbol();
                 let tokenName = await tokenSC.name();
-                let auctionSc = await new ethers.Contract(aucAddress, (auctionType == 'CappedFCFS' ? CappedFCFS.abi : (auctionType == 'CappedAuctionWRedistribution' ? CappedAuctionWRedistribution.abi : (auctionType == "CappedParcelLimitFCFSAuction" ? CappedParcelLimitFCFS.abi : (auctionType == "DutchAuction" ? DutchAuctionTrial.abi : DutchAuctionTrial.abi)))), provider);
+                let auctionSc = await new ethers.Contract(aucAddress, (auctionType == 'FCFSAuction' ? FCFSAuction.abi : (auctionType == 'FCFSLimitAuction' ? FCFSLimitAuction.abi : ((auctionType == "DutchAuction" ? DutchAuction.abi : DutchAuction.abi)))), provider);
             
                 const status = ["notStarted","Ongoing","Finished"][await auctionSc.status()]
 
@@ -211,24 +194,22 @@ const Auction = () => {
             let tokenName = await tokenSC.name();
             var totalSupply = await tokenSC.totalSupply();
 
-            if (auctionDetails.auctionType == "CappedAuctionTrial") {
-                let auctionSc = await new ethers.Contract(auctionDetails.auctionAddress, CappedFCFS.abi, provider);
+            if (auctionDetails.auctionType == "FCFSAuction") {
+                let auctionSc = await new ethers.Contract(auctionDetails.auctionAddress, FCFSAuction.abi, provider);
                 let price = await auctionSc.price();
                 let numberOfTokenToBeDistributed = await auctionSc.numberOfTokensToBeDistributed();
                 let totalDeposited = await auctionSc.totalDeposited();
                 let end = await auctionSc.end();
 
-
-                console.log(price, numberOfTokenToBeDistributed, totalDeposited)
-            } else if (auctionDetails.auctionType == "UncappedAuctionTrial") {
-                let auctionSc = await new ethers.Contract(auctionDetails.auctionAddress, CappedAuctionWRedistribution.abi, provider);
+            } else if (auctionDetails.auctionType == "UncappedAuction") {
+                let auctionSc = await new ethers.Contract(auctionDetails.auctionAddress, UncappedAuction.abi, provider);
                 let price = await auctionSc.price();
                 let numberOfTokenToBeDistributed = await auctionSc.numberOfTokensToBeDistributed();
                 let totalDeposited = auctionSc.totalDeposited();
                 let end = await auctionSc.end();
             } 
-             else if (auctionDetails.auctionType == "DutchAuctionTrial") {
-                let auctionSc = await new ethers.Contract(auctionDetails.auctionAddress, DutchAuctionTrial.abi, provider);
+             else if (auctionDetails.auctionType == "DutchAuction") {
+                let auctionSc = await new ethers.Contract(auctionDetails.auctionAddress, DutchAuction.abi, provider);
                 let startingPrice = fixedNumberToNumber(await auctionSc.rate())
                 console.log(FixedNumber.from(await auctionSc.rate()))
                 let currrentPrice = fixedNumberToNumber(await auctionSc.currentRate());
@@ -326,7 +307,7 @@ const Auction = () => {
     return (
         <div>
             {
-                ((auctionType == "DutchAuctionTrial") || (auctionType == "CappedAuctionTrial"))?
+                ((auctionType == "DutchAuction") || (auctionType == "FCFSAuction"))?
  
                     <div>
                         <AuctionInfo projectId={projectId} auction={auction} price={price} tokenDist={tokenDist} deposit={soldToken} />
