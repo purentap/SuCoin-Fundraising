@@ -39,7 +39,7 @@ import { fixedNumberToNumber } from '../helpers';
 
 import TokenABI from '../contracts_hardhat/artifacts/contracts/Token.sol/Token.json';
 import { WalletSwitcher } from '../User';
-const MaestroAddress = "0x1cFc7B3ec115cF51DB35AEC04Ce902dd1Cb3625b";
+const MaestroAddress = "0xDD17723B9d6D6D3bEbE5046F54ea8F3e8089771a";
 const CappedFCFSAddress = "0x43f691a5D43Dd8edbDa222c6a0de967E52a23db2"
 
 const mkdStr = `# {Freelance Finder Version 2}

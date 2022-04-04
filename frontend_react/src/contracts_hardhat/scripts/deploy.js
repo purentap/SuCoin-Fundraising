@@ -15,7 +15,7 @@ async function main() {
 
   // We get the contract to deploy
   const MAESTRO = await hre.ethers.getContractFactory("Maestro");
-  const maestro = await MAESTRO.deploy("0x1cFc7B3ec115cF51DB35AEC04Ce902dd1Cb3625b")
+  const maestro = await MAESTRO.deploy("0xDD17723B9d6D6D3bEbE5046F54ea8F3e8089771a")
 
   await maestro.deployed()
 

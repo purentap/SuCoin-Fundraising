@@ -16,7 +16,7 @@ module.exports = {
       accounts: ["cc59d5791667a9c38445f6584f3647bfa54ef1919030068ae446875ac8933c80"]
     },
     avalanhe: {
-      url: "https://api.avax-test.network/ext/bc/C/rpc",
+      url: "https://speedy-nodes-nyc.moralis.io/7918f6b4c7b9adebcdeb036e/avalanche/testnet",
       accounts: [privateKey]
     }
   },
