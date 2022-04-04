@@ -8,12 +8,32 @@ import {
   Image,
   HStack,
   Circle,
-  PseudoBox,
   Heading,
+  useDisclosure,
+  Box,
+  Stack,
 } from "@chakra-ui/react";
 import { Button } from "@chakra-ui/react";
-import NoImage from "../../images/no_image.jpg";
+import {
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalFooter,
+  ModalBody,
+  ModalCloseButton,
+} from "@chakra-ui/react";
+import {
+  Alert,
+  AlertIcon,
+  AlertTitle,
+  AlertDescription,
+} from "@chakra-ui/react";
 
+import { useState } from "react";
+import NoImage from "../../images/no_image.jpg";
+import axios from "axios";
+import Cookies from "js-cookie";
 //id,imageUrl,desc,title,status,approvals
 
 function ProjectsCard({
@@ -24,14 +44,55 @@ function ProjectsCard({
   projectDescription,
   imageUrl,
 }) {
+  const apiInstance = axios.create({
+    baseURL: "https://localhost:5001",
+  });
+
   const colorMap = {
     Approved: "green",
     Rejected: "red",
     Pending: "orange",
   };
 
-  if (imageUrl == "" || imageUrl == "emptyImg")
-    {imageUrl = NoImage};
+  const { isOpen, onOpen, onClose } = useDisclosure(); //used for modals on button clicks
+  const [deleteSuccess, setDeleteSuccess] = useState(null); //used to display success or error alert after delete operation
+
+  const deleteHandler = async () => {
+    try {
+      apiInstance.defaults.headers.common[
+        "Authorization"
+      ] = `Bearer ${Cookies.get("token")}`;
+      let response2 = new Promise((resolve, reject) => {
+        apiInstance
+          .delete("/Project/Delete/" + projectID)
+          .then((res) => {
+            console.log("response: ", res.data);
+            resolve(res);
+            setDeleteSuccess(true);
+          })
+          .catch((e) => {
+            const err = "Unable to delete the project";
+            setDeleteSuccess(false);
+            reject(err);
+          });
+      });
+      let result = await response2;
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const downloadPDF = async () => {
+    apiInstance.defaults.headers.common[
+      "Authorization"
+    ] = `Bearer ${Cookies.get("token")}`;
+
+    return await apiInstance.get("/Project/GetPDF/" + projectID);
+  };
+
+  if (imageUrl == "" || imageUrl == "emptyImg") {
+    imageUrl = NoImage;
+  }
 
   return (
     <Grid
@@ -56,22 +117,20 @@ function ProjectsCard({
           templateColumns="repeat(5, 1fr)"
           gap={10}
         >
-          <GridItem mt = "30px" rowSpan={1} colSpan={3}>
+          <GridItem mt="30px" rowSpan={1} colSpan={3}>
             <Center>
               <Heading size="md">{projectName}</Heading>
             </Center>
           </GridItem>
 
-          <GridItem mt = "20px" rowSpan={1} colSpan={1}>
+          <GridItem mt="20px" rowSpan={1} colSpan={1}>
             <Center>
               <Text>#Rating: {rating}</Text>
             </Center>
           </GridItem>
 
-          <GridItem mt= "20px" rowSpan={1} colSpan={1}>
+          <GridItem mt="20px" rowSpan={1} colSpan={1}>
             <Flex>
-              
-
               <Text>Status : {status}</Text>
 
               <Circle
@@ -85,8 +144,19 @@ function ProjectsCard({
         </Grid>
       </GridItem>
 
-      <GridItem ml = "20px" borderRadius="20px" rowSpan={2} colSpan={2} bgColor="gray">
-        <Image borderRadius = "20px" src={imageUrl} boxSize="100%" objectFit="fill" />
+      <GridItem
+        ml="20px"
+        borderRadius="20px"
+        rowSpan={2}
+        colSpan={2}
+        bgColor="gray"
+      >
+        <Image
+          borderRadius="20px"
+          src={imageUrl}
+          boxSize="100%"
+          objectFit="fill"
+        />
       </GridItem>
 
       <GridItem
@@ -101,13 +171,21 @@ function ProjectsCard({
         </Center>
       </GridItem>
 
-      <GridItem  ml="20px" mr= "20px" rowStart={4} rowEnd = {5} colStart = {1} colEnd = {7}>
+      <GridItem
+        ml="20px"
+        mr="20px"
+        rowStart={4}
+        rowEnd={5}
+        colStart={1}
+        colEnd={7}
+      >
         <HStack spacing={10} height="100%">
           <Button
+            onClick={downloadPDF}
             variant="ghost"
             textColor="white"
-            height = "80%"
-            width = "40%"
+            height="80%"
+            width="40%"
             background-color="#F8F8FF"
             color="#2f2d2e"
             border="2px solid #8e00b9"
@@ -127,8 +205,8 @@ function ProjectsCard({
           <Button
             variant="ghost"
             textColor="white"
-            height = "80%"
-            width = "40%"
+            height="80%"
+            width="40%"
             background-color="#F8F8FF"
             color="#2f2d2e"
             border="2px solid #8e00b9"
@@ -146,10 +224,11 @@ function ProjectsCard({
             <Text>Edit Project</Text>
           </Button>
           <Button
+            onClick={onOpen}
             variant="ghost"
             textColor="white"
-            height = "80%"
-            width = "40%"
+            height="80%"
+            width="40%"
             background-color="#F8F8FF"
             color="#2f2d2e"
             border="2px solid #8e00b9"
@@ -165,13 +244,71 @@ function ProjectsCard({
             }}
           >
             <Text>Delete Project</Text>
+            <Modal
+              isCentered
+              onClose={onClose}
+              isOpen={isOpen}
+              motionPreset="slideInBottom"
+            >
+              <ModalOverlay />
+              <ModalContent>
+                <ModalHeader>
+                  Are you sure you want to delete this project?
+                </ModalHeader>
+                <ModalCloseButton />
+                <ModalBody>
+                  <Text count={2}>You cannot undo this process.</Text>
+                </ModalBody>
+                <ModalFooter>
+                  <Button
+                    onClick={onClose}
+                    variant="ghost"
+                    background-color="#F8F8FF"
+                    color="#2f2d2e"
+                    border="2px solid #8e00b9"
+                    border-radius="30px"
+                    text-align="center"
+                    transition-duration="0.5s"
+                    animation="ease-in-out"
+                    _hover={{
+                      background: "linear-gradient(to left, #2d00f7, #ff0291)",
+                      transform: "scale(1.2)",
+                      border: "none",
+                      textColor: "white",
+                    }}
+                  >
+                    Close
+                  </Button>
+                  <Button
+                    onClick={deleteHandler}
+                    variant="ghost"
+                    background-color="#F8F8FF"
+                    color="#2f2d2e"
+                    border="2px solid #8e00b9"
+                    border-radius="30px"
+                    text-align="center"
+                    transition-duration="0.5s"
+                    animation="ease-in-out"
+                    _hover={{
+                      background: "linear-gradient(to left, #2d00f7, #ff0291)",
+                      transform: "scale(1.2)",
+                      border: "none",
+                      textColor: "white",
+                    }}
+                  >
+                    Delete Project
+                  </Button>
+                </ModalFooter>
+              </ModalContent>
+            </Modal>
           </Button>
+
           <Button
             variant="ghost"
-            textColor="white"   
-            height = "80%"
-            width = "40%"
-           background-color="#F8F8FF"
+            textColor="white"
+            height="80%"
+            width="40%"
+            background-color="#F8F8FF"
             color="#2f2d2e"
             border="2px solid #8e00b9"
             border-radius="30px"
@@ -182,7 +319,7 @@ function ProjectsCard({
               background: "linear-gradient(to left, #2d00f7, #ff0291)",
               transform: "scale(1.1)",
               border: "none",
-              textColor: "white"
+              textColor: "white",
             }}
           >
             <Text>Add Collaborator</Text>
