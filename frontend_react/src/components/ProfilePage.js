@@ -84,6 +84,7 @@ const ProfilePage = () => {
     return await apiInstance.get("/Project/Get");
   };
 
+
   const [projects, setProjects] = useState([]);
 
   const isActiveUserProject = (project, wantedHashes, wantedAddress) => {
@@ -113,6 +114,34 @@ const ProfilePage = () => {
     setProjects(wantedProjects);
   }, []);
   console.log(projects);
+
+  const onDelete = async (projectID) => {
+    try {
+      apiInstance.defaults.headers.common[
+        "Authorization"
+      ] = `Bearer ${Cookies.get("token")}`;
+      let response2 = new Promise((resolve, reject) => {
+        apiInstance
+          .delete("/Project/Delete/" + projectID)
+          .then((res) => {
+            console.log("Project deleted!")
+            console.log("response: ", res.data);
+            resolve(res);
+            
+            
+            
+          })
+          .catch((e) => {
+            const err = "Unable to delete the project";
+            reject(err);
+          });
+      });
+      let result = await response2;
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   return (
     <Grid
       height="90%"
@@ -140,6 +169,7 @@ const ProfilePage = () => {
             imageUrl={project.imageUrl}
             rating = {project.rating}
             projectID = {project.projectID}
+            deleteFunction = {onDelete}
           ></ProjectsCard>
         ))}
       </GridItem>

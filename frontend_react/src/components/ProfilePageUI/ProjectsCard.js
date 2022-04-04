@@ -43,6 +43,7 @@ function ProjectsCard({
   projectName,
   projectDescription,
   imageUrl,
+  deleteFunction
 }) {
   const apiInstance = axios.create({
     baseURL: "https://localhost:5001",
@@ -58,30 +59,8 @@ function ProjectsCard({
   const [deleteSuccess, setDeleteSuccess] = useState(null); //used to display success or error alert after delete operation
 
   const deleteHandler = async () => {
-    try {
-      apiInstance.defaults.headers.common[
-        "Authorization"
-      ] = `Bearer ${Cookies.get("token")}`;
-      let response2 = new Promise((resolve, reject) => {
-        apiInstance
-          .delete("/Project/Delete/" + projectID)
-          .then((res) => {
-            console.log("response: ", res.data);
-            resolve(res);
-            setDeleteSuccess(true);
-          })
-          .catch((e) => {
-            const err = "Unable to delete the project";
-            setDeleteSuccess(false);
-            reject(err);
-          });
-      });
-      let result = await response2;
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
+    deleteFunction(projectID);
+  }
   const downloadPDF = async () => {
     apiInstance.defaults.headers.common[
       "Authorization"
