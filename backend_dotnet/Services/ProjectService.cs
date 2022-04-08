@@ -252,7 +252,7 @@ namespace SU_COIN_BACK_END.Services {
                 if (project != null)
                 {
                     int userID = GetUserId();
-                    Ratings rating = await _context.Ratings.FirstOrDefaultAsync(c => c.UserID == userID && c.ProjectID == projectID);
+                    Rating rating = await _context.Ratings.FirstOrDefaultAsync(c => c.UserID == userID && c.ProjectID == projectID);
 
                     if (rating != null)
                     {
@@ -261,7 +261,7 @@ namespace SU_COIN_BACK_END.Services {
                     }
                     else
                     {
-                        Ratings new_rating = new Ratings 
+                        Rating new_rating = new Rating 
                         {
                             UserID = userID, 
                             ProjectID = projectID, 

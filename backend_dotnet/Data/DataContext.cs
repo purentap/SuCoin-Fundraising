@@ -14,7 +14,7 @@ namespace SU_COIN_BACK_END.Data
         public virtual DbSet <Project> Projects {get; set;}
         public virtual DbSet<User> Users {get; set;}
         public virtual DbSet<ProjectPermission> ProjectPermissions {get; set;}
-        public virtual DbSet<Ratings> Ratings {get; set;}
+        public virtual DbSet<Rating> Ratings {get; set;}
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder){
          optionsBuilder
                 .UseMySql(   "server=remotemysql.com;port=3306;user=rTc38f9eAa;password=Zchjjg34kW;database=rTc38f9eAa;",

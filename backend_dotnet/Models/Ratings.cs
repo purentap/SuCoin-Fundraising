@@ -1,6 +1,6 @@
 namespace SU_COIN_BACK_END.Models
 {
-    public class Ratings
+    public class Rating
     {
         public int ID {get; set;}
         public int ProjectID {get; set;}
