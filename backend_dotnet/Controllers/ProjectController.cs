@@ -26,10 +26,10 @@ namespace SU_COIN_BACK_END.Controllers
             _projectService = projectService;
         }
 
-        [HttpGet("Get")]
+        [HttpGet("Get/All/{withHex}")]
         [AllowAnonymous]
-        public async Task<IActionResult> GetAllProjects() {
-            ServiceResponse<List<ProjectDTO>> response = await _projectService.GetAllProjects();
+        public async Task<IActionResult> GetAllProjects(bool withHex) {
+            ServiceResponse<List<ProjectDTO>> response = await _projectService.GetAllProjects(withHex);
             if (!response.Success)
             {
                 return BadRequest(response);

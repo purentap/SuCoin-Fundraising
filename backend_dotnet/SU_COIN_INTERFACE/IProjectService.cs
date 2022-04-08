@@ -8,7 +8,7 @@ namespace SU_COIN_BACK_END.SU_COIN_INTERFACE
 {
     public interface IProjectService
     {
-         Task<ServiceResponse<List<ProjectDTO>>> GetAllProjects();
+         Task<ServiceResponse<List<ProjectDTO>>> GetAllProjects(bool withHex);
          Task<ServiceResponse<ProjectDTO>> GetProjectById(int ID);
          Task<ServiceResponse<string>> AddProject(ProjectDTO project);
          Task<ServiceResponse<bool>> DeleteProject(int ID);
@@ -19,6 +19,7 @@ namespace SU_COIN_BACK_END.SU_COIN_INTERFACE
          Task<ServiceResponse<ProjectDTO>> ChangeStatus(int id);
          Task<ServiceResponse<ProjectDTO>> UpdateMarkDown(int id, string markdown);
          Task<ServiceResponse<List<ProjectDTO>>> GetAllPermissionedProjects();
+         //Task<ServiceResponse<List<ProjectDTO>>> GetAllProjectsWithoutFileHex();
 
     }
 }

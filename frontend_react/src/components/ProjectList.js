@@ -62,7 +62,7 @@ const ProjectList = () => {
 
   const getData = async () => {
     try {
-      const response = await axios.get('https://localhost:5001/Project/Get', config);
+      const response = await axios.get('https://localhost:5001/Project/Get/All/false', config);
       console.log("response")
       console.log(response.data.data)
       setProjects(response.data.data)
@@ -81,7 +81,7 @@ const ProjectList = () => {
       apiInstance.defaults.headers.common["Authorization"] = `Bearer ${Cookies.get('token')}`
       let response2 = new Promise((resolve, reject) => {
         apiInstance
-          .get("/Project/Get")
+          .get("/Project/Get/All/false")
           .then((res) => {
             console.log("response: ", res.data)
             resolve(res)

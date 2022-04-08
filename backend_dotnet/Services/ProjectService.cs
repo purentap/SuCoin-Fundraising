@@ -145,7 +145,7 @@ namespace SU_COIN_BACK_END.Services {
             return response;
         }
 
-        public async Task<ServiceResponse<List<ProjectDTO>>> GetAllProjects()
+        public async Task<ServiceResponse<List<ProjectDTO>>> GetAllProjects(bool withHex)
         {
             ServiceResponse<List<ProjectDTO>> response = new ServiceResponse<List<ProjectDTO>>();
             try
@@ -164,11 +164,21 @@ namespace SU_COIN_BACK_END.Services {
                 }
                 
                 /* If there is any project, send the project data to the mapper */
+                
                 if (projects != null)
                 {
-                    response.Data = (projects.Select(c => _mapper.Map<ProjectDTO>(c))).ToList(); // map projects to projectDTOs
-                    response.Message = "Ok";
-                    response.Success = true;
+                    if (withHex){
+                        response.Data = (projects.Select(c => _mapper.Map<ProjectDTO>(c))).ToList(); // map projects to projectDTOs
+                        response.Message = "Ok";
+                        response.Success = true;
+                    }
+                    else{
+                        var query = projects.Select(p => new Project {ProjectID = p.ProjectID, ProjectName = p.ProjectName, Date = p.Date, ProjectDescription = p.ProjectDescription, ImageUrl = p.ImageUrl, Rating = p.Rating, Status = p.Status}).ToList();
+
+                        response.Data = (query.Select(c => _mapper.Map<ProjectDTO>(c))).ToList(); // map projects to projectDTOs                     
+                        response.Message = "Ok";
+                        response.Success = true;
+                    }
                 }
                 else
                 {
@@ -235,8 +245,7 @@ namespace SU_COIN_BACK_END.Services {
                 if (project != null)
                 {
                     int userID = GetUserId();
-                    Ratings rating = await _context.Ratings.FirstOrDefaultAsync(
-                        c => c.UserID == userID && c.ProjectID == projectID);
+                    Ratings rating = await _context.Ratings.FirstOrDefaultAsync(c => c.UserID == userID && c.ProjectID == projectID);
 
                     if (rating != null)
                     {
