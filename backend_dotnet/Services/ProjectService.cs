@@ -81,22 +81,29 @@ namespace SU_COIN_BACK_END.Services {
                 /* For security reasons, we need to recheck the database and then assign the permission */
                 Project dbProject = await _context.Projects.FirstOrDefaultAsync(c => c.ProjectName == project.ProjectName);
 
-                if (dbProject != null)
+                if (dbProject != null) // The project was added to the database successfully
                 {
+                    /* Since project was added successfully, add an owner to the project */
                     ProjectPermission permission = new ProjectPermission
                     {
                         ProjectID = dbProject.ProjectID, 
                         UserID = GetUserId(), 
-                        //Role = "Owner", 
                         Role = UserPermissionRoleConstants.OWNER,
                         IsAccepted = true 
                     };
                     await _context.ProjectPermissions.AddAsync(permission);
                     await _context.SaveChangesAsync();
+
+                    response.Data = "Ok";
+                    response.Message = MessageConstants.PROJECT_ADD_SUCCESS;
+                    response.Success = true;
                 }
-                response.Data = "Ok";
-                response.Message = MessageConstants.PROJECT_ADD_SUCCESS;
-                response.Success = true;
+                else // The project could not be added, because some operations were applied to the project while adding the project to the database.
+                {
+                    response.Data = "Not Added";
+                    response.Message = MessageConstants.PROJECT_ADD_FAIL;
+                    response.Success = true;
+                }
             }
             catch (Exception e)
             {
