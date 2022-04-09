@@ -154,6 +154,7 @@ namespace SU_COIN_BACK_END.Services {
 
         public async Task<ServiceResponse<List<ProjectDTO>>> GetAllProjects(bool withHex)
         {
+            
             ServiceResponse<List<ProjectDTO>> response = new ServiceResponse<List<ProjectDTO>>();
             try
             {
@@ -161,31 +162,27 @@ namespace SU_COIN_BACK_END.Services {
                 Console.WriteLine($"User role: {userRole}"); // Debuging
                 List<Project> projects = new List<Project>();
 
-                if (userRole == UserRoleConstants.ADMIN || userRole == UserRoleConstants.WHITELIST)
-                {
-                    projects = await _context.Projects.ToListAsync();
+                if (!withHex) {
+                    projects = _context.Projects.Select(p => new Project {ProjectID = p.ProjectID, ProjectName = p.ProjectName, Date = p.Date, ProjectDescription = p.ProjectDescription, ImageUrl = p.ImageUrl, Rating = p.Rating, Status = p.Status}).ToList();
                 }
-                else
+
+                if (userRole != UserRoleConstants.ADMIN && userRole != UserRoleConstants.WHITELIST)
                 {
-                    projects = await _context.Projects.Where(c => c.Status == ProjectStatusConstants.APPROVED).ToListAsync();
+                    projects = projects.Where(c => c.Status == ProjectStatusConstants.APPROVED).ToList();
+
                 }
+        
                 
                 /* If there is any project, send the project data to the mapper */
                 
                 if (projects != null)
                 {
-                    if (withHex){
+                    
                         response.Data = (projects.Select(c => _mapper.Map<ProjectDTO>(c))).ToList(); // map projects to projectDTOs
                         response.Message = "Ok";
                         response.Success = true;
-                    }
-                    else{
-                        var query = projects.Select(p => new Project {ProjectID = p.ProjectID, ProjectName = p.ProjectName, Date = p.Date, ProjectDescription = p.ProjectDescription, ImageUrl = p.ImageUrl, Rating = p.Rating, Status = p.Status}).ToList();
-
-                        response.Data = (query.Select(c => _mapper.Map<ProjectDTO>(c))).ToList(); // map projects to projectDTOs                     
-                        response.Message = "Ok";
-                        response.Success = true;
-                    }
+                    
+             
                 }
                 else
                 {
