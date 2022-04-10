@@ -21,21 +21,6 @@ const apiInstance = axios.create({
   baseURL: "https://localhost:5001",
 });
 
-const getAllUserProjectHashes = async (provider, address) => {
-  var Register = await new ethers.Contract(abi.address, abi.abi, provider);
-
-  var filter = await Register.filters.Register(address);
-
-  return (await Register.queryFilter(filter)).map((project) => project.data);
-};
-
-const getAllProjects = async () => {
-  apiInstance.defaults.headers.common["Authorization"] = `Bearer ${Cookies.get(
-    "token"
-  )}`;
-
-  return await apiInstance.get("/Project/Get");
-};
 
 const ProfilePage = () => {
   const [User, setUser] = useState(user);
@@ -68,51 +53,34 @@ const ProfilePage = () => {
     }
   }, []);
 
-  const getAllUserProjectHashes = async (provider, address) => {
-    var Register = await new ethers.Contract(abi.address, abi.abi, provider);
+  const [projects, setProjects] = useState([]);
 
-    var filter = await Register.filters.Register(address);
-
-    return (await Register.queryFilter(filter)).map((project) => project.data);
-  };
-
-  const getAllProjects = async () => {
+  useEffect( async () => {
+    try{
     apiInstance.defaults.headers.common[
       "Authorization"
     ] = `Bearer ${Cookies.get("token")}`;
+    
+    let response2 = new Promise((resolve, reject) => {
+      apiInstance
+        .get("/Project/GetAllPermissioned")
+        .then((res) => {
+          console.log("response: ", res.data);
+          resolve(res);
+        })
+        .catch((e) => {
+          const err = "Unable to get the projects of the user";
+          reject(err);
+        });
+    });
+    let result = await response2;
+    console.log("User get request is successful", result);
+    setProjects(result.data.data);
+  } catch (error) {
+    console.log(error);
+  }
+}, []);
 
-    return await apiInstance.get("/Project/Get");
-  };
-
-
-  const [projects, setProjects] = useState([]);
-
-  const isActiveUserProject = (project, wantedHashes, wantedAddress) => {
-    const hash = hexToHash(project?.fileHex);
-
-    return (
-      project.proposerAddress == wantedAddress && wantedHashes.includes(hash)
-    );
-  };
-
-  useEffect(async () => {
-    //Needed for blockchain connections
-    const provider = await new ethers.providers.Web3Provider(window.ethereum);
-    const signer = await provider.getSigner();
-    const address = await signer.getAddress();
-
-    //Get all user projects in blockchain  (Will change later when delete comes)
-    const hashes = await getAllUserProjectHashes(provider, address);
-
-    //Get all projects from database and check if address and hashes match
-
-    const allProjects = (await getAllProjects())?.data?.data;
-    const wantedProjects = allProjects.filter((project) =>
-      isActiveUserProject(project, hashes, address)
-    );
-
-    setProjects(wantedProjects);
-  }, []);
   console.log(projects);
 
   const onDelete = async (projectID) => {

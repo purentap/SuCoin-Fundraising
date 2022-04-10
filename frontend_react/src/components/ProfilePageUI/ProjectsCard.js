@@ -36,15 +36,7 @@ import axios from "axios";
 import Cookies from "js-cookie";
 //id,imageUrl,desc,title,status,approvals
 
-function ProjectsCard({
-  projectID,
-  rating,
-  status,
-  projectName,
-  projectDescription,
-  imageUrl,
-  deleteFunction
-}) {
+function ProjectsCard(props) {
   const apiInstance = axios.create({
     baseURL: "https://localhost:5001",
   });
@@ -56,22 +48,36 @@ function ProjectsCard({
   };
 
   const { isOpen, onOpen, onClose } = useDisclosure(); //used for modals on button clicks
-  const [deleteSuccess, setDeleteSuccess] = useState(null); //used to display success or error alert after delete operation
 
   const deleteHandler = async () => {
-    deleteFunction(projectID);
+    let deletedProject = props.this;
+    props.deleteFunction(deletedProject);
   }
-  const downloadPDF = async () => {
+  
+  const onDownloadPDF = async () => {
+    try{
     apiInstance.defaults.headers.common[
       "Authorization"
     ] = `Bearer ${Cookies.get("token")}`;
-
-    return await apiInstance.get("/Project/GetPDF/" + projectID);
-  };
-
-  if (imageUrl == "" || imageUrl == "emptyImg") {
-    imageUrl = NoImage;
+    let response2 = new Promise((resolve, reject) => {
+      apiInstance
+        .get("/Project/GetPDF/" + props.projectID + '/')
+        .then((res) => {
+          console.log("Succesfully got project pdf")
+          return res;       
+        })
+        .catch((e) => {
+          const err = "Unable to get the project PDF";
+          reject(err);
+        });
+    });
+    let result = await response2;
+  } catch (error) {
+    console.log(error);
   }
+};
+
+
 
   return (
     <Grid
@@ -98,31 +104,30 @@ function ProjectsCard({
         >
           <GridItem mt="30px" rowSpan={1} colSpan={3}>
             <Center>
-              <Heading size="md">{projectName}</Heading>
+              <Heading size="md">{props.projectName}</Heading>
             </Center>
           </GridItem>
 
           <GridItem mt="20px" rowSpan={1} colSpan={1}>
             <Center>
-              <Text>#Rating: {rating}</Text>
+              <Text>#Rating: {props.rating}</Text>
             </Center>
           </GridItem>
 
           <GridItem mt="20px" rowSpan={1} colSpan={1}>
             <Flex>
-              <Text>Status : {status}</Text>
+              <Text>Status : {props.status}</Text>
 
               <Circle
                 height="25px"
                 mr={15}
                 minWidth="25px"
-                bgColor={colorMap[status] ?? "red"}
+                bgColor={colorMap[props.status] ?? "red"}
               ></Circle>
             </Flex>
           </GridItem>
         </Grid>
       </GridItem>
-
       <GridItem
         ml="20px"
         borderRadius="20px"
@@ -132,7 +137,7 @@ function ProjectsCard({
       >
         <Image
           borderRadius="20px"
-          src={imageUrl}
+          src={props.imageUrl== "" || props.imageUrl == "emptyImg" ? NoImage : props.imageUrl }
           boxSize="100%"
           objectFit="fill"
         />
@@ -146,7 +151,7 @@ function ProjectsCard({
         marginRight={50}
       >
         <Center height="100%">
-          <Text>{projectDescription}</Text>
+          <Text>{props.projectDescription}</Text>
         </Center>
       </GridItem>
 
@@ -160,7 +165,7 @@ function ProjectsCard({
       >
         <HStack spacing={10} height="100%">
           <Button
-            onClick={downloadPDF}
+            onClick={onDownloadPDF}
             variant="ghost"
             textColor="white"
             height="80%"
