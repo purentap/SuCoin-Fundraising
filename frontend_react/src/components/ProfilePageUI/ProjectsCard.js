@@ -51,10 +51,25 @@ function ProjectsCard(props) {
     props.deleteFunction(deletedProject);
   };
 
+  const downloadFile = async (file,projectId) => {
+    const reader = new FileReader()
+  
+
+    reader.readAsText(file);
+    reader.onloadend = async () => {
+      const data = window.URL.createObjectURL(file);
+      const tempLink = await document.createElement('a');
+      tempLink.href = data;
+      tempLink.download = "Project_#" + projectId + ".pdf"; // some props receive from the component.
+      tempLink.click();
+    }
+  }
+
   const onDownloadPDF = async () => {
     try {
       const apiInstance = axios.create({
         baseURL: "https://localhost:5001",
+        responseType: "blob",
       });
       apiInstance.defaults.headers.common[
         "Authorization"
@@ -64,6 +79,7 @@ function ProjectsCard(props) {
           .get("/Project/GetPDF/" + props.projectID)
           .then((res) => {
             console.log("Succesfully got project pdf");
+            downloadFile(res.data,props.projectID)
             return res;
           })
           .catch((e) => {
