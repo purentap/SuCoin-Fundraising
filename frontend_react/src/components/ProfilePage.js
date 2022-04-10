@@ -63,7 +63,7 @@ const ProfilePage = () => {
     
     let response2 = new Promise((resolve, reject) => {
       apiInstance
-        .get("/Project/GetAllPermissioned")
+        .get("/Project/GetAllPermissioned/false")
         .then((res) => {
           console.log("response: ", res.data);
           resolve(res);

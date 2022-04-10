@@ -346,7 +346,8 @@ namespace SU_COIN_BACK_END.Services {
                 if (project != null) // project exists
                 {
                     string userRole = GetUserRole();
-                    if (project.Status != ProjectStatusConstants.APPROVED && userRole == UserRoleConstants.BASE)
+                    Func<int,Task<bool>> isTeam =  async userid =>  await _context.ProjectPermissions.AnyAsync(p => (p.ProjectID == projectID) && (p.UserID == userid) && p.IsAccepted);
+                    if (project.Status != ProjectStatusConstants.APPROVED && userRole == UserRoleConstants.BASE && !(await isTeam(GetUserId())))
                     {
                         response.Message = MessageConstants.NOT_AUTHORIZED_TO_ACCESS;
                         response.Success = false;
@@ -515,7 +516,7 @@ namespace SU_COIN_BACK_END.Services {
             return response;
         }
     
-        public async Task<ServiceResponse<List<ProjectDTO>>> GetAllPermissionedProjects()
+        public async Task<ServiceResponse<List<ProjectDTO>>> GetAllPermissionedProjects(bool withHex)
         {
             ServiceResponse<List<ProjectDTO>> response = new ServiceResponse<List<ProjectDTO>>();
             try
@@ -528,8 +529,11 @@ namespace SU_COIN_BACK_END.Services {
                 {
                     for (int i = 0; i < projectPermissions.Count; i++)
                     {
-                        Project project = await _context.Projects.FirstOrDefaultAsync(c => c.ProjectID == projectPermissions[i].ProjectID);
+                        Project project = await _context.Projects
+                       .Select(p => withHex ? p : new Project {ProjectID = p.ProjectID, ProjectName = p.ProjectName, Date = p.Date, ProjectDescription = p.ProjectDescription, ImageUrl = p.ImageUrl, Rating = p.Rating, Status = p.Status})
+                        .FirstOrDefaultAsync(c => c.ProjectID == projectPermissions[i].ProjectID);
                         allProjects.Add(project);
+
                     }
 
                     response.Data = (allProjects.Select(c => _mapper.Map<ProjectDTO>(c))).ToList();

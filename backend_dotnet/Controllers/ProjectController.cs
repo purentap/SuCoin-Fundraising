@@ -126,9 +126,9 @@ namespace SU_COIN_BACK_END.Controllers
             return Ok(response);
         }
 
-        [HttpGet("GetAllPermissioned")]
-        public async Task<IActionResult> GetAllPermissionedProjects(){
-            ServiceResponse<List<ProjectDTO>> response = await _projectService.GetAllPermissionedProjects();
+        [HttpGet("GetAllPermissioned/{withHex}")]
+        public async Task<IActionResult> GetAllPermissionedProjects(bool withHex){
+            ServiceResponse<List<ProjectDTO>> response = await _projectService.GetAllPermissionedProjects(withHex);
             if (!response.Success)
             {
                 return BadRequest(response);

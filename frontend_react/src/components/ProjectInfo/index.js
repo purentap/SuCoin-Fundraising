@@ -83,6 +83,7 @@ const ProjectInfo = ({ project, status, isWhitelisted, isOwner, projectId, setPr
   const getFile = async () => {
     const apiInstance = axios.create({
       baseURL: "https://localhost:5001",
+      responseType: "blob",
     })
     apiInstance.defaults.headers.common["Authorization"] = `Bearer ${Cookies.get('token')}`
     let response2 = new Promise((resolve, reject) => {
