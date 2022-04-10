@@ -83,19 +83,21 @@ const ProfilePage = () => {
 
   console.log(projects);
 
-  const onDelete = async (projectID) => {
+  const onDelete = async (deletedProject) => {
     try {
       apiInstance.defaults.headers.common[
         "Authorization"
       ] = `Bearer ${Cookies.get("token")}`;
       let response2 = new Promise((resolve, reject) => {
         apiInstance
-          .delete("/Project/Delete/" + projectID)
+          .delete("/Project/Delete/" + deletedProject.projectID)
           .then((res) => {
             console.log("Project deleted!")
             console.log("response: ", res.data);
+            const newProjectList = projects.filter((project) => project.id !== deletedProject.projectID);
+            setProjects(newProjectList);
             resolve(res);
-            
+
             
             
           })

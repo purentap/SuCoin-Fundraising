@@ -37,10 +37,6 @@ import Cookies from "js-cookie";
 //id,imageUrl,desc,title,status,approvals
 
 function ProjectsCard(props) {
-  const apiInstance = axios.create({
-    baseURL: "https://localhost:5001",
-  });
-
   const colorMap = {
     Approved: "green",
     Rejected: "red",
@@ -50,34 +46,36 @@ function ProjectsCard(props) {
   const { isOpen, onOpen, onClose } = useDisclosure(); //used for modals on button clicks
 
   const deleteHandler = async () => {
-    let deletedProject = props.this;
+    const deletedProject = props;
+
     props.deleteFunction(deletedProject);
-  }
-  
+  };
+
   const onDownloadPDF = async () => {
-    try{
-    apiInstance.defaults.headers.common[
-      "Authorization"
-    ] = `Bearer ${Cookies.get("token")}`;
-    let response2 = new Promise((resolve, reject) => {
-      apiInstance
-        .get("/Project/GetPDF/" + props.projectID + '/')
-        .then((res) => {
-          console.log("Succesfully got project pdf")
-          return res;       
-        })
-        .catch((e) => {
-          const err = "Unable to get the project PDF";
-          reject(err);
-        });
-    });
-    let result = await response2;
-  } catch (error) {
-    console.log(error);
-  }
-};
-
-
+    try {
+      const apiInstance = axios.create({
+        baseURL: "https://localhost:5001",
+      });
+      apiInstance.defaults.headers.common[
+        "Authorization"
+      ] = `Bearer ${Cookies.get("token")}`;
+      let response2 = new Promise((resolve, reject) => {
+        apiInstance
+          .get("/Project/GetPDF/" + props.projectID)
+          .then((res) => {
+            console.log("Succesfully got project pdf");
+            return res;
+          })
+          .catch((e) => {
+            const err = "Unable to get the project PDF";
+            reject(err);
+          });
+      });
+      let result = await response2;
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   return (
     <Grid
@@ -137,7 +135,11 @@ function ProjectsCard(props) {
       >
         <Image
           borderRadius="20px"
-          src={props.imageUrl== "" || props.imageUrl == "emptyImg" ? NoImage : props.imageUrl }
+          src={
+            props.imageUrl == "" || props.imageUrl == "emptyImg"
+              ? NoImage
+              : props.imageUrl
+          }
           boxSize="100%"
           objectFit="fill"
         />
