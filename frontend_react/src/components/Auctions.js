@@ -69,7 +69,7 @@ const Auctions = () => {
             apiInstance.defaults.headers.common["Authorization"] = `Bearer ${Cookies.get('token')}`
             let response2 = new Promise((resolve, reject) => {
                 apiInstance
-                    .get("/Project/Get")
+                    .get("/Project/Get/All/True")
                     .then((res) => {
                         console.log("response: ", res.data)
                         resolve(res)

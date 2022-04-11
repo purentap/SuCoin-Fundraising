@@ -162,10 +162,9 @@ namespace SU_COIN_BACK_END.Services {
                 Console.WriteLine($"User role: {userRole}"); // Debuging
                 List<Project> projects = new List<Project>();
 
-                if (!withHex) {
-                    projects = _context.Projects.Select(p => new Project {ProjectID = p.ProjectID, ProjectName = p.ProjectName, Date = p.Date, ProjectDescription = p.ProjectDescription, ImageUrl = p.ImageUrl, Rating = p.Rating, Status = p.Status}).ToList();
-                }
+                projects = await (withHex ? _context.Projects.ToListAsync() : _context.Projects.Select(p => new Project {ProjectID = p.ProjectID, ProjectName = p.ProjectName, Date = p.Date, ProjectDescription = p.ProjectDescription, ImageUrl = p.ImageUrl, Rating = p.Rating, Status = p.Status}).ToListAsync());
 
+       
                 if (userRole != UserRoleConstants.ADMIN && userRole != UserRoleConstants.WHITELIST)
                 {
                     projects = projects.Where(c => c.Status == ProjectStatusConstants.APPROVED).ToList();
