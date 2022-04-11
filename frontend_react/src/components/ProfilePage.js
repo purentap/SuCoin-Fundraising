@@ -94,7 +94,7 @@ const ProfilePage = () => {
           .then((res) => {
             console.log("Project deleted!")
             console.log("response: ", res.data);
-            const newProjectList = projects.filter((project) => project.id !== deletedProject.projectID);
+            const newProjectList = projects.filter((project) => project.projectID !== deletedProject.projectID);
             setProjects(newProjectList);
             resolve(res);
 
