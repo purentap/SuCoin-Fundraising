@@ -40,7 +40,7 @@ namespace SU_COIN_BACK_END.Services
             ServiceResponse<string> response = new ServiceResponse<string>();
             try
             {
-                User user = await _context.Users.FirstOrDefaultAsync(c => c.Id == GetUserId());
+                User? user = await _context.Users.FirstOrDefaultAsync(c => c.Id == GetUserId());
 
                 if (user != null)
                 {
@@ -69,7 +69,7 @@ namespace SU_COIN_BACK_END.Services
             try
             {
                 int userID = GetUserId();
-                User user = await _context.Users.FirstOrDefaultAsync(c => c.Id == userID);
+                User? user = await _context.Users.FirstOrDefaultAsync(c => c.Id == userID);
 
                 if (user != null)
                 {   
@@ -99,7 +99,7 @@ namespace SU_COIN_BACK_END.Services
             ServiceResponse<UserDTO> response = new ServiceResponse<UserDTO>();
             try
             {
-                User dbUser = await _context.Users.FirstOrDefaultAsync(c => c.Id == GetUserId());
+                User? dbUser = await _context.Users.FirstOrDefaultAsync(c => c.Id == GetUserId());
                 if (user != null)
                 {   
                     if (await _authenticationService.UserNameExists(user.Username))
@@ -141,7 +141,7 @@ namespace SU_COIN_BACK_END.Services
             ServiceResponse<string> response = new ServiceResponse<string>();
             try
             {
-                ProjectPermission permission = await _context.ProjectPermissions
+                ProjectPermission? permission = await _context.ProjectPermissions
                     .FirstOrDefaultAsync(c => c.ProjectID == request.ProjectID && c.UserID == GetUserId() 
                         && c.Role == UserPermissionRoleConstants.OWNER && c.IsAccepted);
                         
@@ -154,7 +154,7 @@ namespace SU_COIN_BACK_END.Services
                         return response;
                     }
 
-                    User user = await _context.Users.FirstOrDefaultAsync(c => c.Username == request.Username);
+                    User? user = await _context.Users.FirstOrDefaultAsync(c => c.Username == request.Username);
 
                     if (user == null)
                     {
@@ -205,7 +205,7 @@ namespace SU_COIN_BACK_END.Services
             try
             {
                 int requested_projectID = request.ProjectID;
-                ProjectPermission permissions = await _context.ProjectPermissions
+                ProjectPermission? permissions = await _context.ProjectPermissions
                     .FirstOrDefaultAsync(c => c.ProjectID == requested_projectID && c.UserID == GetUserId() && !c.IsAccepted);
                 
                 if (permissions != null)
@@ -276,14 +276,14 @@ namespace SU_COIN_BACK_END.Services
             try
             {
                 int loggedIn_userID = GetUserId();
-                ProjectPermission permission = await _context.ProjectPermissions
+                ProjectPermission? permission = await _context.ProjectPermissions
                     .FirstOrDefaultAsync(c => c.ProjectID == request.ProjectID && c.UserID == loggedIn_userID && c.IsAccepted);
                 
                 if (permission != null)
                 {
                     if (permission.Role == UserPermissionRoleConstants.OWNER)
                     {
-                        User user = await _context.Users.FirstOrDefaultAsync(c => c.Username == request.Username);
+                        User? user = await _context.Users.FirstOrDefaultAsync(c => c.Username == request.Username);
                         
                         if (user == null) 
                         {
@@ -298,7 +298,7 @@ namespace SU_COIN_BACK_END.Services
                             return response;
                         }
                         
-                        ProjectPermission perm = await _context.ProjectPermissions
+                        ProjectPermission? perm = await _context.ProjectPermissions
                             .FirstOrDefaultAsync(c => c.ProjectID == request.ProjectID && c.UserID == user.Id && c.IsAccepted);
 
                         if (perm != null)

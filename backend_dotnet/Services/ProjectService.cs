@@ -79,7 +79,7 @@ namespace SU_COIN_BACK_END.Services {
                 await _context.SaveChangesAsync();
 
                 /* For security reasons, we need to recheck the database and then assign the permission */
-                Project dbProject = await _context.Projects.FirstOrDefaultAsync(c => c.ProjectName == project.ProjectName);
+                Project? dbProject = await _context.Projects.FirstOrDefaultAsync(c => c.ProjectName == project.ProjectName);
 
                 if (dbProject != null) // The project was added to the database successfully
                 {
@@ -211,7 +211,8 @@ namespace SU_COIN_BACK_END.Services {
             ServiceResponse<ProjectDTO> response = new ServiceResponse<ProjectDTO>();
             try
             {
-                Project project = await _context.Projects.FirstOrDefaultAsync(c => c.ProjectID == ID);
+                Project? project = await _context.Projects.FirstOrDefaultAsync(c => c.ProjectID == ID);
+
                 if (project != null)
                 {
                     string userRole = GetUserRole();
@@ -252,12 +253,12 @@ namespace SU_COIN_BACK_END.Services {
                     response.Message = "Rating input is invalid, it should be in [0,10]";
                 }
 
-                Project project = await _context.Projects.FirstOrDefaultAsync(c => c.ProjectID == projectID);
+                Project? project = await _context.Projects.FirstOrDefaultAsync(c => c.ProjectID == projectID);
 
                 if (project != null)
                 {
                     int userID = GetUserId();
-                    Rating rating = await _context.Ratings.FirstOrDefaultAsync(c => c.UserID == userID && c.ProjectID == projectID);
+                    Rating? rating = await _context.Ratings.FirstOrDefaultAsync(c => c.UserID == userID && c.ProjectID == projectID);
 
                     if (rating != null)
                     {
@@ -318,7 +319,7 @@ namespace SU_COIN_BACK_END.Services {
                     return response;
                 }
 
-                Project dbProject = await _context.Projects.FirstOrDefaultAsync(c => c.ProjectID == project.ProjectID);
+                Project? dbProject = await _context.Projects.FirstOrDefaultAsync(c => c.ProjectID == project.ProjectID);
 
                 if (dbProject != null)
                 {
@@ -350,7 +351,7 @@ namespace SU_COIN_BACK_END.Services {
             ServiceResponse<byte[]> response = new ServiceResponse<byte[]>();
             try
             {
-                Project project = await _context.Projects.FirstOrDefaultAsync(c => c.ProjectID == projectID);
+                Project? project = await _context.Projects.FirstOrDefaultAsync(c => c.ProjectID == projectID);
                 if (project != null) // project exists
                 {
                     string userRole = GetUserRole();
@@ -426,7 +427,7 @@ namespace SU_COIN_BACK_END.Services {
             ServiceResponse<ProjectDTO> response = new ServiceResponse<ProjectDTO>();
             try
             {
-                Project project = await _context.Projects.FirstOrDefaultAsync(c => c.ProjectID == id);
+                Project? project = await _context.Projects.FirstOrDefaultAsync(c => c.ProjectID == id);
                 if (project != null)
                 {
                     ServiceResponse<List<EventLog<ProjectEvaluationEventDTO>>> response_chain = await _chainInteractionService.GetProjectEvaluationEventLogs();
@@ -502,7 +503,7 @@ namespace SU_COIN_BACK_END.Services {
                     return response;
                 }
 
-                Project dbProject = await _context.Projects.FirstOrDefaultAsync(c => c.ProjectID == projectID);
+                Project? dbProject = await _context.Projects.FirstOrDefaultAsync(c => c.ProjectID == projectID);
 
                 if (dbProject != null)
                 {
@@ -541,7 +542,7 @@ namespace SU_COIN_BACK_END.Services {
                     for (int i = 0; i < projectPermissions.Count; i++)
                     {
                         /* First fetch all the projects. Then, filter the permissioned projects */
-                        Project project = await _context.Projects
+                        Project? project = await _context.Projects
                         .Select(p => withHex ? p : new Project 
                         {
                             ProjectID = p.ProjectID, 

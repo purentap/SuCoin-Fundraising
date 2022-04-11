@@ -46,7 +46,7 @@ namespace SU_COIN_BACK_END.Services
             ServiceResponse<int> response = new ServiceResponse<int>();
             try
             {
-                User user = await _context.Users.FirstOrDefaultAsync(c => c.Address == address);
+                User? user = await _context.Users.FirstOrDefaultAsync(c => c.Address == address);
                 if (user == null)
                 {
                     response.Success = false;
@@ -82,7 +82,7 @@ namespace SU_COIN_BACK_END.Services
             ServiceResponse<string> response = new ServiceResponse<string>();
             try
             {  
-                User user = await _context.Users.FirstOrDefaultAsync(c => c.Address == request.Address);
+                User? user = await _context.Users.FirstOrDefaultAsync(c => c.Address == request.Address);
                 if (user != null)
                 {   
                     if (user.Nonce != null) 
