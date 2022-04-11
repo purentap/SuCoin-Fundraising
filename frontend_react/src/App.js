@@ -1,6 +1,6 @@
 import React, { Profiler, useContext, useState } from 'react';
 // Routing
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, HashRouter } from 'react-router-dom';
 // Components
 import Header from './components/Header';
 import Home from './components/Home';
@@ -23,6 +23,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 
 
 const App = () => {
+  const Router = process.env.REACT_APP_IFS === "True" ? HashRouter : BrowserRouter
   const [address, setAddress] = useState("");
   const value = { address, setAddress };
 
