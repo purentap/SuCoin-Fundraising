@@ -127,10 +127,11 @@ namespace SU_COIN_BACK_END.Services {
                 }
 
                 /* For security reasons, we need to recheck the database and then delete the project */
-                Project project = await _context.Projects.FirstOrDefaultAsync(c => c.ProjectID == ID);
+                Project? project = await _context.Projects.FirstOrDefaultAsync(c => c.ProjectID == ID);
 
                 if (project != null)
                 {
+                    /* Remove both the current project and the related project permissions */
                     _context.ProjectPermissions.RemoveRange(_context.ProjectPermissions.Where(c => c.ProjectID == ID));
                     _context.Remove(project);
                     await _context.SaveChangesAsync();
@@ -162,26 +163,34 @@ namespace SU_COIN_BACK_END.Services {
                 Console.WriteLine($"User role: {userRole}"); // Debuging
                 List<Project> projects = new List<Project>();
 
-                projects = await (withHex ? _context.Projects.ToListAsync() : _context.Projects.Select(p => new Project {ProjectID = p.ProjectID, ProjectName = p.ProjectName, Date = p.Date, ProjectDescription = p.ProjectDescription, ImageUrl = p.ImageUrl, Rating = p.Rating, Status = p.Status}).ToListAsync());
+                /* First fetch all the projects. Then check if the user is neither admin nor whitelist, just filter the approved projects */
+
+                projects = await (withHex ? _context.Projects.ToListAsync() : _context.Projects
+                .Select(p => new Project 
+                {
+                    ProjectID = p.ProjectID, 
+                    ProjectName = p.ProjectName, 
+                    Date = p.Date, 
+                    ProjectDescription = p.ProjectDescription, 
+                    ImageUrl = p.ImageUrl, 
+                    Rating = p.Rating, 
+                    Status = p.Status
+                })
+                .ToListAsync());
 
        
                 if (userRole != UserRoleConstants.ADMIN && userRole != UserRoleConstants.WHITELIST)
                 {
                     projects = projects.Where(c => c.Status == ProjectStatusConstants.APPROVED).ToList();
-
                 }
-        
-                
+                        
                 /* If there is any project, send the project data to the mapper */
                 
                 if (projects != null)
                 {
-                    
-                        response.Data = (projects.Select(c => _mapper.Map<ProjectDTO>(c))).ToList(); // map projects to projectDTOs
-                        response.Message = "Ok";
-                        response.Success = true;
-                    
-             
+                    response.Data = (projects.Select(c => _mapper.Map<ProjectDTO>(c))).ToList(); // map projects to projectDTOs
+                    response.Message = "Ok";
+                    response.Success = true;             
                 }
                 else
                 {
@@ -345,8 +354,11 @@ namespace SU_COIN_BACK_END.Services {
                 if (project != null) // project exists
                 {
                     string userRole = GetUserRole();
-                    Func<int,Task<bool>> isTeam =  async userid =>  await _context.ProjectPermissions.AnyAsync(p => (p.ProjectID == projectID) && (p.UserID == userid) && p.IsAccepted);
-                    if (project.Status != ProjectStatusConstants.APPROVED && userRole == UserRoleConstants.BASE && !(await isTeam(GetUserId())))
+                    Func<int,Task<bool>> checkUserInATeam = async userID => await _context.ProjectPermissions
+                    .AnyAsync(p => (p.ProjectID == projectID) && (p.UserID == userID) && p.IsAccepted); // lambda expression which checks whether is user in any team
+                    bool isUserInATeam = await checkUserInATeam(GetUserId());
+
+                    if (project.Status != ProjectStatusConstants.APPROVED && userRole == UserRoleConstants.BASE && !isUserInATeam)
                     {
                         response.Message = MessageConstants.NOT_AUTHORIZED_TO_ACCESS;
                         response.Success = false;
@@ -521,18 +533,27 @@ namespace SU_COIN_BACK_END.Services {
             try
             {
                 List<ProjectPermission> projectPermissions = await _context.ProjectPermissions
-                    .Where(c => c.UserID == GetUserId() && c.IsAccepted).ToListAsync(); // all project permissions of the logged in user
+                .Where(c => c.UserID == GetUserId() && c.IsAccepted).ToListAsync(); // all project permissions of the logged in user
                 List<Project> allProjects = new List<Project>(); // all permissioned projects of the logged in user
 
                 if (projectPermissions != null)
                 {
                     for (int i = 0; i < projectPermissions.Count; i++)
                     {
+                        /* First fetch all the projects. Then, filter the permissioned projects */
                         Project project = await _context.Projects
-                       .Select(p => withHex ? p : new Project {ProjectID = p.ProjectID, ProjectName = p.ProjectName, Date = p.Date, ProjectDescription = p.ProjectDescription, ImageUrl = p.ImageUrl, Rating = p.Rating, Status = p.Status})
+                        .Select(p => withHex ? p : new Project 
+                        {
+                            ProjectID = p.ProjectID, 
+                            ProjectName = p.ProjectName, 
+                            Date = p.Date, 
+                            ProjectDescription = p.ProjectDescription, 
+                            ImageUrl = p.ImageUrl, 
+                            Rating = p.Rating, 
+                            Status = p.Status
+                        })
                         .FirstOrDefaultAsync(c => c.ProjectID == projectPermissions[i].ProjectID);
                         allProjects.Add(project);
-
                     }
 
                     response.Data = (allProjects.Select(c => _mapper.Map<ProjectDTO>(c))).ToList();
