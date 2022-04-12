@@ -37,7 +37,6 @@ namespace SU_COIN_BACK_END.Controllers
             return Ok(response);
         }
 
-    
         [HttpGet("Get/{id}")]
         [AllowAnonymous]
         public async Task<IActionResult> GetProjectByID(int Id) {
