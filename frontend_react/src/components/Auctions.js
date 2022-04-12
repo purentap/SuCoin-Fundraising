@@ -69,7 +69,7 @@ const Auctions = () => {
             apiInstance.defaults.headers.common["Authorization"] = `Bearer ${Cookies.get('token')}`
             let response2 = new Promise((resolve, reject) => {
                 apiInstance
-                    .get("/Project/Get/All/True")
+                    .get("/Project/Get/All/False")
                     .then((res) => {
                         console.log("response: ", res.data)
                         resolve(res)
@@ -90,10 +90,14 @@ const Auctions = () => {
             var Maestro = await new ethers.Contract(MaestroAddress, MaestroABI.abi, provider);
 
             var filter = await Maestro.filters.CreateAuctionEvent();
-
+            var time = Date.now();
             var allCreateAuctionEvents = await Maestro.queryFilter(filter);
+            console.log(allCreateAuctionEvents);
+
+/*             console.log(Date.now() - time)
+
             console.log(allCreateAuctionEvents)
-            var allAuctions = [];
+ */            var allAuctions = [];
             for (let index = 0; index < allCreateAuctionEvents.length; index++) {
                 let aucAddress = allCreateAuctionEvents[index].args.auction;
                 let fileHash = allCreateAuctionEvents[index].args.fileHash;
@@ -109,19 +113,19 @@ const Auctions = () => {
                 var id
                 result.data.data.forEach(proj => {
                     //console.log("XX", auct.fileHash, " VS ", "0x" + CryptoJS.SHA256(proj.fileHex).toString())
-                    if (fileHash == "0x" + CryptoJS.SHA256(proj.fileHex).toString()) {
-                        console.log("match", "0x" + CryptoJS.SHA256(proj.fileHex).toString())
-                        console.log(proj.projectID)
+                    if (fileHash == "0x" + proj.fileHash) {
                         id = proj.projectID
 
                     }
                 })
 
-                allAuctions.push({ "id": id, "auctionAddress": aucAddress, "fileHash": fileHash, "auctionType": auctionType, "creator": creator, "tokenSymbol": tokenSymbol, tokenName: tokenName, status: status, tokenAddress: Project.token });
+               
+                allAuctions.push({ "id": id, "auctionAddress": aucAddress, "fileHash": fileHash, "auctionType": auctionType, "creator": creator,  });
+
             }
             setAuctions(allAuctions)
-            console.log(allAuctions);
-
+/*             console.log(allAuctions);
+ */
 
             /*var allTokenCreationEvents = await Maestro.filters.TokenCreation();
             console.log(allTokenCreationEvents);*/
