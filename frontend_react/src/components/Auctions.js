@@ -71,7 +71,7 @@ const Auctions = () => {
                 apiInstance
                     .get("/Project/Get/All/False")
                     .then((res) => {
-                        console.log("response: ", res.data)
+                        console.log("response: ", res.data) 
                         resolve(res)
                     })
                     .catch((e) => {
@@ -106,21 +106,22 @@ const Auctions = () => {
                 let Project = await Maestro.projectTokens(fileHash);
                 let tokenSC = await new ethers.Contract(Project.token, TokenABI.abi, provider);
                 let tokenSymbol = await tokenSC.symbol();
+
                 let tokenName = await tokenSC.name();
                 let auctionSc = await new ethers.Contract(aucAddress, (auctionType == 'CappedFCFS' ? CappedFCFS.abi : (auctionType == 'CappedAuctionWRedistribution' ? CappedAuctionWRedistribution.abi : (auctionType == "CappedParcelLimitFCFSAuction" ? CappedParcelLimitFCFS.abi : (auctionType == "DutchAuction" ? DutchAuctionTrial.abi : DutchAuctionTrial.abi)))), provider);
                 const status = ["notStarted","Ongoing","Finished"][await auctionSc.status()]
-           
+                console.log(result.data.data)
                 var id
                 result.data.data.forEach(proj => {
                     //console.log("XX", auct.fileHash, " VS ", "0x" + CryptoJS.SHA256(proj.fileHex).toString())
-                    if (fileHash == "0x" + proj.fileHash) {
+                    if (fileHash == "0x" + proj.fileHex) {
                         id = proj.projectID
 
                     }
                 })
 
                
-                allAuctions.push({ "id": id, "auctionAddress": aucAddress, "fileHash": fileHash, "auctionType": auctionType, "creator": creator,  });
+                allAuctions.push({ "id": id, "auctionAddress": aucAddress, "fileHash": fileHash, "auctionType": auctionType, "creator": creator,tokenName:tokenName,tokenSymbol:tokenSymbol,status:status  });
 
             }
             setAuctions(allAuctions)

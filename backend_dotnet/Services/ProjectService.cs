@@ -58,7 +58,7 @@ namespace SU_COIN_BACK_END.Services {
                     response.Message = "Project name already exists please choose another name";
                     return response;
                 }
-                else if (!await IsProjectSubmittedToChain(project.fileHex))
+                else if (!await IsProjectSubmittedToChain(project.FileHex))
                 {
                     response.Success = false;
                     response.Message = MessageConstants.PROJECT_NOT_SUBMITTED_TO_CHAIN;
@@ -67,7 +67,7 @@ namespace SU_COIN_BACK_END.Services {
 
                 /* Project has not been created in the database. Create the new project */
                 Project new_project = _mapper.Map<Project>(project);
-                new_project.FileHex = project.fileHex;
+                new_project.FileHex = project.FileHex;
                 new_project.Date = DateTime.Now;
                 new_project.IsApproved = false;
                 new_project.Status = ProjectStatusConstants.PENDING;
@@ -167,20 +167,26 @@ namespace SU_COIN_BACK_END.Services {
 
                 /* First fetch all the projects. Then check if the user is neither admin nor whitelist, just filter the approved projects */
 
-                var sqlResult = _context.Projects.FromSqlRaw("Select *,SHA2(FileHex,256) as fileHash from Projects");
+                var hashResult = _context.Projects.FromSqlRaw("Select projectID,SHA2(FileHex,256) as FileHex from Projects");
+        
 
-                projects =  (withHex ? await sqlResult.ToListAsync() :  await sqlResult.Select(p => new Project 
-                {
-                    ProjectID = p.ProjectID, 
-                    ProjectName = p.ProjectName, 
-                    Date = p.Date, 
-                    ProjectDescription = p.ProjectDescription, 
-                    ImageUrl = p.ImageUrl, 
-                    Rating = p.Rating, 
-                    Status = p.Status,  
-                    fileHash = p.fileHash,    
-                })
-                .ToListAsync()); 
+              var hashedVersion =  hashResult.Join(
+                                    _context.Projects,
+                                    hash => hash.ProjectID,
+                                    project => project.ProjectID,
+                                    (hash,projects) => new Project{
+                                        ProjectID = projects.ProjectID, 
+                                            ProjectName = projects.ProjectName, 
+                                            Date = projects.Date, 
+                                            ProjectDescription = projects.ProjectDescription, 
+                                            ImageUrl = projects.ImageUrl, 
+                                            Rating = projects.Rating, 
+                                            Status = projects.Status,
+                                            FileHex =  hash.FileHex , 
+                                    }
+                                );
+
+                projects =  (withHex ? await _context.Projects.ToListAsync() : await hashedVersion.ToListAsync()); 
 
 
        
