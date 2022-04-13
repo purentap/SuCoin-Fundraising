@@ -32,6 +32,7 @@ import CappedAuctionWRedistribution from '../contracts_hardhat/artifacts/contrac
 import DutchAuction from '../contracts_hardhat/artifacts/contracts/DutchAuction.sol/DutchAuction.json';
 import TokenABI from '../contracts_hardhat/artifacts/contracts/Token.sol/Token.json';
 import DutchAuctionTrial from "../contracts_hardhat/artifacts/contracts/DutchAuctionTrial.sol/DutchAuctionTrial.json"
+import AuctionTrial from "../contracts_hardhat/artifacts/contracts/AuctionTrial.sol/AuctionTrial.json"
 
 const options = [
     { value: 'fens', label: 'FENS' },
@@ -81,8 +82,10 @@ const Auctions = () => {
                     })
             })
             let result = await response2
-            console.log("ehee", result.data.data)
-            setProjects(result.data.data)
+
+            const hashToId = Object.fromEntries(result.data.data.map(project => ["0x" + project.fileHex,project.projectID]))
+
+
 
 
 
@@ -90,109 +93,62 @@ const Auctions = () => {
             var Maestro = await new ethers.Contract(MaestroAddress, MaestroABI.abi, provider);
 
             var filter = await Maestro.filters.CreateAuctionEvent();
-            var time = Date.now();
             var allCreateAuctionEvents = await Maestro.queryFilter(filter);
-            console.log(allCreateAuctionEvents);
 
-/*             console.log(Date.now() - time)
 
-            console.log(allCreateAuctionEvents)
- */            var allAuctions = [];
-            for (let index = 0; index < allCreateAuctionEvents.length; index++) {
-                let aucAddress = allCreateAuctionEvents[index].args.auction;
-                let fileHash = allCreateAuctionEvents[index].args.fileHash;
-                let auctionType = allCreateAuctionEvents[index].args.auctionType;
-                let creator = allCreateAuctionEvents[index].args.creator;
-                let Project = await Maestro.projectTokens(fileHash);
-                let tokenSC = await new ethers.Contract(Project.token, TokenABI.abi, provider);
-                let tokenSymbol = await tokenSC.symbol();
 
-                let tokenName = await tokenSC.name();
-                let auctionSc = await new ethers.Contract(aucAddress, (auctionType == 'CappedFCFS' ? CappedFCFS.abi : (auctionType == 'CappedAuctionWRedistribution' ? CappedAuctionWRedistribution.abi : (auctionType == "CappedParcelLimitFCFSAuction" ? CappedParcelLimitFCFS.abi : (auctionType == "DutchAuction" ? DutchAuctionTrial.abi : DutchAuctionTrial.abi)))), provider);
-                const status = ["notStarted","Ongoing","Finished"][await auctionSc.status()]
-                console.log(result.data.data)
-                var id
-                result.data.data.forEach(proj => {
-                    //console.log("XX", auct.fileHash, " VS ", "0x" + CryptoJS.SHA256(proj.fileHex).toString())
-                    if (fileHash == "0x" + proj.fileHex) {
-                        id = proj.projectID
+            const wantedInformation = ["id","auctionAddress","fileHash","auctionType","creator","status","tokenSymbol","tokenName"]
+ 
+            
+          const auctionData =  Promise.all(allCreateAuctionEvents.map(async auctionEvent => {
+              console.log(auctionEvent.args)
+                const {auction,fileHash,auctionType,creator} = auctionEvent.args;
+                const auctionContract =  new ethers.Contract(auction,AuctionTrial.abi,provider)
 
-                    }
-                })
+                 const statusPromise = auctionContract.status()
+                                        .then(status => ["notStarted","Ongoing","Finished"][status]) 
 
-               
-                allAuctions.push({ "id": id, "auctionAddress": aucAddress, "fileHash": fileHash, "auctionType": auctionType, "creator": creator,tokenName:tokenName,tokenSymbol:tokenSymbol,status:status  });
+
+                const tokenPromise =   Maestro.projectTokens(fileHash)
+                                            .then(addresses => new ethers.Contract(addresses.token,TokenABI.abi,provider))
+                                            .then(contract => Promise.all([contract.symbol(),contract.name()]))
+
+                 
+                
+                const id = hashToId[fileHash]
+                
+
+                
+                return Promise.all([id,auction,fileHash,auctionType,creator,statusPromise,tokenPromise])
+                              .then(result => result.flat())
+                              .then(resultFlat => Object.fromEntries(wantedInformation.map((_,i) => [wantedInformation[i],resultFlat[i]])))
+
+            }))
+
+            await auctionData
+
+            //setAuctions(await auctionData)
+          
+
+            
+
+
+     
+
 
             }
-            setAuctions(allAuctions)
-/*             console.log(allAuctions);
- */
-
-            /*var allTokenCreationEvents = await Maestro.filters.TokenCreation();
-            console.log(allTokenCreationEvents);*/
-
-        } catch (error) {
-            setToastshow(true)
-            setToastheader("Catched an error")
-            setToasttext(error?.message)
-            return false;
-        }
-    }, [])
-    /*
-        useEffect(async () => {
-            const CryptoJS = require('crypto-js');
-            try {
-                const apiInstance = axios.create({
-                    baseURL: "https://localhost:5001",
-                })
-                apiInstance.defaults.headers.common["Authorization"] = `Bearer ${Cookies.get('token')}`
-                let response2 = new Promise((resolve, reject) => {
-                    apiInstance
-                        .get("/Project/Get")
-                        .then((res) => {
-                            console.log("response: ", res.data)
-                            resolve(res)
-                        })
-                        .catch((e) => {
-                            const err = "Unable to add the project"
-                            reject(err)
-    
-                        })
-                })
-                let result = await response2
-                console.log("ehee", result.data.data)
-                setProjects(result.data.data)
-    
-                let i = 0
-                auctions.forEach(auct => {
-    
-                    result.data.data.forEach(proj => {
-                        //console.log("XX", auct.fileHash, " VS ", "0x" + CryptoJS.SHA256(proj.fileHex).toString())
-                        if (auct.fileHash == "0x" + CryptoJS.SHA256(proj.fileHex).toString()) {
-                            console.log("match", "0x" + CryptoJS.SHA256(proj.fileHex).toString())
-                            console.log(proj.projectID)
-    
-                            IDs.push(proj.projectID)
-                        }
-                        else {
-                            IDs.push(99999)
-                        }
-                        i++;
-                    });
-                });
-    
-    
-    
-            } catch (error) {
+            catch (error) {
+                setToastshow(true)
+                setToastheader("Catched an error")
+                setToasttext(error?.message)
                 console.log(error)
-            }
-    
-    
-        }, [auctions])
-    */
-    const action2 = () => {
-        console.log("AYDISS", IDs)
-    }
+                return false;
+           
+
+        } 
+        }
+    , [])
+ 
 
     const handleInput = e => {
         const name = e.currentTarget.name;
