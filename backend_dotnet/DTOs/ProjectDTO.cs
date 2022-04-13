@@ -14,6 +14,8 @@ namespace SU_COIN_BACK_END.DTOs
         public string Status {get; set;} = "Pending";
         public string MarkDown {get; set;} = "";
         public string fileHex {get; set;} = "";
+
+        public string fileHash {get;set;} = "";
         public string? ProposerAddress {get; set;} = null;
 
     }

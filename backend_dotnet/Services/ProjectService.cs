@@ -153,9 +153,11 @@ namespace SU_COIN_BACK_END.Services {
             return response;
         }
 
+
         public async Task<ServiceResponse<List<ProjectDTO>>> GetAllProjects(bool withHex)
         {
-            
+                var time = DateTime.Now;
+
             ServiceResponse<List<ProjectDTO>> response = new ServiceResponse<List<ProjectDTO>>();
             try
             {
@@ -165,8 +167,9 @@ namespace SU_COIN_BACK_END.Services {
 
                 /* First fetch all the projects. Then check if the user is neither admin nor whitelist, just filter the approved projects */
 
-                projects = await (withHex ? _context.Projects.ToListAsync() : _context.Projects
-                .Select(p => new Project 
+                var sqlResult = _context.Projects.FromSqlRaw("Select *,SHA2(FileHex,256) as fileHash from Projects");
+
+                projects =  (withHex ? await sqlResult.ToListAsync() :  await sqlResult.Select(p => new Project 
                 {
                     ProjectID = p.ProjectID, 
                     ProjectName = p.ProjectName, 
@@ -174,9 +177,11 @@ namespace SU_COIN_BACK_END.Services {
                     ProjectDescription = p.ProjectDescription, 
                     ImageUrl = p.ImageUrl, 
                     Rating = p.Rating, 
-                    Status = p.Status
+                    Status = p.Status,  
+                    fileHash = p.fileHash,    
                 })
-                .ToListAsync());
+                .ToListAsync()); 
+
 
        
                 if (userRole != UserRoleConstants.ADMIN && userRole != UserRoleConstants.WHITELIST)
@@ -203,6 +208,7 @@ namespace SU_COIN_BACK_END.Services {
                 response.Message = e.Message;
                 response.Success = false;
             }
+
             return response;
         }
 
