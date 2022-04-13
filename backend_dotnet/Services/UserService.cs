@@ -114,7 +114,6 @@ namespace SU_COIN_BACK_END.Services
                     dbUser.Name = user.Name;
                     dbUser.Surname = user.Surname;
                     dbUser.Username = user.Username;
-                    dbUser.SUNET_ID = user.SUNET_ID;
 
                     _context.Users.Update(dbUser);
                     await _context.SaveChangesAsync();
