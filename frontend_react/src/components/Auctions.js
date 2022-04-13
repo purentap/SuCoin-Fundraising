@@ -101,7 +101,6 @@ const Auctions = () => {
  
             
           const auctionData =  Promise.all(allCreateAuctionEvents.map(async auctionEvent => {
-              console.log(auctionEvent.args)
                 const {auction,fileHash,auctionType,creator} = auctionEvent.args;
                 const auctionContract =  new ethers.Contract(auction,AuctionTrial.abi,provider)
 
@@ -125,9 +124,8 @@ const Auctions = () => {
 
             }))
 
-            await auctionData
 
-            //setAuctions(await auctionData)
+            setAuctions(await auctionData)
           
 
             
