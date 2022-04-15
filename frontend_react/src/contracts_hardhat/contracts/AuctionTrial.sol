@@ -31,7 +31,7 @@ abstract contract AuctionTrial is Ownable{                                    //
         status = AuctionStatus.OFF;
         bidCoin = ERC20(_bidCoin);
         maestroSC = Maestro(_maestro);
-        maestroSC.AssignAuction(msg.sender, projectHash, _token, "DutchAuction");
+        maestroSC.AssignAuction(msg.sender, projectHash, _token, "DutchAuctionTrial");
  
     }
 

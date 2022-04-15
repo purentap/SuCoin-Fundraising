@@ -40,7 +40,7 @@ import {numberToFixedNumber  } from '../../helpers';
 
 const BiLiraAddress = "0x8f5736aF17F2F071B476Fd9cFD27a1Bd8D7E7F15";
 
-const maestro = { address: "0xDD17723B9d6D6D3bEbE5046F54ea8F3e8089771a" }
+const maestro = { address: "0x5258A94275071Db1AfF9D49c44f2d7E4469d5EB1" }
 const SUCoin = { address: "0xb6e466F4F0ab1e2dA2E8237F38B2eCf6278894Ce" }
 
 const AuctionInfo = ({ auction, projectId, price, tokenDist, deposit }) => {
@@ -49,45 +49,6 @@ const AuctionInfo = ({ auction, projectId, price, tokenDist, deposit }) => {
   const [amount, setAmount] = useState();
 
 
-  const [approveVotes, setApprove] = useState()
-  const [rejectVotes, setReject] = useState()
-  const [hash, setHash] = useState()
-  const [votesNeeded, setVotesneeded] = useState()
-  const [isEditing, setEditing] = useState(false)
-
-  const [project, setProject] = useState();
-  const [projectName, setName] = useState('');
-  const [projectDescription, setDescription] = useState('');
-  const [projectImg, setImg] = useState('');
-
-
-
-  useEffect(async () => {
-    //console.log("AUCG", auction)
-    // setTokens(["SUCoin", auction.tokenSymbol])
-  }, [])
-
-
-
-  useEffect(async () => {
-    const apiInstance = axios.create({
-      baseURL: "https://localhost:5001",
-    })
-    apiInstance.defaults.headers.common["Authorization"] = `Bearer ${Cookies.get('token')}`
-    let response2 = new Promise((resolve, reject) => {
-      apiInstance
-        .get("/Project/Get/" + projectId)
-        .then((res) => {
-          setProject(res.data.data)
-          //console.log("ripp", res.data.data)
-          resolve(res)
-        })
-        .catch((e) => {
-          const err = "Unable to add the project"
-          reject(err)
-        })
-    })
-  }, [])
 
   const buyTokens = async () => {
     try {
@@ -99,14 +60,14 @@ const AuctionInfo = ({ auction, projectId, price, tokenDist, deposit }) => {
       const value = numberToFixedNumber(amount)
 
 
-      var auctionSC = await new ethers.Contract(auction.auctionAddress, CappedFCFS.abi, signer);
+      var auctionSC = await new ethers.Contract(auction, CappedFCFS.abi, signer);
 
       //var projectTokenSC = await new ethers.Contract(auction.wrapperTokenAddress, TokenABI.abi, signer);
       var SUCoinContract = await new ethers.Contract(SUCoin.address, wrapperTokenABI.abi, signer);
 
       //console.log("done", ethers.parseUnits(value, "gwei"))
 
-      var approveTx = await SUCoinContract.approve(auction.auctionAddress, value);
+      var approveTx = await SUCoinContract.approve(auction, value);
 
 
       let receipt = await approveTx.wait(1);
@@ -133,13 +94,13 @@ const AuctionInfo = ({ auction, projectId, price, tokenDist, deposit }) => {
     const name = e.currentTarget.name;
     const value = e.currentTarget.value;
 
-    if (name === 'name') setName(value);
-    if (name === 'description') setDescription(value);
-    if (name === 'imgUrl') setImg(value);
+
     if (name === 'amount') setAmount(value);
     if (name === 'amount2') setAmount(value);
 
   };
+
+  
 
   return (
     <Wrapper backdrop={"#ccc"}>
@@ -180,7 +141,7 @@ const AuctionInfo = ({ auction, projectId, price, tokenDist, deposit }) => {
               <Row className="g-2">
                 <Col md>
                   <FloatingLabel controlId="floatingInputGrid" label={"Project Token"}>
-                    <Form.Control onChange={handleInput} name="amount2" type="text" value={(amount / price) | 0} />
+                    <Form.Control onChange={handleInput} name="amount2" type="text" value={((amount / price) || 0)} />
                   </FloatingLabel>
                 </Col>
               </Row >

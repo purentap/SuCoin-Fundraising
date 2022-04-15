@@ -40,7 +40,7 @@ const options = [
     { value: 'fman', label: 'FMAN' }
 ]
 
-const MaestroAddress = "0xDD17723B9d6D6D3bEbE5046F54ea8F3e8089771a";
+const MaestroAddress = "0x5258A94275071Db1AfF9D49c44f2d7E4469d5EB1";
 
 const IDs = []
 
@@ -160,6 +160,9 @@ const Auctions = () => {
 
     };
 
+    const navigate = useNavigate();
+
+
     return (
         <>
             <ToastBar toastText={toastText} toastHeader={toastHeader} toastShow={toastShow} setToastshow={setToastshow}></ToastBar>
@@ -190,9 +193,10 @@ const Auctions = () => {
 
                                             </Card.Text>
 
-                                            <Link to={'/auction/' + project.id} >
+                                            <Button onClick={() => navigate('/auction/' + project.id,{state:project})}>
                                                 Auction Page
-                                            </Link >
+                                            </Button>
+                                       
 
                                         </Card.Body>
                                     </Card>

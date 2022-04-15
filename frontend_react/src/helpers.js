@@ -14,7 +14,7 @@ export const numberToFixedNumber = (amount) => {
 
 export const fixedNumberToNumber = (amount) => {
   const defaultDecimals = 18
-  return FixedNumber.fromValue(amount,defaultDecimals)
+  return FixedNumber.fromValue(amount,defaultDecimals)._value
 }
 
 export const hexToHash = (fileHex) => ("0x" + CryptoJS.SHA256(fileHex)).toString()

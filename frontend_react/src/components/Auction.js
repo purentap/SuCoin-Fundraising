@@ -1,346 +1,53 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
-import API from '../API';
-import { useNavigate } from 'react-router-dom';
-// Components
-import BreadCrumb from './BreadCrumb';
-import Grid from './Grid';
-import Spinner from './Spinner';
+import { useNavigate,useLocation } from 'react-router-dom';
 import AuctionInfo from './AuctionInfo';
-import ProjectInfoBar from './ProjectInfoBar';
-import Actor from './ProjectMember';
-import MDEditor from '@uiw/react-md-editor';
-// Hook
-import { useMovieFetch } from '../hooks/useMovieFetch';
-// Image
-import NoImage from '../images/no_image.jpg';
-import ProjectRegister from '../abi/project.json'
-import axios from 'axios'
 
-import Web3 from 'web3';
-import Button from 'react-bootstrap/Button'
-import Form from 'react-bootstrap/Form'
-import Row from 'react-bootstrap/Row'
-import Col from 'react-bootstrap/Col'
-import Container from 'react-bootstrap/Col'
-import Cookies from 'js-cookie'
-
-import { ethers, FixedNumber } from 'ethers';
-import ethersAbi from '../contracts_hardhat/artifacts/contracts/ProjectRegister.sol/ProjectRegister.json'
-import abi from '../abi/project.json'
-
-import MaestroABI from '../contracts_hardhat/artifacts/contracts/Maestro.sol/Maestro.json';
-import CappedFCFS from '../contracts_hardhat/artifacts/contracts/CappedFCFSAuction.sol/CappedFCFSAuction.json';
-import CappedParcelLimitFCFS from '../contracts_hardhat/artifacts/contracts/CappedParcelLimitFCFSAuction.sol/CappedParcelLimitFCFSAuction.json';
-import CappedAuctionWRedistribution from '../contracts_hardhat/artifacts/contracts/CappedAuctionWRedistribution.sol/CappedAuctionWRedistribution.json';
-import DutchAuction from '../contracts_hardhat/artifacts/contracts/DutchAuction.sol/DutchAuction.json';
-import DutchAuctionTrial from '../contracts_hardhat/artifacts/contracts/DutchAuctionTrial.sol/DutchAuctionTrial.json';
-import { fixedNumberToNumber } from '../helpers'; 
-
-import TokenABI from '../contracts_hardhat/artifacts/contracts/Token.sol/Token.json';
-import { WalletSwitcher } from '../User';
-const MaestroAddress = "0xDD17723B9d6D6D3bEbE5046F54ea8F3e8089771a";
-const CappedFCFSAddress = "0x43f691a5D43Dd8edbDa222c6a0de967E52a23db2"
-
-const mkdStr = `# {Freelance Finder Version 2}
-## Project Abstact
-Abstract part
-## Project Details
-details part
-### Details Part 1
-details part 1
-### Details Part 2
-details part 2
-
-## [Details on how to write with markdown](https://www.markdownguide.org/basic-syntax/)
-
-`;
+import {fixedNumberToNumber} from "../helpers.js"
+import { ethers} from 'ethers';
 
 const Auction = () => {
+    const {state} = useLocation();
+    const {auctionType,auctionAddress,projectId} = state
 
-    const { projectId } = useParams({});
 
-    const [markdown, setMarkdown] = useState(mkdStr);
-    const [isEditingChild, setEditingchild] = useState(false);
-    const [isEditing, setEditing] = useState(false);
-    const [isWhitelisted, setIswhitelisted] = useState(false);
-    const [isOwner, setIsowner] = useState(false);
-    const [owner, setOwner] = useState();
-    const [signer, setSigner] = useState()
-    const [projects, setProjects] = useState();
-
-    const [auction, setAuction] = useState();
 
     const [price, setPrice] = useState();
     const [tokenDist, setTokenDist] = useState();
     const [soldToken, setSoldTokens] = useState();
 
+    
+    const provider = new ethers.providers.Web3Provider(window.ethereum);
 
 
-    const [auctionType, setAuctiontype] = useState();
-
-    const [auctions, setAuctions] = useState([
-        {
-            "auctionAddress": "0x98f2C2aFB088bE9378a4dEb2672Af309E9b65329",
-            "fileHash": "0xa190d2b3a3323f420e5df6078d27bf6d7d76144aea19e32cb66ff61b4ad07d2d",
-            "auctionType": "CappedFCFS",
-            "creator": "0xDE02A36403d7a38eB9D6a8568599Ef6CDf18315b",
-            "tokenSymbol": "Lira",
-            "tokenName": "BiLira",
-            "status": "notStarted",
-            "tokenAddress": "0x8f5736aF17F2F071B476Fd9cFD27a1Bd8D7E7F15"
-        },
-        {
-            "auctionAddress": "0x38a758A743Df330182Aa3988090d40b791823255",
-            "fileHash": "0x4fd063a659cd3fe36b2ae58f30c5b7e36e5b0e10fcc2e447ebd76a5443ea2689",
-            "auctionType": "CappedFCFS",
-            "creator": "0xDE02A36403d7a38eB9D6a8568599Ef6CDf18315b",
-            "tokenSymbol": "Lira",
-            "tokenName": "BiLira",
-            "status": "notStarted",
-            "tokenAddress": "0x8f5736aF17F2F071B476Fd9cFD27a1Bd8D7E7F15"
-        }
-    ]);
-
-    const [project, setProject] = useState({
-        rating: 0,
-        imageUrl: "",
-        markdown: "",
-        projectDescription: "",
-        projectName: "",
-        status: "",
-    });
-
-    useEffect(async () => {
-        try {
-            const CryptoJS = require('crypto-js');
-            const apiInstance = axios.create({
-                baseURL: "https://localhost:5001",
-            })
-            apiInstance.defaults.headers.common["Authorization"] = `Bearer ${Cookies.get('token')}`
-            let response2 = new Promise((resolve, reject) => {
-                apiInstance
-                    .get("/Project/Get/All/True")
-                    .then((res) => {
-                        console.log("response: ", res.data)
-                        resolve(res)
-                    })
-                    .catch((e) => {
-                        const err = "Unable to add the project"
-                        reject(err)
-
-                    })
-            })
-            let result = await response2
-            console.log("ehee", result.data.data)
-            setProjects(result.data.data)
-
-
-            
-
-            const provider = await new ethers.providers.Web3Provider(window.ethereum);
-            var Maestro = await new ethers.Contract(MaestroAddress, MaestroABI.abi, provider);
-
-            var filter = await Maestro.filters.CreateAuctionEvent();
-
-            var allCreateAuctionEvents = await Maestro.queryFilter(filter);
-            var allAuctions = [];
-            for (let index = 0; index < allCreateAuctionEvents.length; index++) {
-                let aucAddress = allCreateAuctionEvents[index].args.auction;
-                let fileHash = allCreateAuctionEvents[index].args.fileHash;
-                let auctionType = allCreateAuctionEvents[index].args.auctionType;
-                let creator = allCreateAuctionEvents[index].args.creator;
-                let Project = await Maestro.projectTokens(fileHash);
-                let tokenSC = await new ethers.Contract(Project.token, TokenABI.abi, provider);
-                let tokenSymbol = await tokenSC.symbol();
-                let tokenName = await tokenSC.name();
-                let auctionSc = await new ethers.Contract(aucAddress, (auctionType == 'CappedFCFS' ? CappedFCFS.abi : (auctionType == 'CappedAuctionWRedistribution' ? CappedAuctionWRedistribution.abi : (auctionType == "CappedParcelLimitFCFSAuction" ? CappedParcelLimitFCFS.abi : (auctionType == "DutchAuction" ? DutchAuctionTrial.abi : DutchAuctionTrial.abi)))), provider);
-            
-                const status = ["notStarted","Ongoing","Finished"][await auctionSc.status()]
-
-
-                var id
-                result.data.data.forEach(proj => {
-                    //console.log("XX", auct.fileHash, " VS ", "0x" + CryptoJS.SHA256(proj.fileHex).toString())
-                    if (fileHash == "0x" + CryptoJS.SHA256(proj.fileHex).toString()) {
-                        //console.log("match", "0x" + CryptoJS.SHA256(proj.fileHex).toString())
-                        //console.log(proj.projectID)
-                        id = proj.projectID
-
-                    }
-                })
-
-
-                allAuctions.push({ "id": id, "auctionAddress": aucAddress, "fileHash": fileHash, "auctionType": auctionType, "creator": creator, "tokenSymbol": tokenSymbol, tokenName: tokenName, status: status, tokenAddress: Project.token });
-            }
-            console.log(allAuctions)
-            setAuctions(allAuctions)
-            
-        } catch (error) {
-            return false;
-        }
-    }, [])
-
-    useEffect(async () => {
-        try {
-
-            const provider = await new ethers.providers.Web3Provider(window.ethereum)
-            const signer = await provider.getSigner()
-            var auctionDetails;
-            
-            auctions.forEach(element => {
-                if (element.id == projectId) {
-
-
-                    auctionDetails = element
-                    setAuctiontype(element.auctionType)
-                }
-
-            });
-            console.log("AUCTIONS", await auctionDetails)
-            setAuction(auctionDetails)
-            setTimeout(function () {
-                //do what you need here
-            }, 4000);
-
-            //var auctionDetails = { "auctionAddress": aucAddress, "fileHash": fileHash, "auctionType": auctionType, "creator": creator, "tokenSymbol": tokenSymbol, tokenName: tokenName, status: status, tokenAddress: Project.token };
-            let tokenSC = await new ethers.Contract(auctionDetails.tokenAddress, TokenABI.abi, provider);
-            let tokenSymbol = await tokenSC.symbol();
-            let tokenName = await tokenSC.name();
-            var totalSupply = await tokenSC.totalSupply();
-            if (auctionDetails.auctionType == "CappedFCFS") {
-                let auctionSc = await new ethers.Contract(auctionDetails.auctionAddress, CappedFCFS.abi, provider);
-                let price = await auctionSc.price();
-                let numberOfTokenToBeDistributed = await auctionSc.numberOfTokensToBeDistributed();
-                let totalDeposited = await auctionSc.totalDeposited();
-                let end = await auctionSc.end();
-
-
-                console.log(price, numberOfTokenToBeDistributed, totalDeposited)
-            } else if (auctionDetails.auctionType == "CappedAuctionWRedistribution") {
-                let auctionSc = await new ethers.Contract(auctionDetails.auctionAddress, CappedAuctionWRedistribution.abi, provider);
-                let price = await auctionSc.price();
-                let numberOfTokenToBeDistributed = await auctionSc.numberOfTokensToBeDistributed();
-                let totalDeposited = auctionSc.totalDeposited();
-                let end = await auctionSc.end();
-            } else if (auctionDetails.auctionType == "CappedParcelLimitFCFS") {
-                let auctionSc = await new ethers.Contract(auctionDetails.auctionAddress, CappedParcelLimitFCFS.abi, provider);
-                let price = await auctionSc.price();
-                let numberOfTokenToBeDistributed = await auctionSc.numberOfTokensToBeDistributed();
-                let totalDeposited = auctionSc.totalDeposited();
-                let end = await auctionSc.end();
-                let limit = await auctionSc.limit();
-            } else if (auctionDetails.auctionType == "DutchAuction") {
-                let auctionSc = await new ethers.Contract(auctionDetails.auctionAddress, DutchAuctionTrial.abi, provider);
-                let startingPrice = fixedNumberToNumber(await auctionSc.rate())
-                console.log(FixedNumber.from(await auctionSc.rate()))
-                let currrentPrice = fixedNumberToNumber(await auctionSc.currentRate());
-                let finalPrice = fixedNumberToNumber(await auctionSc.finalRate())
-                let numberOfTokenToBeDistributed = fixedNumberToNumber(await auctionSc.numberOfTokensToBeDistributed());
-                let soldTokens = fixedNumberToNumber(await auctionSc.soldProjectTokens());
-                console.log(numberOfTokenToBeDistributed)
-
-
-                setSoldTokens( soldTokens)
-
-                setPrice(currrentPrice.toString())
-                setTokenDist(numberOfTokenToBeDistributed.toString())
-
-               
-
-            }
-        } catch (error) {
-            console.log(error)
-        }
-    }, [auctions])
-
-
-    useEffect(async () => {
-        const CryptoJS = require('crypto-js');
-
-        const provider = await new ethers.providers.Web3Provider(window.ethereum)
-        const signer = await provider.getSigner()
-        const registerContract = await new ethers.Contract(abi.address, ethersAbi.abi, signer)
-
-        const hash = "0x" + await CryptoJS.SHA256(project.fileHex).toString()
-        const projInfo = await registerContract.projectsRegistered(hash)
-
-        if (await registerContract.whitelist(await signer.getAddress())) {
-            setIswhitelisted(true)
-            console.log("whitelisted bitch")
-        } else {
-            setIswhitelisted(false)
-            console.log("NOT whitelisted bitch")
-        }
-        setOwner(await projInfo.proposer)
-        setSigner(await signer.getAddress())
-
-    }, [project])
-
-
-    useEffect(async () => {
-        if (owner == signer) {
-            setIsowner(true)
-        } else {
-            setIsowner(false)
-        }
-    }, [owner, signer])
-
-    const config = {
-        headers: {
-            "Content-type": "application/json",
-        },
-    };
-    const handleEdit = async () => {
-        setEditing(true);
+    const refreshInfo = contract => {  //Temporary - Must be different depending on the auction type
+        contract.currentRate().then(rate => setPrice(fixedNumberToNumber(rate)))
+        contract.soldProjectTokens().then(soldTokens => setSoldTokens(fixedNumberToNumber(soldTokens)))
+        contract.numberOfTokensToBeDistributed().then(dist => setTokenDist(fixedNumberToNumber(dist)))
     }
 
-    const handleEditSubmission = async () => {
-        setEditing(false);
-
-        try {
-            const apiInstance = axios.create({
-                baseURL: "https://localhost:5001",
-            })
-            apiInstance.defaults.headers.common["Authorization"] = `Bearer ${Cookies.get('token')}`
-            let response2 = new Promise((resolve, reject) => {
-                apiInstance
-                    .put("/Project/UpdateMarkDown/" + projectId + "/" + markdown
-                    )
-                    .then((res) => {
-                        console.log("response: ", res.data)
-                        resolve(res)
-                    })
-                    .catch((e) => {
-                        const err = "Unable to add the project"
-                        reject(err)
-
-                    })
-            })
-            let result = await response2
-        } catch (error) {
-            console.log(error)
-
-        }
-    }
     const navigate = useNavigate();
 
 
+    const tokenBoughtFilter = {address:auctionAddress,topics: [ethers.utils.id("TokenBought(address,uint256,uint256)")]}
 
+    
+    useEffect(async() => {
+        const {abi} = await import(`../contracts_hardhat/artifacts/contracts/${auctionType}.sol/${auctionType}.json`)
+        const auctionContract =  new ethers.Contract(auctionAddress,abi,provider)
+        refreshInfo(auctionContract) //todo it would be better if backend did this
+
+        provider.on(tokenBoughtFilter, (log,event) => refreshInfo(auctionContract))          
+    },[])   
+
+    console.log(soldToken)
     return (
         <div>
             {
-                auctionType == "DutchAuction" ?
-
                     <div>
-                        <AuctionInfo projectId={projectId} auction={auction} price={price} tokenDist={tokenDist} deposit={soldToken} />
-                        {price}
+                        <AuctionInfo projectId={projectId} auction={auctionAddress} price={price} tokenDist={tokenDist} deposit={soldToken} />
                     </div>
 
-                    :
-                    <div>
-
-                    </div>
+             
             }
 
         </div>
