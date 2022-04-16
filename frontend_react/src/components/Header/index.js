@@ -1,3 +1,4 @@
+import '../../general.css'
 import Navbar from 'react-bootstrap/Navbar'
 import Nav from 'react-bootstrap/Nav'
 import NavDropdown from 'react-bootstrap/NavDropdown'
@@ -14,7 +15,6 @@ import { useNavigate } from 'react-router-dom';
 import web3 from 'web3';
 import { ethers } from 'ethers';
 import Cookies from 'js-cookie'
-
 const Header = () => {
   const [showLogin, setShowLogin] = useState(false);
   const [showSignin, setShowSignin] = useState(false);
@@ -140,7 +140,8 @@ const Header = () => {
 
   return (
     <>
-      <Navbar sticky="top" collapseOnSelect expand="lg" bg="dark" variant="dark">
+      {/*style={{backgroundColor:'#173A6A'}}*/}
+      <Navbar sticky="top" collapseOnSelect expand="lg" variant="dark"  className={'navbarcolor'}>
         <Container>
           <Navbar.Brand onClick={() => { navigate('/'); }}>SuRaising</Navbar.Brand>
           <Navbar.Toggle aria-controls="responsive-navbar-nav" />

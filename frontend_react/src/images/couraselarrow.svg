@@ -1,0 +1,20 @@
+<svg id="Component_2_5" data-name="Component 2 – 5" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" preserveAspectRatio="meet" width="228" height="300" viewBox="0 0 228 300">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: url(#linear-gradient);
+      }
+
+      .cls-2 {
+        fill: #fff;
+      }
+    </style>
+    <linearGradient id="linear-gradient" y1="0.5" x2="1" y2="0.5" gradientUnits="objectBoundingBox">
+      <stop offset="0" stop-color="#49577f" stop-opacity="0.631"/>
+      <stop offset="0.854" stop-color="#414e71" stop-opacity="0.612"/>
+      <stop offset="1" stop-color="#252c40" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  <path id="Rectangle_9" data-name="Rectangle 9" class="cls-1" d="M35,0H228a0,0,0,0,1,0,0V300a0,0,0,0,1,0,0H35A35,35,0,0,1,0,265V35A35,35,0,0,1,35,0Z"/>
+  <path id="Path_2" data-name="Path 2" class="cls-2" d="M83.9,0l70.992,153.854h-7.966L83.9,18.51,21.317,153.854H12.355Z" transform="translate(22.163 233.623) rotate(-90)"/>
+</svg>

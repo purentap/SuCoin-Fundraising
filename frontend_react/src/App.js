@@ -1,3 +1,4 @@
+import './general.css'
 import React, { Profiler, useContext, useState } from 'react';
 // Routing
 import { BrowserRouter, Routes, Route, HashRouter } from 'react-router-dom';
@@ -29,26 +30,28 @@ const App = () => {
 
   return (
     <Router>
-      <UserContext.Provider value={value}>
-        <Header >
+      <div className="app">
+        <UserContext.Provider value={value}>
+          <Header >
 
-        </Header>
+          </Header>
 
-        <Routes>
-          <Route path='/' element={<Home />} />
-          <Route path='/projects' element={<ProjectList />} />
-          <Route path='/apply' element={<Apply />} />
-          <Route path='/createTokens' element={<CreateTokens />} />
-          <Route path='/createAuction' element={<CreateAuction />} />
-          <Route path='/auctions' element={<Auctions />} />
-          <Route path='/tokenSwap' element={<TokenSwap />} />
-          <Route path='/projects/:projectId' element={<Project />} />
-          <Route path='/auction/:projectId' element={<Auction />} />
-          <Route path = '/profile' element = {<ProfilePage />} />
-          <Route path='/*' element={<NotFound />} />
-        </Routes>
-        <GlobalStyle />
-      </UserContext.Provider>
+          <Routes>
+            <Route path='/' element={<Home />} />
+            <Route path='/projects' element={<ProjectList />} />
+            <Route path='/apply' element={<Apply />} />
+            <Route path='/createTokens' element={<CreateTokens />} />
+            <Route path='/createAuction' element={<CreateAuction />} />
+            <Route path='/auctions' element={<Auctions />} />
+            <Route path='/tokenSwap' element={<TokenSwap />} />
+            <Route path='/projects/:projectId' element={<Project />} />
+            <Route path='/auction/:projectId' element={<Auction />} />
+            <Route path = '/profile' element = {<ProfilePage />} />
+            <Route path='/*' element={<NotFound />} />
+          </Routes>
+          <GlobalStyle />
+        </UserContext.Provider>
+      </div>
     </Router>
   );
 }

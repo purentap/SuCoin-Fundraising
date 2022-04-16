@@ -1,0 +1,31 @@
+.app{
+    background-color: #D9D8E1;
+}
+.courasel{
+    display: flex;
+    justify-content: space-between;
+    padding: 15px 0 15px 0;
+}
+.info{
+    padding-left: 25px;
+    width: 640px;
+}
+.detail{
+    margin-top: 20px;
+    height: 250px;
+    overflow-x: auto;
+    overflow-y: auto;
+}
+.arrow{
+    opacity: 0.1;
+}
+.arrow:hover{
+    opacity: 1;
+}
+.mini-info{
+    display: flex;
+    justify-content: space-evenly;
+}
+.navbarcolor{
+    background-color: #173A6A;
+}
