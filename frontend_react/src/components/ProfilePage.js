@@ -8,6 +8,7 @@ import { VStack, Grid, GridItem } from "@chakra-ui/react";
 import abi from "../abi/project.json";
 import { ethers } from "ethers";
 import { hexToHash } from "../helpers";
+import ProjectInvitationCard from "./ProfilePageUI/ProjectInvitationCard";
 
 var user = [];
 
@@ -54,6 +55,7 @@ const ProfilePage = () => {
   }, []);
 
   const [projects, setProjects] = useState([]);
+  const [invitedProjects, setInvitedProjects] = useState([]);
 
   useEffect( async () => {
     try{
@@ -74,14 +76,41 @@ const ProfilePage = () => {
         });
     });
     let result = await response2;
-    console.log("User get request is successful", result);
+    console.log("Projects get request is successful", result);
     setProjects(result.data.data);
   } catch (error) {
     console.log(error);
   }
 }, []);
 
+useEffect( async () => {
+  try{
+  apiInstance.defaults.headers.common[
+    "Authorization"
+  ] = `Bearer ${Cookies.get("token")}`;
+  
+  let response2 = new Promise((resolve, reject) => {
+    apiInstance
+      .get("/Project/GetAllInvitations")
+      .then((res) => {
+        console.log("response: ", res.data);
+        resolve(res);
+      })
+      .catch((e) => {
+        const err = "Unable to get invitations of the user";
+        reject(err);
+      });
+  });
+  let result = await response2;
+  console.log("Invitation get request is successful", result);
+  setInvitedProjects(result.data.data);
+} catch (error) {
+  console.log(error);
+}
+}, []);
+
   console.log(projects);
+  console.log("Invited Projects:", invitedProjects);
 
   const onDelete = async (deletedProject) => {
     try {
@@ -112,6 +141,29 @@ const ProfilePage = () => {
     }
   };
 
+  const onInvitation = async (invitationRequest) => {
+    try {
+      apiInstance.defaults.headers.common[
+        "Authorization"
+      ] = `Bearer ${Cookies.get("token")}`;
+      let response2 = new Promise((resolve, reject) => {
+        apiInstance
+          .put("/User/Invite/",invitationRequest)
+          .then((res) => {
+            console.log("Invitation request sent")
+            console.log("response: ", res.data)
+          })
+          .catch((e) => {
+            const err = "Unable to send invitation request";
+            reject(err);
+          });
+      });
+      let result = await response2;
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   return (
     <Grid
       height="90%"
@@ -131,6 +183,17 @@ const ProfilePage = () => {
       </GridItem>
 
       <GridItem colSpan={4}>
+      {invitedProjects.map((invitation) => (
+          <ProjectInvitationCard
+            projectName={invitation.projectName}
+            status={invitation.status}
+            projectDescription={invitation.projectDescription}
+            imageUrl={invitation.imageUrl}
+            rating = {invitation.rating}
+            projectID = {invitation.projectID}>
+          </ProjectInvitationCard>
+        ))}
+        
         {projects.map((project) => (
           <ProjectsCard
             projectName={project.projectName}
@@ -140,8 +203,11 @@ const ProfilePage = () => {
             rating = {project.rating}
             projectID = {project.projectID}
             deleteFunction = {onDelete}
+            invitationFunction = {onInvitation}
           ></ProjectsCard>
         ))}
+
+
       </GridItem>
     </Grid>
   );

@@ -662,5 +662,52 @@ namespace SU_COIN_BACK_END.Services {
                     .FirstOrDefaultAsync();
 
         }
+
+        public async Task<ServiceResponse<List<ProjectDTO>>> GetAllInvitedProjects()
+        {
+            ServiceResponse<List<ProjectDTO>> response = new ServiceResponse<List<ProjectDTO>>();
+            try
+            {
+                List<ProjectPermission> projectPermissions = await _context.ProjectPermissions
+                .Where(c => c.UserID == GetUserId() && !c.IsAccepted).ToListAsync(); // all project Invitations of the logged in user
+                List<Project> allProjects = new List<Project>(); // all permissioned projects of the logged in user
+
+                if (projectPermissions != null)
+                {
+                    for (int i = 0; i < projectPermissions.Count; i++)
+                    {
+                        /* First fetch all the projects. Then, filter the invited projects */
+                        Project? project = await _context.Projects
+                        .Select(p => new Project 
+                        {
+                            ProjectID = p.ProjectID, 
+                            ProjectName = p.ProjectName, 
+                            Date = p.Date, 
+                            ProjectDescription = p.ProjectDescription, 
+                            ImageUrl = p.ImageUrl, 
+                            Rating = p.Rating, 
+                            Status = p.Status
+                        })
+                        .FirstOrDefaultAsync(c => c.ProjectID == projectPermissions[i].ProjectID);
+                        allProjects.Add(project);
+                    }
+
+                    response.Data = (allProjects.Select(c => _mapper.Map<ProjectDTO>(c))).ToList();
+                    response.Success = true;
+                    response.Message = "Ok";
+                }
+                else
+                {
+                    response.Success = false;
+                    response.Message = String.Format("No invitations found for user: {0}", GetUsername());
+                }
+            }
+            catch (Exception e)
+            {
+                response.Success = false;
+                response.Message = e.Message;
+            }
+            return response;
+        }
     }
 }

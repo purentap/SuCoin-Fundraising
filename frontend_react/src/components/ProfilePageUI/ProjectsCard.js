@@ -12,6 +12,8 @@ import {
   useDisclosure,
   Box,
   Stack,
+  FormControl,
+  FormLabel,
 } from "@chakra-ui/react";
 import { Button } from "@chakra-ui/react";
 import {
@@ -22,6 +24,7 @@ import {
   ModalFooter,
   ModalBody,
   ModalCloseButton,
+  Input
 } from "@chakra-ui/react";
 import {
   Alert,
@@ -43,12 +46,36 @@ function ProjectsCard(props) {
     Pending: "orange",
   };
 
+  const [username, setUserName] = useState('');
+  const [role, setRole] = useState('');
+
   const { isOpen, onOpen, onClose } = useDisclosure(); //used for modals on button clicks
 
   const deleteHandler = async () => {
     const deletedProject = props;
 
     props.deleteFunction(deletedProject);
+  };
+
+  const invitationHandler = async event => {
+    event.preventDefault();
+    
+   var invitationRequest = {
+      projectID : props.projectID, 
+      username : username,
+      role : role,
+    };
+    props.invitationFunction(invitationRequest);
+  }; 
+
+  const handleInput = e => {
+    const name = e.currentTarget.name;
+    const value = e.currentTarget.value;
+
+    if(name == 'username') setUserName(value);
+    
+    else if (name == 'role') setRole(value);
+    
   };
 
   const downloadFile = async (file,projectId) => {
@@ -306,6 +333,7 @@ function ProjectsCard(props) {
           </Button>
 
           <Button
+            onClick={onOpen}
             variant="ghost"
             textColor="white"
             height="80%"
@@ -325,6 +353,72 @@ function ProjectsCard(props) {
             }}
           >
             <Text>Add Collaborator</Text>
+            <Modal
+              isCentered
+              onClose={onClose}
+              isOpen={isOpen}
+              motionPreset="slideInBottom"
+            >
+              <ModalOverlay />
+              <ModalContent>
+                <ModalHeader>
+                  Send invitation to your team member to collaborate!
+                </ModalHeader>
+                <ModalCloseButton />
+                <form onSubmit={invitationHandler}>
+                <ModalBody>
+                    <FormControl isRequired>
+                    <FormLabel>Please enter the username of the user:</FormLabel>
+                    <Input name='username' onChange={handleInput} placeholder='Username' />
+                    <FormLabel>Please enter the role of the user. Your team member can be either Editor or Owner: </FormLabel>
+                    <Input name = 'role' onChange={handleInput} placeholder='Role' />
+                  </FormControl>
+                </ModalBody>
+                <ModalFooter>
+                  <Button
+                    
+                    onClick={onClose}
+                    variant="ghost"
+                    background-color="#F8F8FF"
+                    color="#2f2d2e"
+                    border="2px solid #8e00b9"
+                    border-radius="30px"
+                    text-align="center"
+                    transition-duration="0.5s"
+                    animation="ease-in-out"
+                    _hover={{
+                      background: "linear-gradient(to left, #2d00f7, #ff0291)",
+                      transform: "scale(1.2)",
+                      border: "none",
+                      textColor: "white",
+                    }}
+                  >
+                    Close
+                  </Button>
+                  <Button
+                    type="submit"
+                    variant="ghost"
+                    background-color="#F8F8FF"
+                    color="#2f2d2e"
+                    border="2px solid #8e00b9"
+                    border-radius="30px"
+                    text-align="center"
+                    transition-duration="0.5s"
+                    animation="ease-in-out"
+                    _hover={{
+                      background: "linear-gradient(to left, #2d00f7, #ff0291)",
+                      transform: "scale(1.2)",
+                      border: "none",
+                      textColor: "white",
+                    }}
+                  >
+                    Send Invitation!
+                  </Button>
+                  
+                </ModalFooter>
+                </form>
+              </ModalContent>
+            </Modal>
           </Button>
         </HStack>
       </GridItem>

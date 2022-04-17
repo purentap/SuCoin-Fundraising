@@ -20,6 +20,7 @@ namespace SU_COIN_BACK_END.SU_COIN_INTERFACE
          Task<ServiceResponse<ProjectDTO>> UpdateMarkDown(int id, string markdown);
          Task<ServiceResponse<List<ProjectDTO>>> GetAllPermissionedProjects(bool withHex);
          //Task<ServiceResponse<List<ProjectDTO>>> GetAllProjectsWithoutFileHex();
+         Task<ServiceResponse<List<ProjectDTO>>> GetAllInvitedProjects();
 
     }
 }
