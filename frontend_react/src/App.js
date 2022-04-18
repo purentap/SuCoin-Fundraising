@@ -15,6 +15,7 @@ import CreateTokens from './components/CreateTokens';
 import CreateAuction from './components/CreateAuction';
 import TokenSwap from './components/TokenSwap';
 import ProfilePage from './components/ProfilePage';
+import Templates from "./templates"; // CAN BE DELETED
 
 // Context
 import { WalletSwitcher, UserContext } from './User';
@@ -47,6 +48,7 @@ const App = () => {
             <Route path='/projects/:projectId' element={<Project />} />
             <Route path='/auction/:projectId' element={<Auction />} />
             <Route path = '/profile' element = {<ProfilePage />} />
+            <Route path = '/tt' element = {<Templates />} />
             <Route path='/*' element={<NotFound />} />
           </Routes>
           <GlobalStyle />

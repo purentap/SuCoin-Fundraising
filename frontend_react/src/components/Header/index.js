@@ -152,6 +152,7 @@ const Header = () => {
               <Nav.Link onClick={() => { navigate('/auctions'); }}>Auctions</Nav.Link>
               <Nav.Link onClick={() => { navigate('/tokenSwap'); }}>Swap</Nav.Link>
               <Nav.Link onClick={() => { navigate('/apply'); }}>Apply</Nav.Link>
+              <Nav.Link onClick={() => { navigate('/tt'); }}>Test Templates</Nav.Link>
             </Nav>
             <Nav>
               {logged
