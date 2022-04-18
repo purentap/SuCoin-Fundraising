@@ -14,6 +14,7 @@ import {
   Stack,
   FormControl,
   FormLabel,
+  Textarea,
 } from "@chakra-ui/react";
 import { Button } from "@chakra-ui/react";
 import {
@@ -24,7 +25,7 @@ import {
   ModalFooter,
   ModalBody,
   ModalCloseButton,
-  Input
+  Input,
 } from "@chakra-ui/react";
 import {
   Alert,
@@ -46,10 +47,27 @@ function ProjectsCard(props) {
     Pending: "orange",
   };
 
-  const [username, setUserName] = useState('');
-  const [role, setRole] = useState('');
+  const [username, setUserName] = useState("");
+  const [role, setRole] = useState("");
+  const [projectName, setProjectName] = useState("");
+  const [projectDescription, setProjectDescription] = useState("");
+  const [projectImg, setProjectImg] = useState("");
 
-  const { isOpen, onOpen, onClose } = useDisclosure(); //used for modals on button clicks
+  const {
+    isOpen: isEditOpen,
+    onOpen: onEditOpen,
+    onClose: onEditClose,
+  } = useDisclosure();
+  const {
+    isOpen: isDeleteOpen,
+    onOpen: onDeleteOpen,
+    onClose: onDeleteClose,
+  } = useDisclosure(); //used for modals on button clicks
+  const {
+    isOpen: isInvitationOpen,
+    onOpen: onInvitationOpen,
+    onClose: onInvitationClose,
+  } = useDisclosure();
 
   const deleteHandler = async () => {
     const deletedProject = props;
@@ -57,40 +75,54 @@ function ProjectsCard(props) {
     props.deleteFunction(deletedProject);
   };
 
-  const invitationHandler = async event => {
+  const invitationHandler = async (event) => {
     event.preventDefault();
-    
-   var invitationRequest = {
-      projectID : props.projectID, 
-      username : username,
-      role : role,
+
+    var invitationRequest = {
+      projectID: props.projectID,
+      username: username,
+      role: role,
     };
     props.invitationFunction(invitationRequest);
-  }; 
+  };
 
-  const handleInput = e => {
+  const editHandler = async (event) => {
+    event.preventDefault();
+
+    var editRequest = {
+      projectID: props.projectID,
+      projectName: projectName,
+      projectDescription: projectDescription,
+      imageUrl: projectImg,
+      rating: props.rating,
+      status: props.status,
+    };
+
+    props.editFunction(editRequest);
+  };
+  const handleInput = (e) => {
     const name = e.currentTarget.name;
     const value = e.currentTarget.value;
 
-    if(name == 'username') setUserName(value);
-    
-    else if (name == 'role') setRole(value);
-    
+    if (name == "username") setUserName(value);
+    else if (name == "role") setRole(value);
+    else if (name == "projectName") setProjectName(value);
+    else if (name == "projectDescription") setProjectDescription(value);
+    else if (name == "projectImg") setProjectImg(value);
   };
 
-  const downloadFile = async (file,projectId) => {
-    const reader = new FileReader()
-  
+  const downloadFile = async (file, projectId) => {
+    const reader = new FileReader();
 
     reader.readAsText(file);
     reader.onloadend = async () => {
       const data = window.URL.createObjectURL(file);
-      const tempLink = await document.createElement('a');
+      const tempLink = await document.createElement("a");
       tempLink.href = data;
       tempLink.download = "Project_#" + projectId + ".pdf"; // some props receive from the component.
       tempLink.click();
-    }
-  }
+    };
+  };
 
   const onDownloadPDF = async () => {
     try {
@@ -106,7 +138,7 @@ function ProjectsCard(props) {
           .get("/Project/GetPDF/" + props.projectID)
           .then((res) => {
             console.log("Succesfully got project pdf");
-            downloadFile(res.data,props.projectID)
+            downloadFile(res.data, props.projectID);
             return res;
           })
           .catch((e) => {
@@ -232,6 +264,7 @@ function ProjectsCard(props) {
             <Text>Download PDF</Text>
           </Button>
           <Button
+            onClick={onEditOpen}
             variant="ghost"
             textColor="white"
             height="80%"
@@ -251,9 +284,91 @@ function ProjectsCard(props) {
             }}
           >
             <Text>Edit Project</Text>
+            <Modal
+              isCentered
+              onClose={onEditClose}
+              isOpen={isEditOpen}
+              motionPreset="slideInBottom"
+            >
+              <ModalOverlay />
+              <ModalContent>
+                <ModalHeader>Edit your project name & description</ModalHeader>
+                <ModalCloseButton />
+                <form onSubmit={editHandler}>
+                  <ModalBody>
+                    <FormControl isRequired>
+                      <FormLabel>Please enter the project name:</FormLabel>
+                      <Input
+                        name="projectName"
+                        onChange={handleInput}
+                        placeholder="Project Name"
+                      />
+                      <FormLabel>
+                        Please enter the project description:
+                      </FormLabel>
+                      <Textarea
+                        name="projectDescription"
+                        onChange={handleInput}
+                        placeholder="Project Description"
+                      />
+                      <FormLabel>
+                        Please enter the project image link:
+                      </FormLabel>
+                      <Input
+                        name="projectImg"
+                        onChange={handleInput}
+                        placeholder="Project Image"
+                      />
+                    </FormControl>
+                  </ModalBody>
+                  <ModalFooter>
+                    <Button
+                      onClick={onEditClose}
+                      variant="ghost"
+                      background-color="#F8F8FF"
+                      color="#2f2d2e"
+                      border="2px solid #8e00b9"
+                      border-radius="30px"
+                      text-align="center"
+                      transition-duration="0.5s"
+                      animation="ease-in-out"
+                      _hover={{
+                        background:
+                          "linear-gradient(to left, #2d00f7, #ff0291)",
+                        transform: "scale(1.2)",
+                        border: "none",
+                        textColor: "white",
+                      }}
+                    >
+                      Close
+                    </Button>
+                    <Button
+                      type="submit"
+                      variant="ghost"
+                      background-color="#F8F8FF"
+                      color="#2f2d2e"
+                      border="2px solid #8e00b9"
+                      border-radius="30px"
+                      text-align="center"
+                      transition-duration="0.5s"
+                      animation="ease-in-out"
+                      _hover={{
+                        background:
+                          "linear-gradient(to left, #2d00f7, #ff0291)",
+                        transform: "scale(1.2)",
+                        border: "none",
+                        textColor: "white",
+                      }}
+                    >
+                      Edit
+                    </Button>
+                  </ModalFooter>
+                </form>
+              </ModalContent>
+            </Modal>
           </Button>
           <Button
-            onClick={onOpen}
+            onClick={onDeleteOpen}
             variant="ghost"
             textColor="white"
             height="80%"
@@ -275,8 +390,8 @@ function ProjectsCard(props) {
             <Text>Delete Project</Text>
             <Modal
               isCentered
-              onClose={onClose}
-              isOpen={isOpen}
+              onClose={onDeleteClose}
+              isOpen={isDeleteOpen}
               motionPreset="slideInBottom"
             >
               <ModalOverlay />
@@ -290,7 +405,7 @@ function ProjectsCard(props) {
                 </ModalBody>
                 <ModalFooter>
                   <Button
-                    onClick={onClose}
+                    onClick={onDeleteClose}
                     variant="ghost"
                     background-color="#F8F8FF"
                     color="#2f2d2e"
@@ -333,7 +448,7 @@ function ProjectsCard(props) {
           </Button>
 
           <Button
-            onClick={onOpen}
+            onClick={onInvitationOpen}
             variant="ghost"
             textColor="white"
             height="80%"
@@ -355,8 +470,8 @@ function ProjectsCard(props) {
             <Text>Add Collaborator</Text>
             <Modal
               isCentered
-              onClose={onClose}
-              isOpen={isOpen}
+              onClose={onInvitationClose}
+              isOpen={isInvitationOpen}
               motionPreset="slideInBottom"
             >
               <ModalOverlay />
@@ -366,56 +481,70 @@ function ProjectsCard(props) {
                 </ModalHeader>
                 <ModalCloseButton />
                 <form onSubmit={invitationHandler}>
-                <ModalBody>
+                  <ModalBody>
                     <FormControl isRequired>
-                    <FormLabel>Please enter the username of the user:</FormLabel>
-                    <Input name='username' onChange={handleInput} placeholder='Username' />
-                    <FormLabel>Please enter the role of the user. Your team member can be either Editor or Owner: </FormLabel>
-                    <Input name = 'role' onChange={handleInput} placeholder='Role' />
-                  </FormControl>
-                </ModalBody>
-                <ModalFooter>
-                  <Button
-                    
-                    onClick={onClose}
-                    variant="ghost"
-                    background-color="#F8F8FF"
-                    color="#2f2d2e"
-                    border="2px solid #8e00b9"
-                    border-radius="30px"
-                    text-align="center"
-                    transition-duration="0.5s"
-                    animation="ease-in-out"
-                    _hover={{
-                      background: "linear-gradient(to left, #2d00f7, #ff0291)",
-                      transform: "scale(1.2)",
-                      border: "none",
-                      textColor: "white",
-                    }}
-                  >
-                    Close
-                  </Button>
-                  <Button
-                    type="submit"
-                    variant="ghost"
-                    background-color="#F8F8FF"
-                    color="#2f2d2e"
-                    border="2px solid #8e00b9"
-                    border-radius="30px"
-                    text-align="center"
-                    transition-duration="0.5s"
-                    animation="ease-in-out"
-                    _hover={{
-                      background: "linear-gradient(to left, #2d00f7, #ff0291)",
-                      transform: "scale(1.2)",
-                      border: "none",
-                      textColor: "white",
-                    }}
-                  >
-                    Send Invitation!
-                  </Button>
-                  
-                </ModalFooter>
+                      <FormLabel>
+                        Please enter the username of the user:
+                      </FormLabel>
+                      <Input
+                        name="username"
+                        onChange={handleInput}
+                        placeholder="Username"
+                      />
+
+                      <FormLabel>
+                        Please enter the role of the user. Your team member can
+                        be either Editor or Owner:{" "}
+                      </FormLabel>
+                      <Input
+                        name="role"
+                        onChange={handleInput}
+                        placeholder="Role"
+                      />
+                    </FormControl>
+                  </ModalBody>
+                  <ModalFooter>
+                    <Button
+                      onClick={onInvitationClose}
+                      variant="ghost"
+                      background-color="#F8F8FF"
+                      color="#2f2d2e"
+                      border="2px solid #8e00b9"
+                      border-radius="30px"
+                      text-align="center"
+                      transition-duration="0.5s"
+                      animation="ease-in-out"
+                      _hover={{
+                        background:
+                          "linear-gradient(to left, #2d00f7, #ff0291)",
+                        transform: "scale(1.2)",
+                        border: "none",
+                        textColor: "white",
+                      }}
+                    >
+                      Close
+                    </Button>
+                    <Button
+                      type="submit"
+                      variant="ghost"
+                      background-color="#F8F8FF"
+                      color="#2f2d2e"
+                      border="2px solid #8e00b9"
+                      border-radius="30px"
+                      text-align="center"
+                      transition-duration="0.5s"
+                      animation="ease-in-out"
+                      _hover={{
+                        background:
+                          "linear-gradient(to left, #2d00f7, #ff0291)",
+                        transform: "scale(1.2)",
+                        border: "none",
+                        textColor: "white",
+                      }}
+                    >
+                      Send Invitation!
+                    </Button>
+                  </ModalFooter>
                 </form>
               </ModalContent>
             </Modal>

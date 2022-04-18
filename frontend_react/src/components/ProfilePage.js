@@ -163,7 +163,28 @@ useEffect( async () => {
       console.log(error);
     }
   };
+  const onEdit = async (editRequest) => {
+    const apiInstance = axios.create({
+      baseURL: "https://localhost:5001",
+    })
+    apiInstance.defaults.headers.common["Authorization"] = `Bearer ${Cookies.get('token')}`
+    let response2 = new Promise((resolve, reject) => {
+      apiInstance
+        .put("/Project/Update/", editRequest
+      )
+        .then((res) => {
+          console.log("Edit is done")
+          console.log(res.data)
+          resolve(res)
+        })
+        .catch((e) => {
+          const err = "Unable to edite the project"
+          reject(err)
+          console.log(e)
+        })
 
+    })
+  };
   return (
     <Grid
       height="90%"
@@ -204,6 +225,7 @@ useEffect( async () => {
             projectID = {project.projectID}
             deleteFunction = {onDelete}
             invitationFunction = {onInvitation}
+            editFunction = {onEdit}
           ></ProjectsCard>
         ))}
 
