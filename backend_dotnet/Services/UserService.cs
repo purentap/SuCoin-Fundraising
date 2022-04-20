@@ -161,26 +161,27 @@ namespace SU_COIN_BACK_END.Services
                         response.Message = MessageConstants.USER_NOT_FOUND;
                         return response;
                     }
-                    else if (!_context.ProjectPermissions.Any(c => c.ProjectID == request.ProjectID && c.UserID == user.Id))
-                    {
-                        ProjectPermission new_perm = new ProjectPermission
-                        {
-                            ProjectID = request.ProjectID, 
-                            UserID = user.Id, 
-                            Role = request.Role, 
-                            IsAccepted = false
-                        };
-
-                        _context.ProjectPermissions.AddAsync(new_perm);
-                        await _context.SaveChangesAsync();
-                        
-                        response.Success = true;
-                        response.Message = String.Format($"Invitation to collab in project {request.ProjectID} has been sent");
-                    }
-                    else
+                    else if (_context.ProjectPermissions
+                            .Any(c => c.ProjectID == request.ProjectID && c.UserID == user.Id)) // Such a projectPermission entity already exists in the database
                     {
                         response.Success = false;
                         response.Message = "Invitation already exists or accepted";
+                    }
+                    else 
+                    {
+                        ProjectPermission new_permission = new ProjectPermission
+                        {
+                            ProjectID = request.ProjectID,
+                            UserID = user.Id,
+                            Role = request.Role,
+                            IsAccepted = false
+                        };
+
+                        _context.ProjectPermissions.AddAsync(new_permission);
+                        await _context.SaveChangesAsync();
+
+                        response.Success = true;
+                        response.Message = String.Format($"Invitation to collaborate project {request.ProjectID} has been sent");
                     }
                 }
                 else
@@ -203,21 +204,23 @@ namespace SU_COIN_BACK_END.Services
             ServiceResponse<string> response = new ServiceResponse<string>();
             try
             {
+                /* Retrieve pending permission entity for user&project pair from database. Then include the current user in the related project based on the current user's response. */
                 int requested_projectID = request.ProjectID;
-                ProjectPermission? permissions = await _context.ProjectPermissions
-                    .FirstOrDefaultAsync(c => c.ProjectID == requested_projectID && c.UserID == GetUserId() && !c.IsAccepted);
-                
-                if (permissions != null)
+                ProjectPermission? permission = await _context.ProjectPermissions
+                .FirstOrDefaultAsync(c => c.ProjectID == requested_projectID && c.UserID == GetUserId() && !c.IsAccepted); // pending permissions
+
+                /* Default value for IsAccepted is false. If the user accepted the invitation, change its value of IsAccepted property as true. */
+                if (permission != null)
                 {
-                    if (request.IsAccepted)
+                    if (request.IsAccepted) // user accepted to join the project
                     {
-                        permissions.IsAccepted = true;
-                        _context.ProjectPermissions.Update(permissions);
+                        permission.IsAccepted = true;
+                        _context.ProjectPermissions.Update(permission);
                         response.Message = String.Format($"Invitation to project {requested_projectID} is accepted");
                     }
-                    else
+                    else // user rejected to join the project team. Therefore, remove user's permission for this project
                     {
-                        _context.ProjectPermissions.Remove(permissions);
+                        _context.ProjectPermissions.Remove(permission);
                         response.Message = String.Format($"Invitation to project {requested_projectID} is rejected");
                     }
                     await _context.SaveChangesAsync();

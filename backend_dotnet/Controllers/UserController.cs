@@ -69,7 +69,7 @@ namespace SU_COIN_BACK_END.Controllers
         } 
 
         [HttpPost("InvitationReply")]
-        public async Task<IActionResult> ProjectInvitationReply(ProjectPermissionRequest request){
+        public async Task<IActionResult> ReplyProjectInvitation(ProjectPermissionRequest request){
             ServiceResponse<string> response = await _userInterface.EvaluatePendingProjectPermission(request);
             if (!response.Success)
             {
