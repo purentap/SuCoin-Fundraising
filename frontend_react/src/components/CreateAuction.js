@@ -15,35 +15,27 @@ import Container from 'react-bootstrap/Col'
 import FloatingLabel from 'react-bootstrap/FloatingLabel'
 import Card from 'react-bootstrap/Card'
 
+
+
 // Styles
 import { Wrapper, WrapperFile } from './Projects.styles';
 import Web3 from 'web3';
 
-import UserContext from '../User';
 import LoadingButton from './LoadingButton';
-import ToastBar from './Toast';
-import ProjectRegister from '../abi/project.json'
-import Cookies from 'js-cookie'
-import axios from "axios"
-import abi from '../abi/project.json'
-import {ethers} from 'ethers';
-import ethersAbi from '../contracts_hardhat/artifacts/contracts/ProjectRegister.sol/ProjectRegister.json'
 
-import MaestroABI from '../contracts_hardhat/artifacts/contracts/Maestro.sol/Maestro.json';
-import CappedFCFS from '../contracts_hardhat/artifacts/contracts/CappedFCFSAuction.sol/CappedFCFSAuction.json';
-import CappedParcelLimitFCFS from '../contracts_hardhat/artifacts/contracts/CappedParcelLimitFCFSAuction.sol/CappedParcelLimitFCFSAuction.json';
-import CappedAuctionWRedistribution from '../contracts_hardhat/artifacts/contracts/CappedAuctionWRedistribution.sol/CappedAuctionWRedistribution.json';
-import DutchAuction from '../contracts_hardhat/artifacts/contracts/DutchAuction.sol/DutchAuction.json';
-import DutchAuctionTrial from '../contracts_hardhat/artifacts/contracts/DutchAuctionTrial.sol/DutchAuctionTrial.json';
 
-import TokenABI from '../contracts_hardhat/artifacts/contracts/Token.sol/Token.json';
+
+import Maestro from "../contracts_hardhat/artifacts/contracts/Maestro.sol/Maestro.json"
+
+import { ethers } from 'ethers';
+
 
 import { numberToFixedNumber } from '../helpers'; 
 
 
 const BiLiraAddress = "0x8f5736aF17F2F071B476Fd9cFD27a1Bd8D7E7F15";
 
-const maestro = { address: "0x5258A94275071Db1AfF9D49c44f2d7E4469d5EB1" }
+const maestro = { address: "0x8108e5695601Ae9dB8fA755CAB6cE807c5A8222d" }
 const SUCoin = { address: "0xb6e466F4F0ab1e2dA2E8237F38B2eCf6278894Ce" }
 
 const CreateAuction = () => {
@@ -60,28 +52,7 @@ const CreateAuction = () => {
             name: "Dutch Auction",
             description: "this is DUTCH Auction"
         },
-        {
-            id: 1,
-            name: "First Come First Served",
-            description: "This is First come first served"
-        }
-        ,
-        {
-            id: 2,
-            name: "Weighted",
-            description: "this Weighted"
-        }
-        ,
-        {
-            id: 3,
-            name: "Parcel Limit",
-            description: "this is Parcel Limit"
-        },
-        {
-            id: 4,
-            name: "Dutch Auction Trial",
-            description: "An Auction where price decrease constantly"
-        }
+
     ]);
 
     const [auction, setAuction] = useState("")
@@ -96,7 +67,7 @@ const CreateAuction = () => {
 
         const signer = await provider.getSigner();
 
-        const MAESTRO = new ethers.ContractFactory(MaestroABI.abi, MaestroABI.bytecode, signer);
+        const MAESTRO = new ethers.Contract(maestro, Maestro.abi, signer);
 
         const maestroContract = MAESTRO.attach(maestro.address)
 
@@ -116,32 +87,13 @@ const CreateAuction = () => {
         const tokenDistributedDecimal = numberToFixedNumber(TokensToBeDesitributed,sucoinDecimals)
         const priceDecimal = numberToFixedNumber(tokenPrice,sucoinDecimals);
 
+        const maestroContract = new ethers.Contract(maestro.address,Maestro.abi,signer)
 
+        //Dutch Auction
         if (id == 0) {
-            const DutchAuction_ = new ethers.ContractFactory(DutchAuction.abi, DutchAuction.bytecode, signer);
-            let auction = await DutchAuction_.deploy(10, 1, tokenAddress, TokensToBeDesitributed, SUCoin.address, 2, maestro.address, auction.fileHash);
-            await auction.deployed();
+            maestroContract.createAuction(hash,"DutchAuction",[tokenDistributedDecimal,priceDecimal,0,10000])
         }
-        else if (id == 1) {
-            const CappedFCFSAuction = new ethers.ContractFactory(CappedFCFS.abi, CappedFCFS.bytecode, signer);
-            let auction = await CappedFCFSAuction.deploy(tokenPrice, tokenAddress, SUCoin.address, TokensToBeDesitributed, maestro.address, auction.fileHash);
-            await auction.deployed();
-        }
-        else if (id == 2) {
-            const CappedFixedPriceProportionalAuction = new ethers.ContractFactory(CappedAuctionWRedistribution.abi, CappedAuctionWRedistribution.bytecode, signer);
-            let auction = await CappedFixedPriceProportionalAuction.deploy(tokenPrice, tokenAddress, SUCoin.address, TokensToBeDesitributed, maestro.address, auction.fileHash);
-            await auction.deployed();
-        }
-        else if (id == 3) {
-            const CappedParcelLimitFCFSAuction = new ethers.ContractFactory(CappedParcelLimitFCFS.abi, CappedParcelLimitFCFS.bytecode, signer);
-            let auction = await CappedParcelLimitFCFSAuction.deploy(tokenPrice, tokenAddress, SUCoin.address, TokensToBeDesitributed, 1000, maestro.address, auction.fileHash);
-            await auction.deployed();
-        }
-        else if (id == 4) {
-            const Dutch = new ethers.ContractFactory(DutchAuctionTrial.abi, DutchAuctionTrial.bytecode, signer);    
-            let auction = await Dutch.deploy(tokenAddress,SUCoin.address,tokenDistributedDecimal,priceDecimal,maestro.address,hash ?? "fail",0);
-            await auction.deployed();
-        }
+    
     }
 
 
@@ -151,7 +103,6 @@ const CreateAuction = () => {
 
         if (name === 'tokenPrice') setTokenPrice(value);
 
-        if (name === 'tokenAddress') setTokenAddress(value);
         if (name === 'TokensToBeDesitributed') setTokensToBeDesitributed(value);
     };
 
@@ -162,16 +113,7 @@ const CreateAuction = () => {
 
 
                 <Container  >
-                    <Row className="g-2">
-                        <Col md>
-                            <FloatingLabel controlId="floatingInputGrid" label="Token Address">
-                                <Form.Control onChange={handleInput} name="tokenAddress" value={tokenAddress} type="text" />
-                            </FloatingLabel>
-                        </Col>
-                        <Col style={{ justifyContent: "center", alignItems: "center" }}>
-                            <Button variant="dark" onClick={() => { action1() }}> Assign Token</Button>
-                        </Col>
-                    </Row >
+             
 
                     {
 
@@ -191,13 +133,7 @@ const CreateAuction = () => {
                                                     </Col>
                                                 </Row >
 
-                                                <Row className="g-2">
-                                                    <Col md>
-                                                        <FloatingLabel controlId="floatingInputGrid" label="tokenAddress">
-                                                            <Form.Control onChange={handleInput} name="tokenAddress" value={tokenAddress} type="text" />
-                                                        </FloatingLabel>
-                                                    </Col>
-                                                </Row >
+                                               
 
                                                 <Row className="g-2">
                                                     <Col md>

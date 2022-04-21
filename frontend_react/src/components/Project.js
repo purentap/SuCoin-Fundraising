@@ -169,7 +169,7 @@ const Project = ({navigation}) => {
           <Container style={{ width: "70%", paddingLeft: "35%" }}>
             <Row >
               <Col style={{ justifyContent: "center", alignItems: "center" }}>
-                <Button variant="dark" onClick={() => navigate("/createTokens")}> Create Tokens</Button>
+                <Button variant="dark" onClick={() => navigate("/createTokens",{state:{hash: hash}})}> Create Tokens</Button>
               </Col>
 
               <Col style={{ justifyContent: "center", alignItems: "center" }}>

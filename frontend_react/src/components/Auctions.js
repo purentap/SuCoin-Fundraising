@@ -16,23 +16,18 @@ import Container from 'react-bootstrap/Col'
 import FloatingLabel from 'react-bootstrap/FloatingLabel'
 // Styles
 import { Wrapper, WrapperFile } from './Projects.styles';
-import Web3 from 'web3';
 
-import UserContext from '../User';
-import LoadingButton from './LoadingButton';
+
 import ToastBar from './Toast';
-import { Link } from 'react-router-dom';
 import Cookies from 'js-cookie'
 import axios from "axios"
 import { ethers } from 'ethers';
-import MaestroABI from '../contracts_hardhat/artifacts/contracts/Maestro.sol/Maestro.json';
-import CappedFCFS from '../contracts_hardhat/artifacts/contracts/CappedFCFSAuction.sol/CappedFCFSAuction.json';
-import CappedParcelLimitFCFS from '../contracts_hardhat/artifacts/contracts/CappedParcelLimitFCFSAuction.sol/CappedParcelLimitFCFSAuction.json';
-import CappedAuctionWRedistribution from '../contracts_hardhat/artifacts/contracts/CappedAuctionWRedistribution.sol/CappedAuctionWRedistribution.json';
-import DutchAuction from '../contracts_hardhat/artifacts/contracts/DutchAuction.sol/DutchAuction.json';
-import TokenABI from '../contracts_hardhat/artifacts/contracts/Token.sol/Token.json';
-import DutchAuctionTrial from "../contracts_hardhat/artifacts/contracts/DutchAuctionTrial.sol/DutchAuctionTrial.json"
-import AuctionTrial from "../contracts_hardhat/artifacts/contracts/AuctionTrial.sol/AuctionTrial.json"
+
+
+import Auction from "../contracts_hardhat/artifacts/contracts/UpgradeableAuctions/Auction.sol/Auction.json"
+import ERC20MintableUpgradeable from "../contracts_hardhat/artifacts/contracts/UpgradeableTokens/ERC20MintableUpgradeable.sol/ERC20MintableUpgradeable.json"
+import Maestro from "../contracts_hardhat/artifacts/contracts/Maestro.sol/Maestro.json"
+
 
 const options = [
     { value: 'fens', label: 'FENS' },
@@ -40,7 +35,7 @@ const options = [
     { value: 'fman', label: 'FMAN' }
 ]
 
-const MaestroAddress = "0x5258A94275071Db1AfF9D49c44f2d7E4469d5EB1";
+const MaestroAddress = "0x8108e5695601Ae9dB8fA755CAB6cE807c5A8222d";
 
 const IDs = []
 
@@ -90,10 +85,10 @@ const Auctions = () => {
 
 
             const provider = await new ethers.providers.Web3Provider(window.ethereum);
-            var Maestro = await new ethers.Contract(MaestroAddress, MaestroABI.abi, provider);
+            var MAESTRO = await new ethers.Contract(MaestroAddress, Maestro.abi, provider);
 
-            var filter = await Maestro.filters.CreateAuctionEvent();
-            var allCreateAuctionEvents = await Maestro.queryFilter(filter);
+            var filter = await MAESTRO.filters.CreateAuctionEvent();
+            var allCreateAuctionEvents = await MAESTRO.queryFilter(filter);
 
 
 
@@ -102,14 +97,14 @@ const Auctions = () => {
             
           const auctionData =  Promise.all(allCreateAuctionEvents.map(async auctionEvent => {
                 const {auction,fileHash,auctionType,creator} = auctionEvent.args;
-                const auctionContract =  new ethers.Contract(auction,AuctionTrial.abi,provider)
+                const auctionContract =  new ethers.Contract(auction,Auction.abi,provider)
 
                  const statusPromise = auctionContract.status()
                                         .then(status => ["notStarted","Ongoing","Finished"][status]) 
 
 
-                const tokenPromise =   Maestro.projectTokens(fileHash)
-                                            .then(addresses => new ethers.Contract(addresses.token,TokenABI.abi,provider))
+                const tokenPromise =   MAESTRO.projectTokens(fileHash)
+                                            .then(addresses => new ethers.Contract(addresses.token,ERC20MintableUpgradeable.abi,provider))
                                             .then(contract => Promise.all([contract.symbol(),contract.name()]))
 
                  

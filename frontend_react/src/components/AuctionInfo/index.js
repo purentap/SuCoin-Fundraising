@@ -1,27 +1,17 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 // Components
-import Thumb from '../Thumb';
-import Rate from '../Rate';
 // Config
-import { IMAGE_BASE_URL, POSTER_SIZE } from '../../config';
 // Image
-import NoImage from '../../images/no_image.jpg';
 // Styles
 import { Wrapper, Content, Text } from './ProjectInfo.styles';
-import Web3 from 'web3';
 
-import ProjectRegister from '../../abi/project.json'
 import Button from 'react-bootstrap/Button'
 
-import ButtonGroup from '@mui/material/ButtonGroup';
-import axios from 'axios'
-import Cookies from 'js-cookie'
+
 
 import { ethers } from 'ethers';
-import ethersAbi from '../../contracts_hardhat/artifacts/contracts/ProjectRegister.sol/ProjectRegister.json'
-import abi from '../../abi/project.json'
-import { useEffect } from 'react';
+
 
 import Form from 'react-bootstrap/Form'
 import Row from 'react-bootstrap/Row'
@@ -29,18 +19,15 @@ import Col from 'react-bootstrap/Col'
 import Container from 'react-bootstrap/Col'
 import FloatingLabel from 'react-bootstrap/FloatingLabel';
 
-import MaestroABI from '../../contracts_hardhat/artifacts/contracts/Maestro.sol/Maestro.json';
-import CappedFCFS from '../../contracts_hardhat/artifacts/contracts/CappedFCFSAuction.sol/CappedFCFSAuction.json';
-import CappedParcelLimitFCFS from '../../contracts_hardhat/artifacts/contracts/CappedParcelLimitFCFSAuction.sol/CappedParcelLimitFCFSAuction.json';
-import CappedAuctionWRedistribution from '../../contracts_hardhat/artifacts/contracts/CappedAuctionWRedistribution.sol/CappedAuctionWRedistribution.json';
-import DutchAuction from '../../contracts_hardhat/artifacts/contracts/DutchAuction.sol/DutchAuction.json';
-import TokenABI from '../../contracts_hardhat/artifacts/contracts/Token.sol/Token.json';
-import wrapperTokenABI from '../../contracts_hardhat/artifacts/contracts/WrapperToken.sol/WrapperToken.json';
+import FCFSAuction from "../../contracts_hardhat/artifacts/contracts/UpgradeableAuctions/FCFSAuction.sol/FCFSAuction.json"
+
+import WrapperToken from "../../contracts_hardhat/artifacts/contracts/WrapperToken.sol/WrapperToken.json"
+
 import {numberToFixedNumber  } from '../../helpers'; 
 
 const BiLiraAddress = "0x8f5736aF17F2F071B476Fd9cFD27a1Bd8D7E7F15";
 
-const maestro = { address: "0x5258A94275071Db1AfF9D49c44f2d7E4469d5EB1" }
+const maestro = { address: "0x8108e5695601Ae9dB8fA755CAB6cE807c5A8222d" }
 const SUCoin = { address: "0xb6e466F4F0ab1e2dA2E8237F38B2eCf6278894Ce" }
 
 const AuctionInfo = ({ auction, projectId, price, tokenDist, deposit }) => {
@@ -60,12 +47,10 @@ const AuctionInfo = ({ auction, projectId, price, tokenDist, deposit }) => {
       const value = numberToFixedNumber(amount)
 
 
-      var auctionSC = await new ethers.Contract(auction, CappedFCFS.abi, signer);
+      var auctionSC = await new ethers.Contract(auction, FCFSAuction.abi, signer);
 
-      //var projectTokenSC = await new ethers.Contract(auction.wrapperTokenAddress, TokenABI.abi, signer);
-      var SUCoinContract = await new ethers.Contract(SUCoin.address, wrapperTokenABI.abi, signer);
+      var SUCoinContract = await new ethers.Contract(SUCoin.address, WrapperToken.abi, signer);
 
-      //console.log("done", ethers.parseUnits(value, "gwei"))
 
       var approveTx = await SUCoinContract.approve(auction, value);
 
@@ -76,11 +61,7 @@ const AuctionInfo = ({ auction, projectId, price, tokenDist, deposit }) => {
 
       console.log(bid1_receipt)
 
-      //var buyTx = await SUCoinContract.depositFor(await signer.getAddress(), value);
 
-
-
-      // receipt = await buyTx.wait(1);
 
 
     } catch (error) {

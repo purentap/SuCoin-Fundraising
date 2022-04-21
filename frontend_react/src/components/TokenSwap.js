@@ -17,12 +17,6 @@ import ToastBar from './Toast';
 import { Wrapper, WrapperFile } from './Projects.styles';
 import Web3 from 'web3';
 
-import UserContext from '../User';
-import LoadingButton from './LoadingButton';
-import ProjectRegister from '../abi/project.json'
-import Cookies from 'js-cookie'
-import axios from "axios"
-import abi from '../abi/project.json'
 import { ethers } from 'ethers';
 import wrapperTokenABI from '../contracts_hardhat/artifacts/contracts/WrapperToken.sol/WrapperToken.json';
 import TokenABI from '../contracts_hardhat/artifacts/contracts/Token.sol/Token.json';

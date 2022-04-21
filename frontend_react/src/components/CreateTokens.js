@@ -1,9 +1,7 @@
-import React, { useState, useContext, useCallback } from 'react';
-import { useDropzone } from 'react-dropzone'
-import { useNavigate } from 'react-router-dom';
-import API from '../API';
-import Select from 'react-select'
-import { jsPDF } from "jspdf";
+import React, { useState} from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+
+
 // Components
 import MDEditor from "@uiw/react-md-editor";
 import Button from 'react-bootstrap/Button'
@@ -14,20 +12,21 @@ import Container from 'react-bootstrap/Col'
 import FloatingLabel from 'react-bootstrap/FloatingLabel'
 // Styles
 import { Wrapper, WrapperFile } from './Projects.styles';
-import Web3 from 'web3';
 
-import UserContext from '../User';
-import LoadingButton from './LoadingButton';
-import ToastBar from './Toast';
-import ProjectRegister from '../abi/project.json'
-import Cookies from 'js-cookie'
-import axios from "axios"
-import abi from '../abi/project.json'
+
 import { ethers, FixedNumber } from 'ethers';
-import Token from '../contracts_hardhat/artifacts/contracts/Token.sol/Token.json';
 import { numberToFixedNumber } from '../helpers';
+import Maestro from "../contracts_hardhat/artifacts/contracts/Maestro.sol/Maestro.json"
+
+
+const maestro = { address: "0x8108e5695601Ae9dB8fA755CAB6cE807c5A8222d" }
+
 
 const CreateTokens = () => {
+
+    const hash = useLocation()?.state?.hash
+    console.log(hash)
+
     const [tokenName, setTokenName] = useState();
     const [tokenSymbol, setTokenSymbol] = useState();
     const [totalSupply, setTotalSupply] = useState();
@@ -40,27 +39,30 @@ const CreateTokens = () => {
 
     const action1 = async () => {
         try {
-            const decimals = 18                                                             //Erc 20 default
+            const decimals = 18                                                          
             const provider = await new ethers.providers.Web3Provider(window.ethereum);
             const signer = await provider.getSigner();
      
             const totalSupplyDecimals = numberToFixedNumber(totalSupply,decimals)
 
-            let TokenFactory = new ethers.ContractFactory(Token.abi, Token.bytecode, signer);
+            let MAESTRO = new ethers.Contract(maestro.address, Maestro.abi, signer);
+
+            console.log(MAESTRO)
+
             setToastshow(true)
             setToastheader("Signing the Transaction")
             setToasttext("Please sign the transaction from your wallet.")
-            var tokenSC = await TokenFactory.deploy(tokenName, tokenSymbol, totalSupplyDecimals, await signer.getAddress());
+            const tokenProxy = await MAESTRO.createToken(hash,tokenName,tokenSymbol,totalSupplyDecimals)
+
 
             setToastshow(false)
             setToastshow(true)
             setToastheader("Pending Transaction")
             setToasttext("Waiting for transaction confirmation.")
-            await tokenSC.deployed();
-            console.log("Your token deploye on address: %s", tokenSC.address);
-            alert(tokenSC.address)
+            console.log("Your token deploye on address: %s", tokenProxy.address);
             setToastshow(false);
         } catch (error) {
+            console.log(error)
             setToastshow(true)
             setToastheader("Catched an error")
             setToasttext(error)

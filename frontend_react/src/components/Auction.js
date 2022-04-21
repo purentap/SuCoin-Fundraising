@@ -41,7 +41,7 @@ const Auction = () => {
 
     
     useEffect(async() => {
-        const {abi} = await import(`../contracts_hardhat/artifacts/contracts/${auctionType}.sol/${auctionType}.json`)
+        const {abi} = await import(`../contracts_hardhat/artifacts/contracts/UpgradeableAuctions/${auctionType}.sol/${auctionType}.json`)
         const auctionContract =  new ethers.Contract(auctionAddress,abi,provider)
 
       
