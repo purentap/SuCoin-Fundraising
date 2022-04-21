@@ -2,8 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate,useLocation } from 'react-router-dom';
 import AuctionInfo from './AuctionInfo';
 
-import {fixedNumberToNumber} from "../helpers.js"
+import {fixedNumberToNumber,getAllPublicVariables} from "../helpers.js"
 import { ethers} from 'ethers';
+
 
 const Auction = () => {
     const {state} = useLocation();
@@ -19,11 +20,19 @@ const Auction = () => {
     const provider = new ethers.providers.Web3Provider(window.ethereum);
 
 
-    const refreshInfo = contract => {  //Temporary - Must be different depending on the auction type
-        contract.currentRate().then(rate => setPrice(fixedNumberToNumber(rate)))
-        contract.soldProjectTokens().then(soldTokens => setSoldTokens(fixedNumberToNumber(soldTokens)))
-        contract.numberOfTokensToBeDistributed().then(dist => setTokenDist(fixedNumberToNumber(dist)))
+   
+
+    const refreshInfo = async (abi,auctionContract) =>  {
+        const {currentRate,soldProjectTokens,numberOfTokensToBeDistributed} = await getAllPublicVariables(abi,auctionContract)
+
+
+        setPrice(fixedNumberToNumber(currentRate[0]))
+        setSoldTokens(fixedNumberToNumber(soldProjectTokens[0]))
+        setTokenDist(fixedNumberToNumber(numberOfTokensToBeDistributed[0]))
     }
+
+
+ 
 
     const navigate = useNavigate();
 
@@ -34,12 +43,14 @@ const Auction = () => {
     useEffect(async() => {
         const {abi} = await import(`../contracts_hardhat/artifacts/contracts/${auctionType}.sol/${auctionType}.json`)
         const auctionContract =  new ethers.Contract(auctionAddress,abi,provider)
-        refreshInfo(auctionContract) //todo it would be better if backend did this
 
-        provider.on(tokenBoughtFilter, (log,event) => refreshInfo(auctionContract))          
+      
+
+        refreshInfo(abi,auctionContract) //todo it would be better if backend did this
+
+        provider.on(tokenBoughtFilter, (log,event) => refreshInfo(abi,auctionContract))          
     },[])   
 
-    console.log(soldToken)
     return (
         <div>
             {

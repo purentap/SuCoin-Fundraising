@@ -3,12 +3,14 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/math/Math.sol";
+import "@openzeppelin/contracts/utils/Multicall.sol";
+
 import "contracts/Maestro.sol";
 
 
 
 
-abstract contract AuctionTrial is Ownable{                                    //Abstract Contract for all auction types
+abstract contract AuctionTrial is Ownable,Multicall{                           //Abstract Contract for all auction types
 
     ERC20 public bidCoin;                                                     //Coin used for buying auction coins (Sucoin)
     uint public startTime;                                                    //Auction Start time in timestamp
@@ -34,6 +36,8 @@ abstract contract AuctionTrial is Ownable{                                    //
         maestroSC.AssignAuction(msg.sender, projectHash, _token, "DutchAuctionTrial");
  
     }
+    
+  
 
     function auctionStartCheckConditions(uint maximumAuctionTimeInHours) internal virtual {
         require(status == AuctionStatus.OFF,"Auction already started or already ended");
