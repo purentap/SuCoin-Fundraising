@@ -4,11 +4,14 @@ import AuctionInfo from './AuctionInfo';
 
 import {fixedNumberToNumber,getAllPublicVariables} from "../helpers.js"
 import { ethers} from 'ethers';
+import Button from 'react-bootstrap/Button'
 
 
 const Auction = () => {
     const {state} = useLocation();
     const {auctionType,auctionAddress,projectId} = state
+
+    console.log(auctionAddress)
 
 
 
@@ -23,12 +26,21 @@ const Auction = () => {
    
 
     const refreshInfo = async (abi,auctionContract) =>  {
-        const {currentRate,soldProjectTokens,numberOfTokensToBeDistributed} = await getAllPublicVariables(abi,auctionContract)
+        const {rate,currentRate,soldProjectTokens,numberOfTokensToBeDistributed} = await getAllPublicVariables(abi,auctionContract)
 
-
-        setPrice(fixedNumberToNumber(currentRate[0]))
+        switch(auctionType) {
+            case "DutchAuction":
+                setPrice(fixedNumberToNumber(currentRate[0]))
+                setTokenDist(fixedNumberToNumber(numberOfTokensToBeDistributed[0]))
+                break;
+            case "UncappedAuction":
+                setPrice(fixedNumberToNumber(rate[0]))
+                break;
+            
+        }
         setSoldTokens(fixedNumberToNumber(soldProjectTokens[0]))
-        setTokenDist(fixedNumberToNumber(numberOfTokensToBeDistributed[0]))
+
+
     }
 
 

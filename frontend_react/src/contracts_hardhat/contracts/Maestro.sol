@@ -25,7 +25,7 @@ contract Maestro     is AccessControl{
 
 
 
-    ERC20MintableUpgradeable sucoin;
+    ERC20 sucoin;
 
 
     struct addressCounterTimed {
@@ -57,7 +57,7 @@ contract Maestro     is AccessControl{
         _setupRole(ADMIN_ROLE,msg.sender);
        
 
-        sucoin = ERC20MintableUpgradeable(_sucoin);
+        sucoin = ERC20(_sucoin);
 
         uint wantedLength = nameArray.length;
 
@@ -98,7 +98,7 @@ contract Maestro     is AccessControl{
 
 
     function setSucoin(address newAddress) external multiSig(DEFAULT_ADMIN_ROLE,2,100) {
-        sucoin = ERC20MintableUpgradeable(newAddress);
+        sucoin = ERC20(newAddress);
     }
 
 
@@ -194,19 +194,25 @@ contract Maestro     is AccessControl{
         //Initialize the proxy and give user proposer permission
 
         clone.initialize(aucParams);
+
+        //Permision of being a proposer and adding other proposers
         clone.grantRole(clone.PROPOSER_ADMIN_ROLE(), msg.sender);
         clone.grantRole(clone.PROPOSER_ROLE(), msg.sender);
+
+        //Where the collected sucıins will go
         clone.setTeamWallet(msg.sender);
 
 
-        //Grant Mint permission to auction contract if it is uncapped
-        //todo this is easily bypassable look it later
-        if (aucParams.numberOfTokensToBeDistributed == 0)
-            ERC20MintableUpgradeable(projectTokens[projectHash].token).grantRole(keccak256("MINTER_ROLE"),address(clone));
+        //Handle Auction Token Amaount
 
-        
-        
+        ERC20MintableUpgradeable tokenContract = ERC20MintableUpgradeable(projectTokens[projectHash].token);
 
+        if (userParams.numberOfTokensToBeDistributed != 0) //Capped Auction
+            tokenContract.mint(address(clone),userParams.numberOfTokensToBeDistributed);   
+        else                                               //Uncapped Auction
+            tokenContract.grantRole(keccak256("MINTER_ROLE"),address(clone));
+
+               
         projectTokens[projectHash].auction = address(clone);
 
         emit CreateAuctionEvent(msg.sender, address(clone), auctionType, projectHash);

@@ -35,7 +35,7 @@ import { numberToFixedNumber } from '../helpers';
 
 const BiLiraAddress = "0x8f5736aF17F2F071B476Fd9cFD27a1Bd8D7E7F15";
 
-const maestro = { address: "0x8108e5695601Ae9dB8fA755CAB6cE807c5A8222d" }
+const maestro = { address: "0x0f5c10458D42ED60b79dBbec30d26Db694646D73" }
 const SUCoin = { address: "0xb6e466F4F0ab1e2dA2E8237F38B2eCf6278894Ce" }
 
 const CreateAuction = () => {
@@ -52,6 +52,11 @@ const CreateAuction = () => {
             name: "Dutch Auction",
             description: "this is DUTCH Auction"
         },
+        {
+            id: 1,
+            name: "Uncapped Auction",
+            description: "Fixed price unlimited tokens",
+        }
 
     ]);
 
@@ -92,6 +97,9 @@ const CreateAuction = () => {
         //Dutch Auction
         if (id == 0) {
             maestroContract.createAuction(hash,"DutchAuction",[tokenDistributedDecimal,priceDecimal,0,10000])
+        }
+        if (id == 1) {
+            maestroContract.createAuction(hash,"UncappedAuction",[0,priceDecimal,0,0])
         }
     
     }

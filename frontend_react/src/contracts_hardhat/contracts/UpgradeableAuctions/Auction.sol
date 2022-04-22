@@ -116,7 +116,7 @@ abstract contract Auction is AccessControlUpgradeable,Multicall  {              
     }
                                                                             //Create the auction if the auction creator already deposited the coins or have given approval
     function startAuction(uint maximumAuctionTimeInHours) external virtual onlyRole(PROPOSER_ROLE) {
-        {
+        
    
         auctionStartCheckConditions(maximumAuctionTimeInHours);
 
@@ -126,7 +126,7 @@ abstract contract Auction is AccessControlUpgradeable,Multicall  {              
         latestEndTime = block.timestamp + maximumAuctionTimeInHours * 1 seconds;        //seconds instead of hours for test purposes
  
         emit AuctionStarted(startTime,latestEndTime);
-    }
+    
     }
 
     function finalize() internal virtual  {                                                     

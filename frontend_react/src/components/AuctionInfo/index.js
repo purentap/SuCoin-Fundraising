@@ -27,7 +27,7 @@ import {numberToFixedNumber  } from '../../helpers';
 
 const BiLiraAddress = "0x8f5736aF17F2F071B476Fd9cFD27a1Bd8D7E7F15";
 
-const maestro = { address: "0x8108e5695601Ae9dB8fA755CAB6cE807c5A8222d" }
+const maestro = { address: "0x0f5c10458D42ED60b79dBbec30d26Db694646D73" }
 const SUCoin = { address: "0xb6e466F4F0ab1e2dA2E8237F38B2eCf6278894Ce" }
 
 const AuctionInfo = ({ auction, projectId, price, tokenDist, deposit }) => {
@@ -105,8 +105,8 @@ const AuctionInfo = ({ auction, projectId, price, tokenDist, deposit }) => {
               </div>
 
               <div className='rating-directors'>
-                <h3>Tokens Left</h3>
-                <div className='score'>{Number(tokenDist - deposit).toFixed(3)}</div>
+                <h3>Tokens Sold</h3>
+                <div className='score'>{Number(deposit).toFixed(3)}</div>
               </div>
             </div>
 

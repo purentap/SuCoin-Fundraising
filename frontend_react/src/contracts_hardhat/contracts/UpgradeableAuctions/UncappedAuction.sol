@@ -37,6 +37,9 @@ contract UncappedAuction is Auction {
     function finalize() internal override{
         super.finalize();
 
+        //Remove contracts mint permission
+        projectToken.renounceRole(MINTER_ROLE, address(this));
+
         //Emits total sold project tokens when auction finishes
         emit AuctionFinished(block.timestamp, soldProjectTokens);
     
