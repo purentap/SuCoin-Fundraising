@@ -31,7 +31,7 @@ namespace SU_COIN_BACK_END.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> GetAllProjects(bool withHex)
         {
-            ServiceResponse<List<ProjectDTO>> response = await _projectService.GetAllProjects(withHex);
+            ServiceResponse<List<ProjectDTO>> response = await _projectService.GetProjects(withHex);
             if (!response.Success)
             {
                 return BadRequest(response);
@@ -162,7 +162,7 @@ namespace SU_COIN_BACK_END.Controllers
 
         [HttpGet("GetProjects/{numberOfProjects}")]
         public async Task<IActionResult> GetProjects(int numberOfProjects) {
-            ServiceResponse<List<ProjectDTO>> response = await _projectService.GetProjects(numberOfProjects);
+            ServiceResponse<List<ProjectDTO>> response = await _projectService.GetProjects(numberOfProjects: numberOfProjects);
             if (!response.Success)
             {
                 return BadRequest(response);

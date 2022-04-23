@@ -154,7 +154,7 @@ namespace SU_COIN_BACK_END.Services {
         }
 
 
-        public async Task<ServiceResponse<List<ProjectDTO>>> GetAllProjects(bool withHex)
+        public async Task<ServiceResponse<List<ProjectDTO>>> GetProjects(bool withHex=false,int count = Int32.MaxValue)
         {
                 var time = DateTime.Now;
 
@@ -199,7 +199,7 @@ namespace SU_COIN_BACK_END.Services {
                 
                 if (projects != null)
                 {
-                    response.Data = (projects.Select(c => _mapper.Map<ProjectDTO>(c))).ToList(); // map projects to projectDTOs
+                    response.Data = (projects.Take(count).Select(c => _mapper.Map<ProjectDTO>(c))).ToList(); // map projects to projectDTOs
                     response.Message = "Ok";
                     response.Success = true;             
                 }
@@ -586,45 +586,7 @@ namespace SU_COIN_BACK_END.Services {
             }
             return response;
         }
-        public async Task<ServiceResponse<List<ProjectDTO>>> GetProjects(int numberOfProjects) 
-        {
-            ServiceResponse<List<ProjectDTO>> response = new ServiceResponse<List<ProjectDTO>>();
-            try
-            {
-                List<Project> projects = await _context.Projects.ToListAsync();
-
-                if (projects != null) 
-                {
-                    if (numberOfProjects < 0) // Invalid parameter
-                    {
-                        response.Success = false;
-                        response.Message = "Input parameter for number of projects must be non-negative";
-                    }
-                    else if (numberOfProjects >= projects.Count) // Avoiding overflow
-                    {
-                        response = await GetAllProjects(false);
-                    }
-                    else
-                    {
-                        List<Project> selectedProjects = projects.Take(numberOfProjects).ToList();
-                        response.Data = (selectedProjects.Select(c => _mapper.Map<ProjectDTO>(c))).ToList();
-                        response.Success = true;
-                        response.Message = "Ok";
-                    }
-                }
-                else // No projects in the database
-                {
-                    response.Success = false;
-                    response.Message = "No projects found";
-                }
-            }
-            catch (Exception e)
-            {
-                response.Success = false;
-                response.Message = e.Message;
-            }
-            return response;
-        }
+       
     
         public async Task<bool> IsProjectSubmittedToChain(string fileHex)
         {
