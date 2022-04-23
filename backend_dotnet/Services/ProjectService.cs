@@ -69,7 +69,7 @@ namespace SU_COIN_BACK_END.Services {
                 Project new_project = _mapper.Map<Project>(project);
                 new_project.FileHex = project.FileHex;
                 new_project.Date = DateTime.Now;
-                new_project.IsApproved = false;
+                new_project.IsAuctionStarted = false;
                 new_project.Status = ProjectStatusConstants.PENDING;
                 new_project.MarkDown = "";
                 new_project.Rating = 0;
