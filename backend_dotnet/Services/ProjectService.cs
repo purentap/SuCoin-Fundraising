@@ -586,6 +586,45 @@ namespace SU_COIN_BACK_END.Services {
             }
             return response;
         }
+        public async Task<ServiceResponse<List<ProjectDTO>>> GetProjects(int numberOfProjects) 
+        {
+            ServiceResponse<List<ProjectDTO>> response = new ServiceResponse<List<ProjectDTO>>();
+            try
+            {
+                List<Project> projects = await _context.Projects.ToListAsync();
+
+                if (projects != null) 
+                {
+                    if (numberOfProjects < 0) // Invalid parameter
+                    {
+                        response.Success = false;
+                        response.Message = "Input parameter for number of projects must be non-negative";
+                    }
+                    else if (numberOfProjects >= projects.Count) // Avoiding overflow
+                    {
+                        response = await GetAllProjects(false);
+                    }
+                    else
+                    {
+                        List<Project> selectedProjects = projects.Take(numberOfProjects).ToList();
+                        response.Data = (selectedProjects.Select(c => _mapper.Map<ProjectDTO>(c))).ToList();
+                        response.Success = true;
+                        response.Message = "Ok";
+                    }
+                }
+                else // No projects in the database
+                {
+                    response.Success = false;
+                    response.Message = "No projects found";
+                }
+            }
+            catch (Exception e)
+            {
+                response.Success = false;
+                response.Message = e.Message;
+            }
+            return response;
+        }
     
         public async Task<bool> IsProjectSubmittedToChain(string fileHex)
         {

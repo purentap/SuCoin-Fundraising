@@ -159,5 +159,15 @@ namespace SU_COIN_BACK_END.Controllers
             }
             return Ok(response);
         }
+
+        [HttpGet("GetProjects/{numberOfProjects}")]
+        public async Task<IActionResult> GetProjects(int numberOfProjects) {
+            ServiceResponse<List<ProjectDTO>> response = await _projectService.GetProjects(numberOfProjects);
+            if (!response.Success)
+            {
+                return BadRequest(response);
+            }
+            return Ok(response);
+        }
     }
 }

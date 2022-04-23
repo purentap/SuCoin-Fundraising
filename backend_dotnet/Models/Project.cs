@@ -10,7 +10,7 @@ namespace SU_COIN_BACK_END.Models
         public bool IsApproved {get; set;} = false;
         public string FileHex {get; set;} = "";
         public string ProjectDescription {get; set;}
-        public string ImageUrl {get; set;} = null;
+        public string? ImageUrl {get; set;} = null;
         public double Rating {get; set;} = 0;
         public string Status {get; set;} = ProjectStatusConstants.PENDING;
         public string MarkDown {get; set;} = "";
