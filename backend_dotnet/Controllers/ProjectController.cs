@@ -62,6 +62,7 @@ namespace SU_COIN_BACK_END.Controllers
             }
             return Ok(response);
         }
+
         [HttpDelete("Delete/{id}")]
         public async Task<IActionResult> DeleteProject(int Id)
         {
@@ -95,6 +96,7 @@ namespace SU_COIN_BACK_END.Controllers
             }
             return Ok(response);
         }
+
         [HttpGet("GetPDF/{id}")]
         [AllowAnonymous]
         public async Task<IActionResult> GetPdfById(int id)
@@ -106,6 +108,7 @@ namespace SU_COIN_BACK_END.Controllers
             }
             return File(response.Data, "application/pdf", "MyProjectReport.pdf");
         }
+
         [HttpGet("GetByStatus/{status}")]
         [AllowAnonymous]
         public async Task<IActionResult> GetProjectByStatus(string status)
@@ -117,6 +120,7 @@ namespace SU_COIN_BACK_END.Controllers
             }
             return Ok(response);
         }
+
         [HttpPut("ChangeStatus/{id}")]
         public async Task<IActionResult> ChangeStatus(int id)
         { //Only admin or whitelisted can do it or it can be updated directly from blockchain
@@ -127,6 +131,7 @@ namespace SU_COIN_BACK_END.Controllers
             }
             return Ok(response);
         }
+
         [HttpPut("UpdateMarkDown/{id}/{markdown}")]
         public async Task<IActionResult> UpdateMarkDown(int id, string markdown)
         {
@@ -161,7 +166,9 @@ namespace SU_COIN_BACK_END.Controllers
         }
 
         [HttpGet("GetProjects/{numberOfProjects}")]
-        public async Task<IActionResult> GetProjects(int numberOfProjects) {
+        [AllowAnonymous]
+        public async Task<IActionResult> GetProjects(int numberOfProjects) 
+        {
             ServiceResponse<List<ProjectDTO>> response = await _projectService.GetProjects(numberOfProjects: numberOfProjects);
             if (!response.Success)
             {

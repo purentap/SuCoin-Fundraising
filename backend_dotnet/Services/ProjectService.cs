@@ -154,11 +154,11 @@ namespace SU_COIN_BACK_END.Services {
         }
 
 
-        public async Task<ServiceResponse<List<ProjectDTO>>> GetProjects(bool withHex=false,int count = Int32.MaxValue)
+        public async Task<ServiceResponse<List<ProjectDTO>>> GetProjects(bool withHex = false, int count = Int32.MaxValue)
         {
-                var time = DateTime.Now;
-
+            var time = DateTime.Now;
             ServiceResponse<List<ProjectDTO>> response = new ServiceResponse<List<ProjectDTO>>();
+
             try
             {
                 string userRole = GetUserRole();
@@ -170,25 +170,24 @@ namespace SU_COIN_BACK_END.Services {
                 var hashResult = _context.Projects.FromSqlRaw("Select projectID,SHA2(FileHex,256) as FileHex from Projects");
         
 
-              var hashedVersion =  hashResult.Join(
-                                    _context.Projects,
-                                    hash => hash.ProjectID,
-                                    project => project.ProjectID,
-                                    (hash,projects) => new Project{
-                                        ProjectID = projects.ProjectID, 
-                                            ProjectName = projects.ProjectName, 
-                                            Date = projects.Date, 
-                                            ProjectDescription = projects.ProjectDescription, 
-                                            ImageUrl = projects.ImageUrl, 
-                                            Rating = projects.Rating, 
-                                            Status = projects.Status,
-                                            FileHex =  hash.FileHex , 
-                                    }
-                                );
+                var hashedVersion =  hashResult.Join(
+                    _context.Projects,
+                    hash => hash.ProjectID,
+                    project => project.ProjectID,
+                    (hash,projects) => new Project
+                    {
+                        ProjectID = projects.ProjectID, 
+                        ProjectName = projects.ProjectName, 
+                        Date = projects.Date, 
+                        ProjectDescription = projects.ProjectDescription, 
+                        ImageUrl = projects.ImageUrl, 
+                        Rating = projects.Rating, 
+                        Status = projects.Status,
+                        FileHex =  hash.FileHex, 
+                    }
+                );
 
                 projects =  (withHex ? await _context.Projects.ToListAsync() : await hashedVersion.ToListAsync()); 
-
-
        
                 if (userRole != UserRoleConstants.ADMIN && userRole != UserRoleConstants.WHITELIST)
                 {
@@ -199,9 +198,17 @@ namespace SU_COIN_BACK_END.Services {
                 
                 if (projects != null)
                 {
-                    response.Data = (projects.Take(count).Select(c => _mapper.Map<ProjectDTO>(c))).ToList(); // map projects to projectDTOs
-                    response.Message = "Ok";
-                    response.Success = true;             
+                    if (count < 0) // Invalid parameter
+                    {
+                        response.Message = "Parameter for project amount must be non-negative";
+                        response.Success = false;
+                    }
+                    else 
+                    {
+                        response.Data = (projects.Take(count).Select(c => _mapper.Map<ProjectDTO>(c))).ToList(); // map projects to projectDTOs
+                        response.Message = "Ok";
+                        response.Success = true;  
+                    }           
                 }
                 else
                 {
