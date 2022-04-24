@@ -87,10 +87,11 @@ abstract contract Auction is AccessControlUpgradeable,Multicall  {              
 
 
 
-    modifier stateUpdate() {
+   modifier stateUpdate() {
         if (status == AuctionStatus.RUNNING && block.timestamp >= latestEndTime)
             finalize();
-        _;
+        else
+            _;
     }
 
     modifier isFinished() {
