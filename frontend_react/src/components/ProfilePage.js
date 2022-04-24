@@ -109,8 +109,6 @@ useEffect( async () => {
 }
 }, []);
 
-  console.log(projects);
-  console.log("Invited Projects:", invitedProjects);
 
   const onDelete = async (deletedProject) => {
     try {
@@ -163,6 +161,81 @@ useEffect( async () => {
       console.log(error);
     }
   };
+
+  const onInvitationAccept = async (acceptedProject) => {
+    const acceptRequest = {
+      projectID : acceptedProject.projectID,
+      Username : User.username,
+      Role : "Editor",
+      IsAccepted : true
+    };
+
+    try {
+      apiInstance.defaults.headers.common[
+        "Authorization"
+      ] = `Bearer ${Cookies.get("token")}`;
+      let response2 = new Promise((resolve, reject) => {
+        apiInstance
+          .post("/User/InvitationReply" , acceptRequest)
+          .then((res) => {
+            console.log("Project is Accepted!")
+            console.log("response: ", res.data);
+            const newProjectList = projects.concat(acceptedProject);
+            const newInvitationList = invitedProjects.filter((project) => project.projectID !== acceptedProject.projectID);
+            setProjects(newProjectList);
+            setInvitedProjects(newInvitationList);
+            resolve(res);
+
+            
+            
+          })
+          .catch((e) => {
+            const err = "Unable to accept the project";
+            reject(err);
+          });
+      });
+      let result = await response2;
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const onInvitationReject = async (rejectedProject) => {
+    const rejectRequest = {
+      projectID : rejectedProject.projectID,
+      Username : User.username,
+      Role : "Editor",
+      IsAccepted : false
+    };
+
+    try {
+      apiInstance.defaults.headers.common[
+        "Authorization"
+      ] = `Bearer ${Cookies.get("token")}`;
+      let response2 = new Promise((resolve, reject) => {
+        apiInstance
+          .post("/User/InvitationReply" , rejectRequest)
+          .then((res) => {
+            console.log("Project is Rejected!")
+            console.log("response: ", res.data);
+            const newInvitationList = invitedProjects.filter((project) => project.projectID !== rejectedProject.projectID);
+            setInvitedProjects(newInvitationList);
+            resolve(res);
+
+            
+            
+          })
+          .catch((e) => {
+            const err = "Unable to reject the project";
+            reject(err);
+          });
+      });
+      let result = await response2;
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   const onEdit = async (editRequest) => {
     const apiInstance = axios.create({
       baseURL: "https://localhost:5001",
@@ -211,7 +284,10 @@ useEffect( async () => {
             projectDescription={invitation.projectDescription}
             imageUrl={invitation.imageUrl}
             rating = {invitation.rating}
-            projectID = {invitation.projectID}>
+            projectID = {invitation.projectID}
+            invitationAccept = {onInvitationAccept}
+            invitationReject = {onInvitationReject}>
+              
           </ProjectInvitationCard>
         ))}
         
