@@ -30,15 +30,21 @@ const Auction = () => {
 
         switch(auctionType) {
             case "DutchAuction":
+                setSoldTokens(fixedNumberToNumber(soldProjectTokens[0]))
                 setPrice(fixedNumberToNumber(currentRate[0]))
                 setTokenDist(fixedNumberToNumber(numberOfTokensToBeDistributed[0]))
                 break;
             case "UncappedAuction":
+                setSoldTokens(fixedNumberToNumber(soldProjectTokens[0]))
                 setPrice(fixedNumberToNumber(rate[0]))
                 break;
+            case "PseudoCappedAuction":
+                setTokenDist(fixedNumberToNumber(numberOfTokensToBeDistributed[0]))
+                setPrice(fixedNumberToNumber(currentRate[0]))
+                break
+            
             
         }
-        setSoldTokens(fixedNumberToNumber(soldProjectTokens[0]))
 
 
     }

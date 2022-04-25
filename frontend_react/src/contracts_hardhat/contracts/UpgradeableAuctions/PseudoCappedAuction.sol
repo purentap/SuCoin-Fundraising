@@ -61,9 +61,8 @@ contract PseudoCappedAuction is CappedTokenAuction {
         }
 
 
-    //In a normal capped auction rate is constant so this function does nothing
     function setCurrentRate() internal virtual {
-        currentRate =   numberOfTokensToBeDistributed / totalDepositedSucoins;
+        currentRate =   totalDepositedSucoins * (10 ** projectToken.decimals()) / numberOfTokensToBeDistributed;
     }
 
 
