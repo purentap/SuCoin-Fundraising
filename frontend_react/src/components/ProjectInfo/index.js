@@ -88,9 +88,9 @@ const ProjectInfo = ({ project, status, isWhitelisted, isOwner, projectId, setPr
     apiInstance.defaults.headers.common["Authorization"] = `Bearer ${Cookies.get('token')}`
     let response2 = new Promise((resolve, reject) => {
       apiInstance
-        .get("/Project/Get/" + projectId)
+        .get("/Project/GetPDF/" + projectId)
         .then((res) => {
-          downloadFile(res.data.data.fileHex)
+          downloadFile(res.data)
           resolve(res)
         })
         .catch((e) => {
@@ -123,14 +123,14 @@ const ProjectInfo = ({ project, status, isWhitelisted, isOwner, projectId, setPr
 
 
 
+
   const downloadFile = async (file) => {
     const reader = new FileReader()
-    const x = Buffer.from(file, 'hex')
-    const blob = new Blob([x.buffer]);
+  
 
-    reader.readAsText(blob);
+    reader.readAsText(file);
     reader.onloadend = async () => {
-      const data = window.URL.createObjectURL(blob);
+      const data = window.URL.createObjectURL(file);
       const tempLink = await document.createElement('a');
       tempLink.href = data;
       tempLink.download = "Project_#" + projectId + ".pdf"; // some props receive from the component.
