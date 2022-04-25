@@ -147,6 +147,7 @@ const TokenSwap = () => {
 
     return (
         <>
+            <div className="sectionName" style={{paddingLeft:"50px", paddingTop:"25px", paddingBottom:"25px"}}>Swap Token</div>
             <ToastBar toastText={toastText} toastHeader={toastHeader} toastShow={toastShow} setToastshow={setToastshow}></ToastBar>
             <Wrapper>
 

@@ -1,5 +1,21 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat&display=swap');
+
+*{
+    font-family: 'Montserrat', sans-serif;
+}
+
+.home-page{
+    font-family: 'Montserrat', sans-serif;
+}
+
+.projects-page{
+    font-family: 'Montserrat', sans-serif;
+}
+
+
 .app{
     background-color: #D9D8E1;
+    font-family: 'Montserrat', sans-serif;
 }
 .courasel{
     display: flex;
@@ -9,12 +25,14 @@
 .info{
     padding-left: 25px;
     width: 640px;
+    font-family: 'Montserrat', sans-serif;
 }
 .detail{
     margin-top: 20px;
     height: 250px;
     overflow-x: auto;
     overflow-y: auto;
+    font-family: 'Montserrat', sans-serif;
 }
 .arrow{
     opacity: 0.1;
@@ -25,7 +43,44 @@
 .mini-info{
     display: flex;
     justify-content: space-evenly;
+    font-family: 'Montserrat', sans-serif;
 }
 .navbarcolor{
     background-color: #173A6A;
+    font-family: 'Montserrat', sans-serif;
+}
+
+.navbar-brand{
+    font-family: 'Montserrat', sans-serif; 
+}   
+
+.nav-link{
+    font-family: 'Montserrat', sans-serif; 
+}
+
+.sectionName{
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 700;
+    font-size: larger;
+}
+
+.simpletext{
+    font-family: 'Montserrat', sans-serif; 
+}
+
+.dropdown-item{
+    font-family: 'Montserrat', sans-serif; 
+}
+
+.name{
+    font-family: 'Montserrat', sans-serif; 
+}
+
+.btn-to-detail{
+    font-family: 'Montserrat', sans-serif; 
+}
+
+.grid-container{
+    display: grid;
+    grid-template-columns: auto auto auto;
 }

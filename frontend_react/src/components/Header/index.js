@@ -143,7 +143,7 @@ const Header = () => {
       {/*style={{backgroundColor:'#173A6A'}}*/}
       <Navbar sticky="top" collapseOnSelect expand="lg" variant="dark"  className={'navbarcolor'}>
         <Container>
-          <Navbar.Brand onClick={() => { navigate('/'); }}>SuRaising</Navbar.Brand>
+          <Navbar.Brand onClick={() => { navigate('/'); }}>SULaunch</Navbar.Brand>
           <Navbar.Toggle aria-controls="responsive-navbar-nav" />
           <Navbar.Collapse id="responsive-navbar-nav">
             <Nav className="me-auto">

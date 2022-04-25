@@ -17,6 +17,8 @@ import FloatingLabel from 'react-bootstrap/FloatingLabel'
 // Styles
 import { Wrapper, WrapperFile } from './Projects.styles';
 
+import AuctionCard from "./AuctionCard/AuctionCard";
+
 
 import ToastBar from './Toast';
 import Cookies from 'js-cookie'
@@ -92,7 +94,7 @@ const Auctions = () => {
 
 
 
-            const wantedInformation = ["id","auctionAddress","fileHash","auctionType","creator","status","tokenSymbol","tokenName"]
+            const wantedInformation = ["id","auctionAddress","fileHash","auctionType","creator","status","tokenSymbol","tokenName", "projectName", "projectDescription", "imageUrl"]
  
             
           const auctionData =  Promise.all(allCreateAuctionEvents.map(async auctionEvent => {
@@ -110,10 +112,12 @@ const Auctions = () => {
                  
                 
                 const id = hashToId[fileHash]
-                
 
+                console.log(id)
+                const {projectName, projectDescription, imageUrl} = result.data.data.find(element =>  element.projectID == id);
                 
-                return Promise.all([id,auction,fileHash,auctionType,creator,statusPromise,tokenPromise])
+                
+                return Promise.all([id, auction,fileHash,auctionType,creator,statusPromise,tokenPromise, projectName, projectDescription, imageUrl])
                               .then(result => result.flat())
                               .then(resultFlat => Object.fromEntries(wantedInformation.map((_,i) => [wantedInformation[i],resultFlat[i]])))
 
@@ -160,49 +164,32 @@ const Auctions = () => {
 
     return (
         <>
+            <div className="sectionName" style={{paddingLeft:"50px", paddingTop:"25px", paddingBottom:"25px"}}>Auctions</div>
             <ToastBar toastText={toastText} toastHeader={toastHeader} toastShow={toastShow} setToastshow={setToastshow}></ToastBar>
-            <Wrapper>
+            
+            <br></br>
 
+            <div style={{ width: "90%", textAlign: "center", margin: "auto" }}>
+                <div class="grid-container" style={{display: 'grid'}}>
+                    {auctions.map((project, index) => (
+                        <div>
+                            <AuctionCard
+                            project={project}
+                            imageUrl={project.imageUrl}
+                            projectName={project.projectName}
+                            projectDescription={project.projectDescription}
+                            auctionType={project.auctionType}
+                            tokenName={project.tokenName}
+                            totalFund={"N/A"}
+                            projectID={project.id}
+                            />
+                        </div>
+                    ))
+                    }
+                </div>
+            </div>
 
-
-                <Container  >
-                    <Row>
-                        {
-
-                            auctions.map((project, index) => (
-                                <Col>
-                                    <Card style={{ width: '18rem' }}>
-
-                                        <Card.Body>
-                                            <Card.Title>{"Auction of Project # " + project.id}</Card.Title>
-                                            <Card.Text>
-                                                {"Auction Type: " + project.auctionType}
-
-                                            </Card.Text>
-                                            <Card.Text>
-                                                {"Auction Status: " + project.status}
-                                            </Card.Text>
-                                            <Card.Text>
-
-                                                {"Token Name: " + project.tokenName + '(' + project.tokenSymbol + ')'}
-
-                                            </Card.Text>
-
-                                            <Button onClick={() => navigate('/auction/' + project.id,{state:project})}>
-                                                Auction Page
-                                            </Button>
-                                       
-
-                                        </Card.Body>
-                                    </Card>
-                                </Col>
-                            )
-                            )
-
-                        }
-                    </Row>
-                </Container>
-            </Wrapper >
+        
 
 
         </>

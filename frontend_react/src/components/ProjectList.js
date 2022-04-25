@@ -8,6 +8,8 @@ import ButtonToolbar from 'react-bootstrap/ButtonToolbar'
 // Components
 import Grid from './Grid';
 
+import ProjectCard from "./ProjectCard/ProjectCard";
+
 
 import { useHomeFetch } from '../hooks/useHomeFetch';
 import { Link } from 'react-router-dom';
@@ -106,42 +108,40 @@ const ProjectList = () => {
 
 
   return (
-    <div>
-
+    <div className='projects-page'>
+      <div className="sectionName" style={{paddingLeft:"50px", paddingTop:"25px", paddingBottom:"10px"}}>Projects</div>
       <div style={{ display: "flex", justifyContent: "center", marginTop: "1rem" }}>
         <ButtonGroup aria-label="Basic example"
           exclusive
         >
-          <Button onClick={() => { handleChange(0) }} variant="outline-secondary" value={radios[0].value} >{radios[0].name} </Button>
-          <Button onClick={() => { handleChange(1) }} variant="outline-secondary" value={radios[1].value} >{radios[1].name} </Button>
-          <Button onClick={() => { handleChange(2) }} variant="outline-secondary" value={radios[2].value} >{radios[2].name} </Button>
-          <Button onClick={() => { handleChange(3) }} variant="outline-secondary" value={radios[3].value} > {radios[3].name} </Button >
+          <Button className="simpletext" onClick={() => { handleChange(0) }} variant="outline-secondary" value={radios[0].value} >{radios[0].name} </Button>
+          <Button className="simpletext" onClick={() => { handleChange(1) }} variant="outline-secondary" value={radios[1].value} >{radios[1].name} </Button>
+          <Button className="simpletext" onClick={() => { handleChange(2) }} variant="outline-secondary" value={radios[2].value} >{radios[2].name} </Button>
+          <Button className="simpletext" onClick={() => { handleChange(3) }} variant="outline-secondary" value={radios[3].value} > {radios[3].name} </Button >
         </ButtonGroup >
       </div >
 
       <br></br>
+
       <div style={{ width: "90%", textAlign: "center", margin: "auto" }}>
-        <Grid >
+        <div class="grid-container" style={{display: 'grid'}}>
           {projects.map((project, index) => (
             <div>
-              <Accordion defaultActiveKey="0">
-                <Accordion.Item eventKey={index}>
-                  <Accordion.Header>Project #{project.projectID}    {project.projectName}     </Accordion.Header>
-                  <Accordion.Body>
-                    {project.projectDescription}
-                    <br></br>
-
-                    <Link to={'/projects/' + project.projectID} >
-                      Project Page
-                    </Link >
-                  </Accordion.Body>
-                </Accordion.Item>
-              </Accordion>
+              <ProjectCard
+              imageUrl={project.imageUrl}
+              projectName={project.projectName}
+              projectDescription={project.projectDescription}
+              projectStatus={project.status}
+              projectRating={project.rating}
+              projectID={project.projectID}
+              />
             </div>
           ))}
 
-        </Grid>
+        </div>
       </div>
+
+      <br></br>
     </div>
   );
 };
