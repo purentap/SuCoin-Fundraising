@@ -53,8 +53,8 @@ contract Maestro     is AccessControl{
    
     constructor(address _sucoin,address _projectManager,string[] memory nameArray,address[] memory implementationContracts){
 
-        _setupRole(DEFAULT_ADMIN_ROLE,msg.sender);
-        _setupRole(ADMIN_ROLE,msg.sender);
+        _grantRole(DEFAULT_ADMIN_ROLE,msg.sender);
+        _grantRole(ADMIN_ROLE,msg.sender);
        
 
         sucoin = ERC20(_sucoin);
@@ -249,8 +249,8 @@ contract Maestro     is AccessControl{
         return typeAddress;
     }
 
-    //TODO: MULTISIG
-    function editImplementation(string memory name, address newImplementationAddress) external onlyRole(DEFAULT_ADMIN_ROLE) {
+    //TODO: MULTISIG need 2 admins
+    function editImplementation(string memory name, address newImplementationAddress) external multiSig(ADMIN_ROLE,2,100)  {
         address addressCurrent = auctionNameAddressSet[name];
         require(addressCurrent != address(0),"This contract type is not specified");
         auctionNameAddressSet[name] = newImplementationAddress;

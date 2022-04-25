@@ -14,7 +14,7 @@ contract OBFCFSAuction is FCFSAuction {
 
 
     function tokenBuyLogic(uint bidCoinBits) internal override virtual  {
-        uint tokenCount = bidCoinBits / currentRate;
+        uint tokenCount = (bidCoinBits * (10 ** projectToken.decimals())) / currentRate;
         biddingBook[msg.sender] += tokenCount;
         soldProjectTokens += tokenCount;
 

@@ -29,7 +29,6 @@ contract UncappedAuction is Auction {
 
     function __UncappedAuction_init_unchained(auctionParameters calldata params) internal onlyInitializing{
         projectToken = ERC20MintableUpgradeable(params.token);
-        require(params.rate >= 1,"1 Token should at least worth 1 sucoin bits");
         rate = params.rate;
     }
 
@@ -46,7 +45,7 @@ contract UncappedAuction is Auction {
     }
 
     function tokenBuyLogic(uint bidCoinBits) internal virtual override {
-            uint boughtTokens = bidCoinBits / rate;
+            uint boughtTokens = (bidCoinBits * (10 ** projectToken.decimals())) / rate;
 
             projectToken.mint(msg.sender , boughtTokens);
             soldProjectTokens += boughtTokens;
@@ -66,6 +65,7 @@ contract UncappedAuction is Auction {
 
     function handleValidTimeBid(uint bidCoinBits) internal virtual override {
         bidCoinBits = handleRemainder(bidCoinBits, rate);
+        require(bidCoinBits >= (rate / (10 ** projectToken.decimals())),"Bidcoin amount lower than required to buy a token");
 
         swap(bidCoinBits);
 

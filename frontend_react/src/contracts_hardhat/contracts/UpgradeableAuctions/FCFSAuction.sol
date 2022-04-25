@@ -21,7 +21,6 @@ contract FCFSAuction is CappedTokenAuction {
     } 
 
     function __FCFSAuction_init_unchained(auctionParameters calldata params) internal onlyInitializing{
-        require(params.rate >= 1,"1 Token should at least worth 1 sucoin bits");  
         currentRate = rate = params.rate;
     }
 
@@ -39,7 +38,8 @@ contract FCFSAuction is CappedTokenAuction {
     }
 
     function tokenBuyLogic(uint  bidCoinBits) virtual internal override{
-        uint tokenCount = bidCoinBits / currentRate;
+        uint tokenCount = (bidCoinBits * (10 ** projectToken.decimals())) / currentRate;
+        
 
         projectToken.transfer(msg.sender,tokenCount);
          
@@ -72,13 +72,14 @@ contract FCFSAuction is CappedTokenAuction {
         
 
         setCurrentRate();
-        require(bidCoinBits >= currentRate,"Bidcoin amount lower than required to buy a token");
 
         bidCoinBits = handleRemainder(bidCoinBits, currentRate);
 
 
+        //Todo calculations could be better 
+        uint totalCost = currentRate * (buyableProjectTokens) / (10 ** projectToken.decimals());
+        require(bidCoinBits >= (totalCost / buyableProjectTokens) ,"Bidcoin amount lower than required to buy a token");
 
-        uint totalCost = currentRate * (buyableProjectTokens);
         
 
       

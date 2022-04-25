@@ -35,7 +35,7 @@ import { numberToFixedNumber } from '../helpers';
 
 const BiLiraAddress = "0x8f5736aF17F2F071B476Fd9cFD27a1Bd8D7E7F15";
 
-const maestro = { address: "0x0f5c10458D42ED60b79dBbec30d26Db694646D73" }
+const maestro = { address: "0x7E72b0Ea0842F9eF143217e9CcE4a18188d8F12f" }
 const SUCoin = { address: "0xb6e466F4F0ab1e2dA2E8237F38B2eCf6278894Ce" }
 
 const CreateAuction = () => {
@@ -47,21 +47,44 @@ const CreateAuction = () => {
     
     const [isLoading, setLoading] = useState(false)
     const [auctionTypes, setAuctiontypes] = useState([
+     
         {
             id: 0,
-            name: "Dutch Auction",
-            description: "this is DUTCH Auction"
+            name: "Uncapped Auction",
+            description: "Fixed price unlimited tokens",
         },
         {
             id: 1,
-            name: "Uncapped Auction",
-            description: "Fixed price unlimited tokens",
+            name: "Pseudo Capped Auction",
+            description: "Fixed number of tokens but unlimited sucoins can be invested",
+        },
+        {
+            id : 2,
+            name: "Order book FCFS Auction",
+            description: "FCFS Auction where users get their tokens at the end of auction"
+        },
+        {
+            id : 3,
+            name: "FCFS Limit Auction",
+            description: "FCFS Auction where there is a limit in terms of sucoins that a user can invest"
+        },
+        {
+            id : 4,
+            name: "FCFS Auction",
+            description: "First come first serve fixed price fixed supply token sale"
+        },
+        {
+            id : 5,
+            name: "Dutch Auction",
+            description: "Similar to FCFS but price goes down with time"
         }
 
     ]);
 
     const [auction, setAuction] = useState("")
     const [tokenPrice, setTokenPrice] = useState();
+    const [finalPrice,setFinalPrice] = useState();
+    const [limit,setLimit] = useState();
     const [tokenAddress, setTokenAddress] = useState();
     const [TokensToBeDesitributed, setTokensToBeDesitributed] = useState();
 
@@ -94,14 +117,10 @@ const CreateAuction = () => {
 
         const maestroContract = new ethers.Contract(maestro.address,Maestro.abi,signer)
 
-        //Dutch Auction
-        if (id == 0) {
-            maestroContract.createAuction(hash,"DutchAuction",[tokenDistributedDecimal,priceDecimal,0,10000])
-        }
-        if (id == 1) {
-            maestroContract.createAuction(hash,"UncappedAuction",[0,priceDecimal,0,0])
-        }
-    
+        const auctionType = ["UncappedAuction","PseudoCappedAuction","OBFCFSAuction","FCFSLimitAuction","FCFSAuction","DutchAuction"][id]
+        maestroContract.createAuction(hash,"DutchAuction",[tokenDistributedDecimal,priceDecimal,finalPrice,limit])
+
+        
     }
 
 
@@ -110,6 +129,10 @@ const CreateAuction = () => {
         const value = e.currentTarget.value;
 
         if (name === 'tokenPrice') setTokenPrice(value);
+
+        if (name == "finalPrice") setFinalPrice(value);
+
+        if (name == "limit") setLimit(value);
 
         if (name === 'TokensToBeDesitributed') setTokensToBeDesitributed(value);
     };
@@ -141,6 +164,15 @@ const CreateAuction = () => {
                                                     </Col>
                                                 </Row >
 
+                                                <Row className="g-2">
+                                                    <Col md>
+                                                        <FloatingLabel controlId="floatingInputGrid" label="finalPrice">
+                                                            <Form.Control onChange={handleInput} name="finalPrice" type="text" />
+                                                        </FloatingLabel>
+                                                    </Col>
+                                                </Row >
+
+                                                
                                                
 
                                                 <Row className="g-2">
@@ -150,13 +182,17 @@ const CreateAuction = () => {
                                                         </FloatingLabel>
                                                     </Col>
                                                 </Row >
+                                                
+                                                <Row className="g-2">
+                                                    <Col md>
+                                                        <FloatingLabel controlId="floatingInputGrid" label="#limit">
+                                                            <Form.Control onChange={handleInput} name="limit" type="text" />
+                                                        </FloatingLabel>
+                                                    </Col>
+                                                </Row >
 
                                                 <br></br>
-                                                <Row style={{ paddingLeft: "10%" }}>
-                                                    <Col style={{ justifyContent: "center", alignItems: "center" }}>
-                                                        <Button variant="dark" onClick={() => { action1() }}> Create</Button>
-                                                    </Col>
-                                                </Row>
+                                           
                                             </Container>
 
 
