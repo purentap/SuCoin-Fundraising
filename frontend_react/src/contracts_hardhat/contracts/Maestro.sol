@@ -249,6 +249,7 @@ contract Maestro     is AccessControl{
         return typeAddress;
     }
 
+    //TODO: MULTISIG
     function editImplementation(string memory name, address newImplementationAddress) external onlyRole(DEFAULT_ADMIN_ROLE) {
         address addressCurrent = auctionNameAddressSet[name];
         require(addressCurrent != address(0),"This contract type is not specified");

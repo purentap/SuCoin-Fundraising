@@ -25,6 +25,18 @@ function ProjectInvitationCard(props){
         Pending: "orange",
       };
 
+      const invitationAcceptHandler = async () => {
+        const acceptedProject = props;
+    
+        props.invitationAccept(acceptedProject);
+      };
+
+      const invitationRejectHandler = async () => {
+        const rejectedProject = props;
+    
+        props.invitationReject(rejectedProject);
+      };
+
     return (
         
         <Grid
@@ -120,6 +132,7 @@ function ProjectInvitationCard(props){
           >
             <HStack spacing={10} height="100%">
               <Button
+                onClick ={invitationAcceptHandler}
                 variant="ghost"
                 textColor="white"
                 height="80%"
@@ -141,6 +154,7 @@ function ProjectInvitationCard(props){
                 <Text>Accept</Text>
               </Button>
               <Button
+                onClick={invitationRejectHandler}
                 variant="ghost"
                 textColor="white"
                 height="80%"
