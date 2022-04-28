@@ -39,7 +39,18 @@ contract Maestro     is AccessControl{
         address proposer;
         address token;
         address auction;
+        string auctionType;
     }
+
+    struct ProjectSurface {
+        address auction;
+        string tokenName;
+        string tokenSymbol;
+        string auctionType;
+
+    }
+
+
 
   struct userAuctionParameters {
 
@@ -48,6 +59,36 @@ contract Maestro     is AccessControl{
        uint finalRate;
        uint limit;
     }
+
+
+
+    function getProjectSurfaceByStatus(bytes32[] calldata hashes,Auction.AuctionStatus status,uint selectCount) view external returns(ProjectSurface[] memory){
+
+
+        ProjectSurface[] memory wantedProjects = new ProjectSurface[](selectCount);
+
+
+        for (uint i = 0; (i < hashes.length) && (selectCount > 0); i++) {
+               Project  storage  project = projectTokens[hashes[i]];
+               address auction = project.auction;
+
+               if (auction == address(0))
+                continue;
+
+               if (Auction(auction).status() == status) {
+                   ERC20 token = ERC20(project.token);
+                   wantedProjects[--selectCount] = ProjectSurface(project.auction,token.name(),token.symbol(),project.auctionType);
+               }
+               
+            }
+        return wantedProjects;
+
+        }
+                
+
+                
+
+    
 
     
    
@@ -214,6 +255,8 @@ contract Maestro     is AccessControl{
 
                
         projectTokens[projectHash].auction = address(clone);
+        projectTokens[projectHash].auctionType = auctionType;
+
 
         emit CreateAuctionEvent(msg.sender, address(clone), auctionType, projectHash);
 
