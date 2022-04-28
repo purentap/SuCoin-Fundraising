@@ -15,6 +15,9 @@ import Button from './Button';
 import ProjectRegister from '../abi/project.json'
 import Web3 from 'web3';
 
+import axios from 'axios'
+import Cookies from 'js-cookie'
+
 
 // Hook
 import { useHomeFetch } from '../hooks/useHomeFetch';
@@ -39,6 +42,36 @@ const Home = () => {
     console.log(state.results)
 
   }
+
+  useEffect(async () => {
+    try {
+      const apiInstance = axios.create({
+        baseURL: "https://localhost:5001",
+      })
+      apiInstance.defaults.headers.common["Authorization"] = `Bearer ${Cookies.get('token')}`
+      let response2 = new Promise((resolve, reject) => {
+        apiInstance
+          .get("/Project/Get/All/false")
+          .then((res) => {
+              console.log(res.data.map(element => element))
+            resolve(res.data.map(element => element.fileHex))
+          })
+          .catch((e) => {
+            const err = "Unable to add the project"
+            reject(err)
+
+          })
+      })
+      let result = await response2
+      console.log(result)
+
+    } catch (error) {
+      console.log(error)
+    }
+
+
+  }, [])
+
 
   const courasel =  (type) => {
       //todo get values according to request
