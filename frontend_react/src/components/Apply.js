@@ -159,6 +159,7 @@ const Apply = () => {
 
 	return (
 		<>
+			<div className="sectionName" style={{paddingLeft:"50px", paddingTop:"25px", paddingBottom:"25px"}}>Apply Project</div>
 			<ToastBar toastText={toastText} toastHeader={toastHeader} toastShow={toastShow} setToastshow={setToastshow}></ToastBar>
 			<Wrapper>
 				<Container style={{ width: "30%" }}  >
