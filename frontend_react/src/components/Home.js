@@ -17,13 +17,16 @@ import Web3 from 'web3';
 
 import axios from 'axios'
 import Cookies from 'js-cookie'
-
+import Maestro from "../contracts_hardhat/artifacts/contracts/Maestro.sol/Maestro.json"
+import { ethers } from 'ethers';
 
 // Hook
 import { useHomeFetch } from '../hooks/useHomeFetch';
 // Image
 import NoImage from '../images/no_image.jpg';
 import cool_jpeg from '../images/cool_block.jpeg';
+
+import {getAuctionByStatus} from "./Auctions.js"
 
 const Home = () => {
   const {
@@ -43,34 +46,16 @@ const Home = () => {
 
   }
 
+
+  //Gets x amount of random auctions
+  //Status,Count
+  //Status - 0 Off  1 - Running 2 - Finished
+  //Count should be fixed later
+
   useEffect(async () => {
-    try {
-      const apiInstance = axios.create({
-        baseURL: "https://localhost:5001",
-      })
-      apiInstance.defaults.headers.common["Authorization"] = `Bearer ${Cookies.get('token')}`
-      let response2 = new Promise((resolve, reject) => {
-        apiInstance
-          .get("/Project/Get/All/false")
-          .then((res) => {
-              console.log(res.data.map(element => element))
-            resolve(res.data.map(element => element.fileHex))
-          })
-          .catch((e) => {
-            const err = "Unable to add the project"
-            reject(err)
+    console.log(await getAuctionByStatus(0,5))
 
-          })
-      })
-      let result = await response2
-      console.log(result)
-
-    } catch (error) {
-      console.log(error)
-    }
-
-
-  }, [])
+  })
 
 
   const courasel =  (type) => {

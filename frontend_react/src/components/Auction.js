@@ -9,9 +9,9 @@ import Button from 'react-bootstrap/Button'
 
 const Auction = () => {
     const {state} = useLocation();
-    const {auctionType,auctionAddress,projectId} = state
+    const {auctionType,auction,projectId} = state
 
-    console.log(auctionAddress)
+
 
 
 
@@ -55,12 +55,12 @@ const Auction = () => {
     const navigate = useNavigate();
 
 
-    const tokenBoughtFilter = {address:auctionAddress,topics: [ethers.utils.id("TokenBought(address,uint256,uint256)")]}
+    const tokenBoughtFilter = {address:auction,topics: [ethers.utils.id("TokenBought(address,uint256,uint256)")]}
 
     
     useEffect(async() => {
         const {abi} = await import(`../contracts_hardhat/artifacts/contracts/UpgradeableAuctions/${auctionType}.sol/${auctionType}.json`)
-        const auctionContract =  new ethers.Contract(auctionAddress,abi,provider)
+        const auctionContract =  new ethers.Contract(auction,abi,provider)
 
       
 
@@ -73,7 +73,7 @@ const Auction = () => {
         <div>
             {
                     <div>
-                        <AuctionInfo projectId={projectId} auction={auctionAddress} price={price} tokenDist={tokenDist} deposit={soldToken} />
+                        <AuctionInfo projectId={projectId} auction={auction} price={price} tokenDist={tokenDist} deposit={soldToken} />
                     </div>
 
              

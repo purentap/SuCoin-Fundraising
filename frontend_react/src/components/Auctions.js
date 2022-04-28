@@ -31,15 +31,54 @@ import ERC20MintableUpgradeable from "../contracts_hardhat/artifacts/contracts/U
 import Maestro from "../contracts_hardhat/artifacts/contracts/Maestro.sol/Maestro.json"
 
 
+
+
 const options = [
     { value: 'fens', label: 'FENS' },
     { value: 'fass', label: 'FASS' },
     { value: 'fman', label: 'FMAN' }
 ]
 
-const MaestroAddress = "0x557596a0b4Ce6ec22BB6B533Aa49c6165eFD21cB";
+const MaestroAddress = "0x2A42610389b0d0aAa184A83C5733F2F6739BCc4B";
 
 const IDs = []
+
+const provider = new ethers.providers.Web3Provider(window.ethereum);
+var MAESTRO = new ethers.Contract(MaestroAddress, Maestro.abi, provider);
+
+export const getAuctionByStatus = async(status,count) => {
+    const CryptoJS = require('crypto-js');
+    const apiInstance = axios.create({
+        baseURL: "https://localhost:5001",
+    })
+    apiInstance.defaults.headers.common["Authorization"] = `Bearer ${Cookies.get('token')}`
+    let response2 = new Promise((resolve, reject) => {
+        apiInstance
+            .get("/Project/Get/All/False")
+            .then((res) => {
+                console.log("response: ", res.data) 
+                resolve(res)
+            })
+            .catch((e) => {
+                const err = "Unable to add the project"
+                reject(err)
+
+            })
+    })
+    let result = await response2
+
+    const hashToProject = Object.fromEntries(result.data.data.map(project => ["0x" + project.fileHex,project]))
+
+
+    const auctionData = await MAESTRO.getProjectSurfaceByStatus(Object.keys(hashToProject),0,10)
+    const auctionDataCombined = auctionData.filter(auction => auction.auctionType != "").map(auction => {
+        let newAuction = Object.assign([],auction)
+        Object.assign(newAuction,(({ projectName, projectDescription,imageUrl,projectID }) => ({ projectName, projectDescription,imageUrl,projectID }))(hashToProject[auction.projectHash]))
+        return newAuction
+    })
+
+    return auctionDataCombined
+}
 
 const Auctions = () => {
     const [auctions, setAuctions] = useState([
@@ -56,75 +95,16 @@ const Auctions = () => {
     const [toastHeader, setToastheader] = useState();
     const [projects, setProjects] = useState();
 
-
+    
 
     useEffect(async () => {
         try {
-            const CryptoJS = require('crypto-js');
-            const apiInstance = axios.create({
-                baseURL: "https://localhost:5001",
-            })
-            apiInstance.defaults.headers.common["Authorization"] = `Bearer ${Cookies.get('token')}`
-            let response2 = new Promise((resolve, reject) => {
-                apiInstance
-                    .get("/Project/Get/All/False")
-                    .then((res) => {
-                        console.log("response: ", res.data) 
-                        resolve(res)
-                    })
-                    .catch((e) => {
-                        const err = "Unable to add the project"
-                        reject(err)
-
-                    })
-            })
-            let result = await response2
-
-            const hashToId = Object.fromEntries(result.data.data.map(project => ["0x" + project.fileHex,project.projectID]))
-
-
-
-
-
-            const provider = await new ethers.providers.Web3Provider(window.ethereum);
-            var MAESTRO = await new ethers.Contract(MaestroAddress, Maestro.abi, provider);
-
-            var filter = await MAESTRO.filters.CreateAuctionEvent();
-            var allCreateAuctionEvents = await MAESTRO.queryFilter(filter);
-
-
-
-            const wantedInformation = ["id","auctionAddress","fileHash","auctionType","creator","status","tokenSymbol","tokenName", "projectName", "projectDescription", "imageUrl"]
- 
             
-          const auctionData =  Promise.all(allCreateAuctionEvents.map(async auctionEvent => {
-                const {auction,fileHash,auctionType,creator} = auctionEvent.args;
-                const auctionContract =  new ethers.Contract(auction,Auction.abi,provider)
+            
+     
+ 
 
-                 const statusPromise = auctionContract.status()
-                                        .then(status => ["notStarted","Ongoing","Finished"][status]) 
-
-
-                const tokenPromise =   MAESTRO.projectTokens(fileHash)
-                                            .then(addresses => new ethers.Contract(addresses.token,ERC20MintableUpgradeable.abi,provider))
-                                            .then(contract => Promise.all([contract.symbol(),contract.name()]))
-
-                 
-                
-                const id = hashToId[fileHash]
-
-                console.log(id)
-                const {projectName, projectDescription, imageUrl} = result.data.data.find(element =>  element.projectID == id);
-                
-                
-                return Promise.all([id, auction,fileHash,auctionType,creator,statusPromise,tokenPromise, projectName, projectDescription, imageUrl])
-                              .then(result => result.flat())
-                              .then(resultFlat => Object.fromEntries(wantedInformation.map((_,i) => [wantedInformation[i],resultFlat[i]])))
-
-            }))
-
-
-            setAuctions(await auctionData)
+            setAuctions(await getAuctionByStatus(0,10))
           
 
             
@@ -181,7 +161,7 @@ const Auctions = () => {
                             auctionType={project.auctionType}
                             tokenName={project.tokenName}
                             totalFund={"N/A"}
-                            projectID={project.id}
+                            projectID={project.projectID}
                             />
                         </div>
                     ))

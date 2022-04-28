@@ -47,6 +47,7 @@ contract Maestro     is AccessControl{
         string tokenName;
         string tokenSymbol;
         string auctionType;
+        bytes32 projectHash;
 
     }
 
@@ -77,7 +78,7 @@ contract Maestro     is AccessControl{
 
                if (Auction(auction).status() == status) {
                    ERC20 token = ERC20(project.token);
-                   wantedProjects[--selectCount] = ProjectSurface(project.auction,token.name(),token.symbol(),project.auctionType);
+                   wantedProjects[--selectCount] = ProjectSurface(project.auction,token.name(),token.symbol(),project.auctionType,hashes[i]);
                }
                
             }
