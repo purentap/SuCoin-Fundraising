@@ -10,6 +10,7 @@ namespace SU_COIN_BACK_END.Constants.MessageConstants
         public const string PROJECT_UPDATE_SUCCESS = "Project updated";
         public const string PROJECT_UPDATE_FAIL = "Project update fail";
         public const string PROJECT_NOT_FOUND = "Project not found";
+        public const string PROJECT_NAME_EXISTS = "Project name already exists please choose another name";
         public const string USER_REGISTER_SUCCESS = "User register successful";
         public const string USER_REGISTER_FAIL = "User register failed";
         public const string USER_LOGIN_SUCCES = "Login Success";
@@ -31,6 +32,7 @@ namespace SU_COIN_BACK_END.Constants.MessageConstants
         public const string EVENT_NOT_FOUND = "No event has found";
         public const string PROJECT_NOT_SUBMITTED_TO_CHAIN = "Project pdf you are trying to register is not submitted to blockchain";
         public const string NOT_AUTHORIZED_TO_ACCESS = "You are not authorized to access this resource";
+        public const string OK = "Ok";
     }
 }
 

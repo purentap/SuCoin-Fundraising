@@ -66,7 +66,7 @@ namespace SU_COIN_BACK_END.Services
                 _context.Users.Update(user);
                 await _context.SaveChangesAsync();
                 response.Success = true;
-                response.Message = "Ok";
+                response.Message = MessageConstants.OK;
                 response.Data = nonce;
             }
             catch (Exception e)

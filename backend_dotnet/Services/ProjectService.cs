@@ -55,7 +55,7 @@ namespace SU_COIN_BACK_END.Services {
                 if (await ProjectNameExists(project.ProjectName))
                 {
                     response.Success = false;
-                    response.Message = "Project name already exists please choose another name";
+                    response.Message = MessageConstants.PROJECT_NAME_EXISTS;
                     return response;
                 }
 
@@ -88,7 +88,7 @@ namespace SU_COIN_BACK_END.Services {
                     await _context.ProjectPermissions.AddAsync(permission);
                     await _context.SaveChangesAsync();
 
-                    response.Data = "Ok";
+                    response.Data = MessageConstants.OK;
                     response.Message = MessageConstants.PROJECT_ADD_SUCCESS;
                     response.Success = true;
                 }
@@ -116,7 +116,7 @@ namespace SU_COIN_BACK_END.Services {
                 if (await ProjectNameExists(project.ProjectName))
                 {
                     response.Success = false;
-                    response.Message = "Project name already exists please choose another name";
+                    response.Message = MessageConstants.PROJECT_NAME_EXISTS;
                     return response;
                 }
                 else if (!await IsProjectSubmittedToChain(project.FileHex))
@@ -155,7 +155,7 @@ namespace SU_COIN_BACK_END.Services {
                     await _context.ProjectPermissions.AddAsync(permission);
                     await _context.SaveChangesAsync();
 
-                    response.Data = "Ok";
+                    response.Data = MessageConstants.OK;
                     response.Message = MessageConstants.PROJECT_ADD_SUCCESS;
                     response.Success = true;
                 }
@@ -196,7 +196,7 @@ namespace SU_COIN_BACK_END.Services {
                     _context.ProjectPermissions.RemoveRange(_context.ProjectPermissions.Where(c => c.ProjectID == ID));
                     _context.Remove(project);
                     await _context.SaveChangesAsync();
-                    response.Message = "Ok";
+                    response.Message = MessageConstants.OK;
                     response.Data = true;
                     response.Success = true;
                 }
@@ -266,13 +266,13 @@ namespace SU_COIN_BACK_END.Services {
                     else 
                     {
                         response.Data = (projects.Take(count).Select(c => _mapper.Map<ProjectDTO>(c))).ToList(); // map projects to projectDTOs
-                        response.Message = "Ok";
+                        response.Message = MessageConstants.OK;
                         response.Success = true;  
                     }           
                 }
                 else
                 {
-                    response.Message = "No project found!";
+                    response.Message = MessageConstants.PROJECT_NOT_FOUND;
                     response.Success = true;
                 }
             }
@@ -298,13 +298,13 @@ namespace SU_COIN_BACK_END.Services {
                     if (userRole == UserRoleConstants.ADMIN || userRole == UserRoleConstants.WHITELIST || project.Status == ProjectStatusConstants.APPROVED) 
                     {
                         response.Data = _mapper.Map<ProjectDTO>(project);
-                        response.Message = "Ok";
+                        response.Message = MessageConstants.OK;
                         response.Success = true;
                     }
                     else
                     {
                         response.Success = false;
-                        response.Message = "You are not authorized to access resources";
+                        response.Message = MessageConstants.NOT_AUTHORIZED_TO_ACCESS;
                     }
                 }
                 else 
@@ -354,16 +354,16 @@ namespace SU_COIN_BACK_END.Services {
                     if (hashes != null)
                     {
                         response.Data = hashes;
-                        response.Message = "Ok";
+                        response.Message = MessageConstants.OK;
                         response.Success = true;
                     }
                     else
                     {
-                        response.Message = "No projects found in the auction";
+                        response.Message = MessageConstants.PROJECT_NOT_FOUND;
                         response.Success = true;
                     }
                 }
-                else 
+                else // all projects
                 {
                     string userRole = GetUserRole();
                     Console.WriteLine($"User role: {userRole}"); // Debuging
@@ -373,19 +373,19 @@ namespace SU_COIN_BACK_END.Services {
                         if (hashes != null) 
                         {
                             response.Data = hashes;
-                            response.Message = "Ok";
+                            response.Message = MessageConstants.OK;
                             response.Success = true;
                         }
                         else 
                         {
-                            response.Message = "No projects found in the auction";
+                            response.Message = MessageConstants.PROJECT_NOT_FOUND;
                             response.Success = true;
                         }
                     }
                     else 
                     {
                         response.Success = false;
-                        response.Message = "You are not authorized to access resources";
+                        response.Message = MessageConstants.NOT_AUTHORIZED_TO_ACCESS;
                     }
                 }
 
@@ -438,7 +438,7 @@ namespace SU_COIN_BACK_END.Services {
                     _context.Update(project);
                     await _context.SaveChangesAsync();
                     response.Success = true;
-                    response.Message = "Ok";
+                    response.Message = MessageConstants.OK;
                     response.Data = _mapper.Map<ProjectDTO>(project);
                 } 
                 else
@@ -472,7 +472,7 @@ namespace SU_COIN_BACK_END.Services {
                 if (sameNameProjectId > 0 && sameNameProjectId != project.ProjectID)
                 {
                     response.Success = false;
-                    response.Message = "Project name already exists please choose another name";
+                    response.Message = MessageConstants.PROJECT_NAME_EXISTS;
                     return response;
                 }
 
@@ -487,7 +487,7 @@ namespace SU_COIN_BACK_END.Services {
                     await _context.SaveChangesAsync();
                     response.Data = _mapper.Map<ProjectDTO>(dbProject);
                     response.Success = true;
-                    response.Message = "Ok" ;              
+                    response.Message = MessageConstants.OK;              
                 }
                 else
                 {
@@ -524,7 +524,7 @@ namespace SU_COIN_BACK_END.Services {
                     else
                     {
                         response.Data = Convert.FromHexString(project.FileHex);
-                        response.Message = "Ok";
+                        response.Message = MessageConstants.OK;
                         response.Success = true;
                     }
                 }
@@ -562,12 +562,12 @@ namespace SU_COIN_BACK_END.Services {
                 if (projects != null)
                 {
                     response.Data = (projects.Select(c => _mapper.Map<ProjectDTO>(c))).ToList();
-                    response.Message = "Ok";
+                    response.Message = MessageConstants.OK;
                     response.Success = true;
                 }
                 else
                 {
-                    response.Message = "No project found!";
+                    response.Message = MessageConstants.PROJECT_NOT_FOUND;
                     response.Success = false;
                 }
             }
@@ -669,7 +669,7 @@ namespace SU_COIN_BACK_END.Services {
                     await _context.SaveChangesAsync();
                     response.Data = _mapper.Map<ProjectDTO>(dbProject);
                     response.Success = true;
-                    response.Message = "Ok";
+                    response.Message = MessageConstants.OK;
                 }
                 else
                 {
@@ -716,7 +716,7 @@ namespace SU_COIN_BACK_END.Services {
 
                     response.Data = (allProjects.Select(c => _mapper.Map<ProjectDTO>(c))).ToList();
                     response.Success = true;
-                    response.Message = "Ok";
+                    response.Message = MessageConstants.OK;
                 }
                 else
                 {
@@ -840,7 +840,7 @@ namespace SU_COIN_BACK_END.Services {
 
                     response.Data = (allProjects.Select(c => _mapper.Map<ProjectDTO>(c))).ToList();
                     response.Success = true;
-                    response.Message = "Ok";
+                    response.Message = MessageConstants.OK;
                 }
                 else
                 {

@@ -54,7 +54,7 @@ namespace SU_COIN_BACK_END.Services
                 var allEvents = await registerEventHandler.GetAllChangesAsync(filterAllRegisterEvents);
                 if (allEvents != null) // user registered projects so far
                 {
-                    response.Message = "Ok";
+                    response.Message = MessageConstants.OK;
                     response.Success = true;
                     response.Data = allEvents;
                 }
@@ -82,7 +82,7 @@ namespace SU_COIN_BACK_END.Services
                 var allEvents = await whitelistInsertEventHandler.GetAllChangesAsync(filterAllWhitelistEvents);
                 if (allEvents != null) // user has been inserted into the whitelist before
                 {
-                    response.Message = "Ok";
+                    response.Message = MessageConstants.OK;
                     response.Success = true;
                     response.Data = allEvents;
                 }
@@ -110,7 +110,7 @@ namespace SU_COIN_BACK_END.Services
                 var allEvents = await whitelistRemoveEventHandler.GetAllChangesAsync(filterAllWhitelistEvents);
                 if (allEvents != null) // user has beem removed from the whitelist before
                 {
-                    response.Message = "Ok";
+                    response.Message = MessageConstants.OK;
                     response.Success = true;
                     response.Data = allEvents;
                 }
@@ -162,7 +162,7 @@ namespace SU_COIN_BACK_END.Services
                 var allEvents = await whitelistInsertEventHandler.GetAllChangesAsync(filterAllProjEvalEvents);
                 if (allEvents != null) // projects have been evaluated before
                 {
-                    response.Message = "Ok";
+                    response.Message = MessageConstants.OK;
                     response.Success = true;
                     response.Data = allEvents;
                 }

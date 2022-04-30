@@ -46,7 +46,7 @@ namespace SU_COIN_BACK_END.Services
                 {
                     _context.Remove(user);
                     await _context.SaveChangesAsync();
-                    response.Message = "Ok";
+                    response.Message = MessageConstants.OK;
                     response.Success = true;
                 }
                 else
@@ -73,7 +73,7 @@ namespace SU_COIN_BACK_END.Services
 
                 if (user != null)
                 {   
-                    response.Message = "Ok";
+                    response.Message = MessageConstants.OK;
                     response.Success = true;
                     response.Data = _mapper.Map<UserDTO>(user);
                     response.Data.Invitations = await _context.ProjectPermissions
@@ -117,7 +117,7 @@ namespace SU_COIN_BACK_END.Services
 
                     _context.Users.Update(dbUser);
                     await _context.SaveChangesAsync();
-                    response.Message = "Ok";
+                    response.Message = MessageConstants.OK;
                     response.Success = true;
                     response.Data = _mapper.Map<UserDTO>(dbUser);
                 }
@@ -257,12 +257,12 @@ namespace SU_COIN_BACK_END.Services
                 if (users != null)
                 {
                     response.Data = (users.Select(c => _mapper.Map<UserDTO>(c))).ToList();
-                    response.Message = "Ok";
+                    response.Message = MessageConstants.OK;
                     response.Success = true;
                 }
                 else 
                 {
-                    response.Message = "No user found";
+                    response.Message = MessageConstants.USER_NOT_FOUND;
                     response.Success = false;
                 }
             } catch (Exception e) {    
