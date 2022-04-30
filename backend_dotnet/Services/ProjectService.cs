@@ -58,6 +58,67 @@ namespace SU_COIN_BACK_END.Services {
                     response.Message = "Project name already exists please choose another name";
                     return response;
                 }
+
+                /* Project has not been created in the database. Create the new project */
+                Project new_project = _mapper.Map<Project>(project);
+                new_project.FileHex = project.FileHex;
+                new_project.Date = DateTime.Now;
+                new_project.IsAuctionStarted = false;
+                new_project.Status = ProjectStatusConstants.PENDING;
+                new_project.MarkDown = "";
+                new_project.Rating = 0;
+                new_project.ProposerAddress = GetUserAddress();
+
+                await _context.Projects.AddAsync(new_project);
+                await _context.SaveChangesAsync();
+
+                /* For security reasons, we need to recheck the database and then assign the permission */
+                Project? dbProject = await _context.Projects.FirstOrDefaultAsync(c => c.ProjectName == project.ProjectName);
+
+                if (dbProject != null) // The project was added to the database successfully
+                {
+                    /* Since project was added successfully, add an owner to the project */
+                    ProjectPermission permission = new ProjectPermission
+                    {
+                        ProjectID = dbProject.ProjectID, 
+                        UserID = GetUserId(), 
+                        Role = UserPermissionRoleConstants.OWNER,
+                        IsAccepted = true 
+                    };
+                    await _context.ProjectPermissions.AddAsync(permission);
+                    await _context.SaveChangesAsync();
+
+                    response.Data = "Ok";
+                    response.Message = MessageConstants.PROJECT_ADD_SUCCESS;
+                    response.Success = true;
+                }
+                else // The project could not be added, because some operations were applied to the project while adding the project to the database.
+                {
+                    response.Data = "Not Added";
+                    response.Message = MessageConstants.PROJECT_ADD_FAIL;
+                    response.Success = true;
+                }
+            }
+            catch (Exception e)
+            {
+                response.Success = false;
+                response.Message = MessageConstants.PROJECT_ADD_FAIL + "\nException message: " + e.Message;
+                return response;
+            }
+            return response;
+        }
+
+        public async Task<ServiceResponse<string>> AddProjectAfterChain(ProjectDTO project)
+        {
+            ServiceResponse<string> response = new ServiceResponse<string>();
+            try
+            {
+                if (await ProjectNameExists(project.ProjectName))
+                {
+                    response.Success = false;
+                    response.Message = "Project name already exists please choose another name";
+                    return response;
+                }
                 else if (!await IsProjectSubmittedToChain(project.FileHex))
                 {
                     response.Success = false;
@@ -156,9 +217,7 @@ namespace SU_COIN_BACK_END.Services {
 
         public async Task<ServiceResponse<List<ProjectDTO>>> GetProjects(bool withHex = false, int count = Int32.MaxValue)
         {
-            var time = DateTime.Now;
             ServiceResponse<List<ProjectDTO>> response = new ServiceResponse<List<ProjectDTO>>();
-
             try
             {
                 string userRole = GetUserRole();
@@ -167,10 +226,10 @@ namespace SU_COIN_BACK_END.Services {
 
                 /* First fetch all the projects. Then check if the user is neither admin nor whitelist, just filter the approved projects */
 
-                var hashResult = _context.Projects.FromSqlRaw("Select projectID,SHA2(FileHex,256) as FileHex from Projects");
+                var hashResult = _context.Projects.FromSqlRaw("Select projectID,SHA2(FileHex,256) as FileHex from Projects"); // ProjectId&Hash Records
         
 
-                var hashedVersion =  hashResult.Join(
+                var hashedVersion =  hashResult.Join( // Newly constructed query project list which includes hash of the fileHexs
                     _context.Projects,
                     hash => hash.ProjectID,
                     project => project.ProjectID,
@@ -179,11 +238,12 @@ namespace SU_COIN_BACK_END.Services {
                         ProjectID = projects.ProjectID, 
                         ProjectName = projects.ProjectName, 
                         Date = projects.Date, 
+                        IsAuctionStarted = projects.IsAuctionStarted, 
                         ProjectDescription = projects.ProjectDescription, 
                         ImageUrl = projects.ImageUrl, 
                         Rating = projects.Rating, 
                         Status = projects.Status,
-                        FileHex =  hash.FileHex, 
+                        FileHex =  hash.FileHex, // hash value is combined to project with FileHex property
                     }
                 );
 
@@ -213,7 +273,7 @@ namespace SU_COIN_BACK_END.Services {
                 else
                 {
                     response.Message = "No project found!";
-                    response.Success = false;
+                    response.Success = true;
                 }
             }
             catch (Exception e)
@@ -258,6 +318,84 @@ namespace SU_COIN_BACK_END.Services {
                 response.Message = e.Message;
                 response.Success = false;
             }
+            return response;
+        }
+
+        public async Task<ServiceResponse<List<string>>> GetAllFileHashes(bool areOnlyAuctionsStarted = false)
+        {
+            ServiceResponse<List<string>> response = new ServiceResponse<List<string>>();
+            try 
+            {
+                //List<Project> projects = new List<Project>();
+                List<string> hashes = new List<string>();
+                var hashResult = _context.Projects.FromSqlRaw("Select projectID,SHA2(FileHex,256) as FileHex from Projects"); // ProjectId&Hash Records
+
+                var hashedVersion = hashResult.Join(  // Newly constructed query project list which includes hash of the fileHexs
+                    _context.Projects,
+                    hash => hash.ProjectID,
+                    project => project.ProjectID,
+                    (hash, projects) => new Project
+                    {
+                        ProjectID = projects.ProjectID,
+                        ProjectName = projects.ProjectName,
+                        Date = projects.Date,
+                        IsAuctionStarted = projects.IsAuctionStarted,
+                        ProjectDescription = projects.ProjectDescription,
+                        ImageUrl = projects.ImageUrl,
+                        Rating = projects.Rating,
+                        Status = projects.Status,
+                        FileHex = hash.FileHex // hash value is combined to project with FileHex property
+                    }
+                );
+
+                if (areOnlyAuctionsStarted)
+                {
+                    hashes =  await hashedVersion.Where(p => p.IsAuctionStarted).Select(p => p.FileHex).ToListAsync();
+                    if (hashes != null)
+                    {
+                        response.Data = hashes;
+                        response.Message = "Ok";
+                        response.Success = true;
+                    }
+                    else
+                    {
+                        response.Message = "No projects found in the auction";
+                        response.Success = true;
+                    }
+                }
+                else 
+                {
+                    string userRole = GetUserRole();
+                    Console.WriteLine($"User role: {userRole}"); // Debuging
+                    if (userRole == UserRoleConstants.ADMIN)
+                    {
+                        hashes = await hashResult.Select(p => p.FileHex).ToListAsync();
+                        if (hashes != null) 
+                        {
+                            response.Data = hashes;
+                            response.Message = "Ok";
+                            response.Success = true;
+                        }
+                        else 
+                        {
+                            response.Message = "No projects found in the auction";
+                            response.Success = true;
+                        }
+                    }
+                    else 
+                    {
+                        response.Success = false;
+                        response.Message = "You are not authorized to access resources";
+                    }
+                }
+
+            }
+            catch (Exception e) 
+            {
+                response.Message = e.Message;
+                response.Success = false;
+            }
+
             return response;
         }
 

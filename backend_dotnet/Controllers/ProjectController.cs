@@ -86,6 +86,18 @@ namespace SU_COIN_BACK_END.Controllers
             return Ok(response);
         }
 
+        [HttpPost("AddAfterChain")]
+        public async Task<IActionResult> AddProjectAfterChain(ProjectDTO project)
+        {
+            ServiceResponse<string> response = await _projectService.AddProjectAfterChain(project);
+            Console.WriteLine(response.Message);
+            if (!response.Success)
+            {
+                return BadRequest(response);
+            }
+            return Ok(response);
+        }
+
         [HttpPut("Rate/{id}/{rating}")]
         public async Task<IActionResult> RateProject(int id, double rating)
         {
@@ -175,6 +187,17 @@ namespace SU_COIN_BACK_END.Controllers
                 return BadRequest(response);
             }
             return Ok(response);
+        }
+
+        [HttpGet("GetAllHashes/{areOnlyAuctionsStarted}")]
+        public async Task<IActionResult> GetAllFileHashes(bool areOnlyAuctionsStarted)
+        {
+            ServiceResponse<List<string>> response = await _projectService.GetAllFileHashes(areOnlyAuctionsStarted);
+            if (!response.Success)
+            {
+                return BadRequest(response);
+            }
+            return Ok(response.Data);
         }
     }
 }
