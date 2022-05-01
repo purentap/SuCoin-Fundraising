@@ -7,31 +7,26 @@ import "@openzeppelin/contracts/proxy/Clones.sol";
 import "./UpgradeableAuctions/Auction.sol";
 
 import "./UpgradeableTokens/ERC20MintableUpgradeable.sol";
-import "@openzeppelin/contracts/access/AccessControl.sol";
 
 import "./ProjectRegister.sol";
 
 
-contract Maestro     is AccessControl{
+contract Maestro {
 
-    bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
 
     mapping (bytes32 => Project) public projectTokens;
 
     address tokenImplementationAddress;
     mapping (string => address) private auctionNameAddressSet;
 
-    mapping (bytes => addressCounterTimed) private multiSigCounter;
+    mapping (bytes => ProjectRegister.addressCounterTimed) private multiSigCounter;
 
 
 
     ERC20 sucoin;
 
 
-    struct addressCounterTimed {
-        address[] addresses;
-        uint beginningBlock;
-    }
+
 
     ProjectRegister projectManager;
 
@@ -89,15 +84,12 @@ contract Maestro     is AccessControl{
 
                 
 
-    
 
     
    
     constructor(address _sucoin,address _projectManager,string[] memory nameArray,address[] memory implementationContracts){
 
-        _grantRole(DEFAULT_ADMIN_ROLE,msg.sender);
-        _grantRole(ADMIN_ROLE,msg.sender);
-       
+
 
         sucoin = ERC20(_sucoin);
 
@@ -137,46 +129,14 @@ contract Maestro     is AccessControl{
     );
 
 
-
-
-    function setSucoin(address newAddress) external multiSig(DEFAULT_ADMIN_ROLE,2,100) {
-        sucoin = ERC20(newAddress);
-    }
-
-
-    modifier tokenAssigned(bytes32 projectHash){
-        require(projectTokens[projectHash].token != address(0),"No token assigned to this project");
-        _;
-    }
-
-    
-
-    modifier notDeployed(bytes32 projectHash){
-        require(projectTokens[projectHash].auction == address(0),"Auction already deployed for this project.");
-        _;
-    }
-
-
-   modifier tokenOwner(bytes32 projectHash, address owner){
-        require(projectTokens[projectHash].proposer == owner ,"You are not the owner of the token");
-        _;
-    }
-
-    modifier managerControl(bytes32 projectHash,address caller) {
-        projectManager.isValidToDistribute(caller,projectHash);
-        _;
-    }
-
-
-
-    modifier multiSig(bytes32 role,uint walletCount,uint timeLimitInBlocks){
+modifier multiSig(bytes32 role,uint walletCount,uint timeLimitInBlocks){
         //Check parameter correctness
         require(walletCount != 0,"Wallet Counter Parameter must be higher than 0");
         require(timeLimitInBlocks != 0, "Time limit must be higher than 0");
         //Check role permissions
-        require(hasRole(role,address(0)) || hasRole(role,msg.sender),"You don't have permission to run this function");
+        require(projectManager.hasRole(role,address(0)) || projectManager.hasRole(role,msg.sender),"You don't have permission to run this function");
         //Get reference to addresses
-        addressCounterTimed storage addressCounter = multiSigCounter[msg.data];
+        ProjectRegister.addressCounterTimed storage addressCounter = multiSigCounter[msg.data];
         address[] storage addresses = addressCounter.addresses;
 
         
@@ -206,6 +166,40 @@ contract Maestro     is AccessControl{
             _;
         }     
     }
+
+
+
+    function setSucoin(address newAddress) external multiSig(projectManager.ADMIN_ROLE(),2,100) {
+        sucoin = ERC20(newAddress);
+    }
+
+
+    modifier tokenAssigned(bytes32 projectHash){
+        require(projectTokens[projectHash].token != address(0),"No token assigned to this project");
+        _;
+    }
+
+    
+
+    modifier notDeployed(bytes32 projectHash){
+        require(projectTokens[projectHash].auction == address(0),"Auction already deployed for this project.");
+        _;
+    }
+
+
+   modifier tokenOwner(bytes32 projectHash, address owner){
+        require(projectTokens[projectHash].proposer == owner ,"You are not the owner of the token");
+        _;
+    }
+
+    modifier managerControl(bytes32 projectHash,address caller) {
+        projectManager.isValidToDistribute(caller,projectHash);
+        _;
+    }
+
+
+
+    
 
 
 
@@ -294,7 +288,7 @@ contract Maestro     is AccessControl{
     }
 
     //TODO: MULTISIG need 2 admins
-    function editImplementation(string memory name, address newImplementationAddress) external multiSig(ADMIN_ROLE,2,100)  {
+    function editImplementation(string memory name, address newImplementationAddress) external multiSig(projectManager.ADMIN_ROLE(),2,100)  {
         address addressCurrent = auctionNameAddressSet[name];
         require(addressCurrent != address(0),"This contract type is not specified");
         auctionNameAddressSet[name] = newImplementationAddress;

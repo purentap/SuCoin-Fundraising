@@ -2,7 +2,7 @@ namespace SU_COIN_BACK_END.Constants.ContractConstants
 {
     public static class ContractConstants
     {
-        public const string RegisterContractAddress = "0xd2b6aA1e5449A7F1fD1C54BaAE8BCfDa40744f5a";
+        public const string RegisterContractAddress = "0xd6B62a173A9cb5F804A450b6F0689d3ADBF33BF3";
         
     }
 }
