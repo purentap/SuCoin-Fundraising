@@ -22,6 +22,7 @@ using SU_COIN_BACK_END.Data;
 using System.Security.Cryptography;
 using SU_COIN_BACK_END.Constants.UserRoleConstants;
 
+
 namespace SU_COIN_BACK_END.Services
 {
     public class AuthenticationService : IAuthencticationService
@@ -93,22 +94,12 @@ namespace SU_COIN_BACK_END.Services
                         { 
                             response.Success = true;
                             response.Message = MessageConstants.USER_LOGIN_SUCCES;
-                            bool isWhitelistedInChain = await _chainInteractionService.IsWhiteListed(user.Address);
-                            Console.WriteLine("Whitelist status:" + isWhitelistedInChain.ToString());
-                            string currentRole = user.Role;
-                            if (currentRole != UserRoleConstants.ADMIN) 
-                            {
-                                bool isWhitelistedInDatabase = (currentRole == UserRoleConstants.WHITELIST);
-                                if (!isWhitelistedInDatabase && isWhitelistedInChain) 
-                                {
-                                    currentRole = UserRoleConstants.WHITELIST;
-                                }
-                                else if (isWhitelistedInDatabase && !isWhitelistedInChain) 
-                                {
-                                    currentRole = UserRoleConstants.BASE;
-                                }
-                                user.Role = currentRole;
-                            }
+                            string chainRole = await _chainInteractionService.GetChainRole(user.Address);
+                            
+                            if (user.Role != UserRoleConstants.ADMIN)
+                                user.Role = chainRole;
+                        
+                         
                             response.Data = GenerateToken(user);
                             user.Nonce = null;
                             _context.Users.Update(user);

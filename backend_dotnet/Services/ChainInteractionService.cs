@@ -24,6 +24,7 @@ using Nethereum.Contracts;
 using Nethereum.Contracts.Extensions;
 using System.Numerics;
 using System.Security.Cryptography;
+using SU_COIN_BACK_END.Constants.UserRoleConstants;
 
 namespace SU_COIN_BACK_END.Services
 {
@@ -128,27 +129,34 @@ namespace SU_COIN_BACK_END.Services
             return response;
         }
 
-        public async Task<bool> IsWhiteListed(string address)
+        public async Task<string> GetChainRole(string address)
         {
             try
             {
-                ServiceResponse<List<EventLog<WhitelistInsertEventDTO>>> response_inserts = await GetWhiteListInsertEventLogs(address);
-                ServiceResponse<List<EventLog<WhitelistRemoveEventDTO>>> response_removes = await GetWhiteListRemoveEventLogs(address);
-                int numberOfInserts = response_inserts.Data.Count;
-                int numberOfRemoves = response_removes.Data.Count;
-                bool isRemoved = (numberOfInserts == numberOfRemoves);
-                bool notJoinedBefore = (numberOfInserts == 0 && numberOfRemoves == 0);
-                if (isRemoved || notJoinedBefore) // user is not whitelisted
-                {
-                    return false;
-                }    
-                return true;           
+                var ABI = @"[{ ""inputs"": [ { ""internalType"": ""address"", ""name"": """", ""type"": ""address"" } ], ""name"": ""statusList"", ""outputs"": [ { ""internalType"": ""enum ProjectRegister.USER_STATUS"", ""name"": """", ""type"": ""uint8"" } ], ""stateMutability"": ""view"", ""type"": ""function"" }]";
+               var contract = _web3.Eth.GetContract(ABI,ContractConstants.RegisterContractAddress);
+
+            
+               
+            int status = await contract.GetFunction("statusList").CallAsync<int>(address);
+
+            Console.WriteLine(status);
+
+               switch (status){
+                   case 1:
+                    return UserRoleConstants.WHITELIST;
+                   case 2:
+                    return UserRoleConstants.BLACKLIST;
+                   default:
+                    return UserRoleConstants.BASE;
+               }
+            
             } 
             catch (Exception e)
             {
                 string error = e.Message;
                 Console.WriteLine("Error: {0}",error);
-                return false;
+                return "Base";
             }
         }
     

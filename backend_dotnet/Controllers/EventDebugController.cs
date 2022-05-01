@@ -14,6 +14,7 @@ using SU_COIN_BACK_END.DTOs;
 using SU_COIN_BACK_END.Response;
 using SU_COIN_BACK_END.Request;
 using Nethereum.Contracts;
+using SU_COIN_BACK_END.Constants.UserRoleConstants;
 
 namespace SU_COIN_BACK_END.Controllers
 {
@@ -48,7 +49,7 @@ namespace SU_COIN_BACK_END.Controllers
 
         [HttpGet("Whitelisted/{address}")]
         public async Task<IActionResult> IsWhiteListed(string address) {
-            bool response = await _chainInteractionService.IsWhiteListed(address);
+            bool response = await _chainInteractionService.GetChainRole(address) == UserRoleConstants.WHITELIST;
             return Ok(response);
         }
     }
