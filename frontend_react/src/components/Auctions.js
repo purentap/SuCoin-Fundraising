@@ -117,8 +117,7 @@ const Auctions = () => {
             catch (error) {
                 setToastshow(true)
                 setToastheader("Catched an error")
-                setToasttext(error?.message)
-                console.log(error)
+                setToasttext(error.data.message)
                 return false;
            
 

@@ -90,7 +90,7 @@ const Apply = () => {
 		catch (error) {
 			setToastshow(true)
 			setToastheader("Catched an error")
-			setToasttext(error)
+			setToasttext(error.data.message)
 			return false;
 		}
 	}
@@ -119,7 +119,8 @@ const Apply = () => {
 						resolve(res)
 					})
 					.catch((e) => {
-						const err = "Unable to add the project"
+						console.log(e.message)
+						const err = e.message
 						reject(err)
 
 					})
@@ -128,8 +129,10 @@ const Apply = () => {
 			console.log(result)
 			setLoading(false)
 		} catch (error) {
-			console.log(error)
-
+			setLoading(false)
+			setToastshow(true)
+			setToastheader("Failure")
+			setToasttext(error)
 		}
 	}
 
@@ -205,7 +208,7 @@ const Apply = () => {
 					<Row style={{ paddingLeft: "10%" }}>
 						{!txConfirmed ?
 							<Col style={{ justifyContent: "center", alignItems: "center" }}>
-								<LoadingButton show={isLoading} text={"Submit to Chain"} variant="dark" func={connectToContract}> </LoadingButton>
+								<LoadingButton show={isLoading} text={"Submit to Chain"} variant="dark" func={handleDB}> </LoadingButton>
 							</Col>
 							:
 							<Col style={{ justifyContent: "center", alignItems: "center" }}>

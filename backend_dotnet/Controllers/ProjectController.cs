@@ -78,10 +78,9 @@ namespace SU_COIN_BACK_END.Controllers
         public async Task<IActionResult> AddProject(ProjectDTO project)
         {
             ServiceResponse<string> response = await _projectService.AddProject(project);
-            Console.WriteLine(response.Message);
             if (!response.Success)
             {
-                return BadRequest(response);
+                return BadRequest(response.Message);
             }
             return Ok(response);
         }

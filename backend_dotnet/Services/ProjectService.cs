@@ -50,6 +50,13 @@ namespace SU_COIN_BACK_END.Services {
         public async Task<ServiceResponse<string>> AddProject(ProjectDTO project)
         {
             ServiceResponse<string> response = new ServiceResponse<string>();
+
+            if (GetUserRole() == UserRoleConstants.BLACKLIST) {
+                    response.Success = false;
+                    response.Message = MessageConstants.USER_IS_BLACKLISTED;
+                    return response;
+            }
+
             try
             {
                 if (await ProjectNameExists(project.ProjectName))
