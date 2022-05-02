@@ -69,7 +69,7 @@ abstract contract Auction is AccessControlUpgradeable,Multicall  {              
         bidCoin = WrapperToken(params.bidCoin);
     }
 
-    function setTeamWallet(address wallet) external  onlyRole(PROPOSER_ADMIN_ROLE) {
+    function setTeamWallet(address wallet) virtual external  onlyRole(PROPOSER_ADMIN_ROLE) {
         projectWallet = wallet;
     }
 

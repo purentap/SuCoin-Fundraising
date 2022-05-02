@@ -20,7 +20,7 @@ contract PseudoCappedAuction is CappedTokenAuction {
 
    
 
-    function initialize(auctionParameters calldata params)  override initializer public {
+    function initialize(auctionParameters calldata params)  override virtual initializer public {
         __CappedTokenAuction_init(params);
         __PseudoCappedAuction_init_unchained(params);
     }
@@ -29,14 +29,16 @@ contract PseudoCappedAuction is CappedTokenAuction {
         soldProjectTokens = params.numberOfTokensToBeDistributed;
     }
 
-    function finalize() internal override{
+    function finalize() internal override virtual{
         super.finalize();
+
+        soldProjectTokens = numberOfTokensToBeDistributed;
     
         emit AuctionFinished(block.timestamp, currentRate);
     
     }
 
-    function withDraw()  external stateUpdate() isFinished() {    //Users can withdraw their tokens if the auction is finished
+    function withDraw()  external virtual stateUpdate() isFinished() {    //Users can withdraw their tokens if the auction is finished
 
 
         //This function may cause loss of some sucoins (owner gets more coins then needed)
@@ -76,6 +78,8 @@ contract PseudoCappedAuction is CappedTokenAuction {
 
     
     } 
+
+    
     
 
 
