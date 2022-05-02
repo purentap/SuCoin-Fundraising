@@ -64,7 +64,11 @@ contract OBDutchAuction is PseudoCappedAuction {
 
         require(price >= minPrice,"You need to enter a higher price");
 
-        UserOrders[msg.sender].price = price;
+        UserOrder storage userOrder = UserOrders[msg.sender];
+
+        require(userOrder.price == 0, "You have already bid");
+
+        userOrder.price = price;
 
         bidCoinBits =  handleRemainder(bidCoinBits, price);
     } 
@@ -77,6 +81,16 @@ contract OBDutchAuction is PseudoCappedAuction {
             }
     }
 
+    function getMinPrice(uint total) private returns(uint){
+        uint value;
+
+         for (value = tree.first(); total > ordersForPrice[value].totalWanted; value = tree.next(value)) 
+                    total -= ordersForPrice[value].totalWanted; 
+
+        minPriceTokenCount = total;
+         clearTree(value);
+        return value + 1;
+    }
 
 
     function tokenBuyLogic(uint bidCoinBits) internal virtual override {
@@ -85,7 +99,7 @@ contract OBDutchAuction is PseudoCappedAuction {
             UserOrders[msg.sender].deposit = bidCoinBits;
             PriceOrders storage orders = ordersForPrice[price];
 
-            if (orders.userAddresses.length < 0 && (price >= minPrice)) 
+            if (orders.userAddresses.length == 0) 
                 tree.insert(price);
             
 
@@ -95,27 +109,20 @@ contract OBDutchAuction is PseudoCappedAuction {
 
             if (soldProjectTokens != numberOfTokensToBeDistributed) {
                 uint total = soldProjectTokens + amount;
-                if (total > numberOfTokensToBeDistributed) {
-                    soldProjectTokens = numberOfTokensToBeDistributed;
-                    minPriceTokenCount = total - numberOfTokensToBeDistributed;
-                    minPrice = tree.first() + 1;
-                }
-                else 
-                    soldProjectTokens += numberOfTokensToBeDistributed;
+
+                if (total > numberOfTokensToBeDistributed) 
+                    minPrice = getMinPrice(total);
+
+                soldProjectTokens = total > numberOfTokensToBeDistributed ? numberOfTokensToBeDistributed : total;
+                
+                
             }
             else  {
                 uint total = minPriceTokenCount + amount;
-                uint value;
-                
-                for (value = tree.first(); total > ordersForPrice[value].totalWanted; value = tree.next(value)) 
-                    total -= ordersForPrice[value].totalWanted; 
-                
-                minPrice = value + 1;
-                clearTree(value);
+                minPrice = getMinPrice(total);
             }
 
        
-            
             totalDepositedSucoins += bidCoinBits;
             setCurrentRate();
         }
