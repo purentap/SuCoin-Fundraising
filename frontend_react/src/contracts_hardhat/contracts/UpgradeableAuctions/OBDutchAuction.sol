@@ -12,7 +12,7 @@ contract OBDutchAuction is PseudoCappedAuction {
     using BokkyPooBahsRedBlackTreeLibrary for BokkyPooBahsRedBlackTreeLibrary.Tree;
     address public proposerWallet;
 
-    uint public minPrice;
+    uint public minPrice = 1;
     uint public minPriceTokenCount;
 
    BokkyPooBahsRedBlackTreeLibrary.Tree private tree;
@@ -69,6 +69,15 @@ contract OBDutchAuction is PseudoCappedAuction {
         bidCoinBits =  handleRemainder(bidCoinBits, price);
     } 
 
+    function clearTree(uint tempRate) private {
+        while(tree.first() != tempRate) {
+                uint prevValue = tree.prev(tempRate);
+                tree.remove(prevValue);
+                delete ordersForPrice[prevValue];
+            }
+    }
+
+
 
     function tokenBuyLogic(uint bidCoinBits) internal virtual override {
 
@@ -81,8 +90,31 @@ contract OBDutchAuction is PseudoCappedAuction {
             
 
             orders.userAddresses.push(msg.sender);
-            orders.totalWanted += bidCoinBits / price;
+            uint amount = bidCoinBits / price;
+            orders.totalWanted += amount;
 
+            if (soldProjectTokens != numberOfTokensToBeDistributed) {
+                uint total = soldProjectTokens + amount;
+                if (total > numberOfTokensToBeDistributed) {
+                    soldProjectTokens = numberOfTokensToBeDistributed;
+                    minPriceTokenCount = total - numberOfTokensToBeDistributed;
+                    minPrice = tree.first() + 1;
+                }
+                else 
+                    soldProjectTokens += numberOfTokensToBeDistributed;
+            }
+            else  {
+                uint total = minPriceTokenCount + amount;
+                uint value;
+                
+                for (value = tree.first(); total > ordersForPrice[value].totalWanted; value = tree.next(value)) 
+                    total -= ordersForPrice[value].totalWanted; 
+                
+                minPrice = value + 1;
+                clearTree(value);
+            }
+
+       
             
             totalDepositedSucoins += bidCoinBits;
             setCurrentRate();
@@ -90,25 +122,7 @@ contract OBDutchAuction is PseudoCappedAuction {
 
 
     function setCurrentRate() internal virtual override {   //Todo performance could be improved
-        currentRate = tree.last();
-
-
-        //Min Price part
-        uint remainingTokens = numberOfTokensToBeDistributed;
-        uint tempRate;
-
-        for (tempRate = currentRate;  (remainingTokens > ordersForPrice[tempRate].totalWanted) && (tempRate != 0); tempRate = tree.prev(tempRate)) 
-           remainingTokens -= ordersForPrice[tempRate].totalWanted;
-
-        if (tempRate == 0) 
-            soldProjectTokens = numberOfTokensToBeDistributed - remainingTokens;
-        
-        else {
-            soldProjectTokens = numberOfTokensToBeDistributed;
-            minPriceTokenCount = remainingTokens;
-        }
-        
-        minPrice = tempRate + 1;     
+        currentRate = tree.last(); 
     }
 
     function withDraw()  external stateUpdate() isFinished() override {    //Users can withdraw their tokens if the auction is finished
