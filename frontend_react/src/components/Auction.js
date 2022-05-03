@@ -11,7 +11,7 @@ const Auction = () => {
     const {state} = useLocation();
     const {auctionType,auction,projectId} = state
 
-
+    console.log(state)
 
 
 
@@ -26,7 +26,7 @@ const Auction = () => {
    
 
     const refreshInfo = async (abi,auctionContract) =>  {
-        const {rate,currentRate,soldProjectTokens,numberOfTokensToBeDistributed} = await getAllPublicVariables(abi,auctionContract)
+        const {rate,currentRate,soldProjectTokens,numberOfTokensToBeDistributed,minPrice} = await getAllPublicVariables(abi,auctionContract)
 
         switch(auctionType) {
             case "DutchAuction":
@@ -42,6 +42,12 @@ const Auction = () => {
                 setTokenDist(fixedNumberToNumber(numberOfTokensToBeDistributed[0]))
                 setPrice(fixedNumberToNumber(currentRate[0]))
                 break
+            case "OBDutchAuction":
+                setTokenDist(fixedNumberToNumber(numberOfTokensToBeDistributed[0]))
+                setSoldTokens(fixedNumberToNumber(soldProjectTokens[0]))
+                setPrice(fixedNumberToNumber(minPrice[0]))
+                break;
+
             
             
         }

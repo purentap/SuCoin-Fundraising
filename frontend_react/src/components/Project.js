@@ -98,7 +98,7 @@ const Project = ({navigation}) => {
     const hashResult = "0x" + await CryptoJS.SHA256(project.fileHex).toString()
     const projInfo = await registerContract.projectsRegistered(hashResult)
 
-    if (await registerContract.whitelist(await signer.getAddress())) {
+    if (await registerContract.statusList(await signer.getAddress()) == 1) {
       setIswhitelisted(true)
       console.log("whitelisted bitch")
     } else {

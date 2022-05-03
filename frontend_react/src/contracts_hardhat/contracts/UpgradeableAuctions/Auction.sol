@@ -140,7 +140,7 @@ abstract contract Auction is AccessControlUpgradeable,Multicall  {              
 
      function bid(uint bidCoinBits)  external  virtual stateUpdate() isRunning() {
 
-         require(bidCoinBits >= 0, "You need to bid some coins");
+         require(bidCoinBits > 0, "You need to bid some coins");
 
         emit BidSubmission(msg.sender, bidCoinBits);
 

@@ -14,6 +14,15 @@ abstract contract CappedTokenAuction is Auction {
     event TokenBought(address indexed buyer,uint usedBidCoinAmount , uint boughtTokenAmount );        //Logs bought auction tokens
 
     //Maestro public maestroSCa;
+
+       function revertPrice(uint formattedAmount) internal virtual view returns(uint) {
+             return formattedAmount / 10 ** projectToken.decimals();
+        }
+
+        function convertPrice(uint normalAmount) internal virtual view returns(uint){
+            return normalAmount * 10 ** projectToken.decimals();
+        }
+
   
 
     function __CappedTokenAuction_init(auctionParameters calldata params) internal onlyInitializing {

@@ -12,7 +12,7 @@ contract OBDutchAuction is PseudoCappedAuction {
     using BokkyPooBahsRedBlackTreeLibrary for BokkyPooBahsRedBlackTreeLibrary.Tree;
     address public proposerWallet;
 
-    uint public minPrice = 1;
+    uint public minPrice;
     uint public minPriceTokenCount;
 
    BokkyPooBahsRedBlackTreeLibrary.Tree private tree;
@@ -39,6 +39,7 @@ contract OBDutchAuction is PseudoCappedAuction {
 
     function __OBDutchAuction_init_unchained() internal onlyInitializing {
         projectWallet = address(this);
+        minPrice = 1;
     }
 
     function setTeamWallet(address wallet) override external virtual onlyRole(PROPOSER_ADMIN_ROLE) {
@@ -48,7 +49,7 @@ contract OBDutchAuction is PseudoCappedAuction {
     function bid(uint bidCoinBits,uint price)  external  virtual stateUpdate() isRunning()  {
 
 
-         require(bidCoinBits >= 0, "You need to bid some coins");
+         require(bidCoinBits > 0, "You need to bid some coins");
 
         emit BidSubmission(msg.sender, bidCoinBits);
 
@@ -71,6 +72,8 @@ contract OBDutchAuction is PseudoCappedAuction {
         userOrder.price = price;
 
         bidCoinBits =  handleRemainder(bidCoinBits, price);
+
+        swap(bidCoinBits);
     } 
 
     function clearTree(uint tempRate) private {
@@ -84,7 +87,7 @@ contract OBDutchAuction is PseudoCappedAuction {
     function getMinPrice(uint total) private returns(uint){
         uint value;
 
-         for (value = tree.first(); total > ordersForPrice[value].totalWanted; value = tree.next(value)) 
+         for (value = tree.first(); total >= ordersForPrice[value].totalWanted; value = tree.next(value)) 
                     total -= ordersForPrice[value].totalWanted; 
 
         minPriceTokenCount = total;
@@ -104,16 +107,16 @@ contract OBDutchAuction is PseudoCappedAuction {
             
 
             orders.userAddresses.push(msg.sender);
-            uint amount = bidCoinBits / price;
+            uint amount = convertPrice(bidCoinBits) / price;
             orders.totalWanted += amount;
 
             if (soldProjectTokens != numberOfTokensToBeDistributed) {
                 uint total = soldProjectTokens + amount;
 
-                if (total > numberOfTokensToBeDistributed) 
-                    minPrice = getMinPrice(total);
+                if (total >= numberOfTokensToBeDistributed) 
+                    minPrice = getMinPrice(total - numberOfTokensToBeDistributed);
 
-                soldProjectTokens = total > numberOfTokensToBeDistributed ? numberOfTokensToBeDistributed : total;
+                soldProjectTokens = total >= numberOfTokensToBeDistributed ? numberOfTokensToBeDistributed : total;
                 
                 
             }
@@ -127,9 +130,10 @@ contract OBDutchAuction is PseudoCappedAuction {
             setCurrentRate();
         }
 
+     
 
     function setCurrentRate() internal virtual override {   //Todo performance could be improved
-        currentRate = tree.last(); 
+        currentRate = tree.last();
     }
 
     function withDraw()  external stateUpdate() isFinished() override {    //Users can withdraw their tokens if the auction is finished
@@ -141,15 +145,15 @@ contract OBDutchAuction is PseudoCappedAuction {
         require(userOrder.deposit > 0,"You already withdrew or your token distributed already");
 
         uint price = userOrder.price;
-        uint tokenAmount = userOrder.deposit / price;
-        uint cost = tokenAmount * (minPrice - 1);
+        uint tokenAmount = convertPrice(userOrder.deposit)  / price;
+        uint cost =  revertPrice(tokenAmount * (minPrice - 1));
 
 
         //Higher or equal to minPrice gets the full order
         if (price >= minPrice)  {
 
             //Send tokens
-             projectToken.transfer(msg.sender,userOrder.deposit / price);
+             projectToken.transfer(msg.sender,tokenAmount);
 
 
              //Refund to user and remaining goes to proposer
@@ -168,14 +172,22 @@ contract OBDutchAuction is PseudoCappedAuction {
         else {
             uint availableToken = userOrder.available < tokenAmount ? userOrder.available : tokenAmount;
 
- 
+            if (minPriceTokenCount == 0) {
+             projectToken.transfer(msg.sender,tokenAmount);
+             bidCoin.transfer(proposerWallet, userOrder.deposit);
+            }
+            
+            else {
+
             if (availableToken != 0) {
                 projectToken.transfer(msg.sender,availableToken);
-                bidCoin.transfer(proposerWallet,availableToken * (price));
+                bidCoin.transfer(proposerWallet,revertPrice(availableToken * (price)));
             }
 
             if (availableToken != tokenAmount) 
-                bidCoin.transfer(msg.sender, (tokenAmount - availableToken)  * price);
+                bidCoin.transfer(msg.sender, revertPrice((tokenAmount - availableToken) * price));
+
+            }
             
 
         }
@@ -188,12 +200,13 @@ contract OBDutchAuction is PseudoCappedAuction {
         super.finalize();
 
         if (minPriceTokenCount != 0) {
-            uint tempCount = minPriceTokenCount;
-            address[] storage priceAddreses = ordersForPrice[(minPrice-1)].userAddresses;
+            PriceOrders storage minOrders = ordersForPrice[minPrice-1];
+            uint tempCount =  minOrders.totalWanted - minPriceTokenCount;
+            address[] storage priceAddreses = minOrders.userAddresses;
 
             for (uint i = 0; i < priceAddreses.length; i++) {
                 UserOrder storage userOrder = UserOrders[priceAddreses[i]];
-                uint wantedTokenAmount = userOrder.deposit / userOrder.price;
+                uint wantedTokenAmount =  convertPrice(userOrder.deposit) / userOrder.price;
 
                 if (tempCount < wantedTokenAmount) {
                     userOrder.available = tempCount;

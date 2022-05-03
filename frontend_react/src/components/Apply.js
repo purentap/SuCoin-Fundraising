@@ -208,7 +208,7 @@ const Apply = () => {
 					<Row style={{ paddingLeft: "10%" }}>
 						{!txConfirmed ?
 							<Col style={{ justifyContent: "center", alignItems: "center" }}>
-								<LoadingButton show={isLoading} text={"Submit to Chain"} variant="dark" func={handleDB}> </LoadingButton>
+								<LoadingButton show={isLoading} text={"Submit to Chain"} variant="dark" func={connectToContract}> </LoadingButton>
 							</Col>
 							:
 							<Col style={{ justifyContent: "center", alignItems: "center" }}>

@@ -35,7 +35,7 @@ import { numberToFixedNumber } from '../helpers';
 
 const BiLiraAddress = "0x8f5736aF17F2F071B476Fd9cFD27a1Bd8D7E7F15";
 
-const maestro = { address: "0xeb7C5DeBf8D67bac15C8304AaB6286dA77D047Fb" }
+const maestro = { address: "0xEb3c8ce0F953cdC76F0e3D31B6512F26d081Aa81" }
 const SUCoin = { address: "0xb6e466F4F0ab1e2dA2E8237F38B2eCf6278894Ce" }
 
 const CreateAuction = () => {
@@ -77,6 +77,11 @@ const CreateAuction = () => {
             id : 5,
             name: "Dutch Auction",
             description: "Similar to FCFS but price goes down with time"
+        },
+        {
+            id:6,
+            name: "Orderbook Dutch Auction",
+            description: "Dutch Auction with ordebook"
         }
 
     ]);
@@ -117,7 +122,7 @@ const CreateAuction = () => {
 
         const maestroContract = new ethers.Contract(maestro.address,Maestro.abi,signer)
 
-        const auctionType = ["UncappedAuction","PseudoCappedAuction","OBFCFSAuction","FCFSLimitAuction","FCFSAuction","DutchAuction"][id]
+        const auctionType = ["UncappedAuction","PseudoCappedAuction","OBFCFSAuction","FCFSLimitAuction","FCFSAuction","DutchAuction","OBDutchAuction"][id]
         console.log(auctionType)
         maestroContract.createAuction(hash,auctionType,[tokenDistributedDecimal,priceDecimal,finalPrice,limit])
 
