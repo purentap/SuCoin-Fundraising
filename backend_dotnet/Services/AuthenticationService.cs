@@ -97,9 +97,10 @@ namespace SU_COIN_BACK_END.Services
                             string chainRole = await _chainInteractionService.GetChainRole(user.Address);
                             
                             if (user.Role != UserRoleConstants.ADMIN)
+                            {
                                 user.Role = chainRole;
-                        
-                         
+                            }
+                                                 
                             response.Data = GenerateToken(user);
                             user.Nonce = null;
                             _context.Users.Update(user);

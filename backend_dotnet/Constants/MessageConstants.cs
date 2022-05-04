@@ -24,8 +24,7 @@ namespace SU_COIN_BACK_END.Constants.MessageConstants
         public const string USER_WRONG_PASS_NAME_ERROR = "Username or Password might be wrong";
         public const string USER_REGISTERED = "User Registered";
         public const string USER_EXIST = "User Already Exists";
-
-        public const string USER_IS_BLACKLISTED = "Blacklisted users don't have permission for this action";
+        public const string USER_IS_BLACKLISTED = "Blacklisted users do not have permission for this action";
         public const string USER_NAME_EXIST = "Username already in use choose other username.";
         public const string PASSWORD_CHANGE_SUCCESS = "Password change succesfully";
         public const string SIGNATURE_REJECTED = "Signature provided does belong to the address: {0}";

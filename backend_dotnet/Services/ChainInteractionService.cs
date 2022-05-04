@@ -131,33 +131,39 @@ namespace SU_COIN_BACK_END.Services
 
         public async Task<string> GetChainRole(string address)
         {
+            string chainRole; // role of user in the chain
             try
             {
                 var ABI = @"[{ ""inputs"": [ { ""internalType"": ""address"", ""name"": """", ""type"": ""address"" } ], ""name"": ""statusList"", ""outputs"": [ { ""internalType"": ""enum ProjectRegister.USER_STATUS"", ""name"": """", ""type"": ""uint8"" } ], ""stateMutability"": ""view"", ""type"": ""function"" }]";
-               var contract = _web3.Eth.GetContract(ABI,ContractConstants.RegisterContractAddress);
+                var contract = _web3.Eth.GetContract(ABI, ContractConstants.RegisterContractAddress);
 
-            
-               
-            int status = await contract.GetFunction("statusList").CallAsync<int>(address);
+                /* Fetch the status and then determine the role */
 
-            Console.WriteLine(status);
+                int status = await contract.GetFunction("statusList").CallAsync<int>(address);
 
-               switch (status){
-                   case 1:
-                    return UserRoleConstants.WHITELIST;
-                   case 2:
-                    return UserRoleConstants.BLACKLIST;
-                   default:
-                    return UserRoleConstants.BASE;
-               }
-            
+                Console.WriteLine(status);
+
+                switch (status)
+                {
+                    case 1:
+                        chainRole = UserRoleConstants.WHITELIST;
+                        break;
+                    case 2:
+                        chainRole = UserRoleConstants.BLACKLIST;
+                        break;
+                    default:
+                        chainRole = UserRoleConstants.BASE;
+                        break;
+                }
             } 
             catch (Exception e)
             {
                 string error = e.Message;
-                Console.WriteLine("Error: {0}",error);
-                return "Base";
+                Console.WriteLine($"Error {error}");
+                chainRole = UserRoleConstants.BASE;
             }
+
+            return chainRole;
         }
     
         public async Task<ServiceResponse<List<EventLog<ProjectEvaluationEventDTO>>>> GetProjectEvaluationEventLogs()

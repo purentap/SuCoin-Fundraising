@@ -80,7 +80,7 @@ namespace SU_COIN_BACK_END.Controllers
             ServiceResponse<string> response = await _projectService.AddProject(project);
             if (!response.Success)
             {
-                return BadRequest(response.Message);
+                return BadRequest(response);
             }
             return Ok(response);
         }
