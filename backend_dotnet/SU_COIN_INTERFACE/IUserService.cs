@@ -5,7 +5,6 @@ using SU_COIN_BACK_END.Request;
 
 
 namespace SU_COIN_BACK_END.SU_COIN_INTERFACE
-
 {
     public interface IUserService
     {

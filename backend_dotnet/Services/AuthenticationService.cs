@@ -62,7 +62,7 @@ namespace SU_COIN_BACK_END.Services
                     Array.Reverse(randomNumber);
                 }
                 int nonce = Math.Abs(BitConverter.ToInt32(randomNumber, 0)); // randomly assigned nonce value
-                Console.WriteLine("Nonce: {0}", nonce);
+                Console.WriteLine($"Nonce: {nonce}");
                 user.Nonce = nonce;
                 _context.Users.Update(user);
                 await _context.SaveChangesAsync();
@@ -94,17 +94,25 @@ namespace SU_COIN_BACK_END.Services
                         { 
                             response.Success = true;
                             response.Message = MessageConstants.USER_LOGIN_SUCCES;
-                            string chainRole = await _chainInteractionService.GetChainRole(user.Address);
-                            
-                            if (user.Role != UserRoleConstants.ADMIN)
+                            ServiceResponse<string> chainResponse = await _chainInteractionService.GetChainRole(user.Address);
+                            Console.WriteLine($"Response Message --> {chainResponse.Message}"); // Debuging
+                            if (chainResponse.Success)
                             {
-                                user.Role = chainRole;
+                                if (user.Role != UserRoleConstants.ADMIN)
+                                {
+                                    user.Role = chainResponse.Data;
+                                }
+
+                                response.Data = GenerateToken(user);
+                                user.Nonce = null;
+                                _context.Users.Update(user);
+                                await _context.SaveChangesAsync();
                             }
-                                                 
-                            response.Data = GenerateToken(user);
-                            user.Nonce = null;
-                            _context.Users.Update(user);
-                            await _context.SaveChangesAsync();
+                            else 
+                            {
+                                response.Message = chainResponse.Message;
+                                response.Success = chainResponse.Success;
+                            }
                         }
                         else
                         {

@@ -129,8 +129,9 @@ namespace SU_COIN_BACK_END.Services
             return response;
         }
 
-        public async Task<string> GetChainRole(string address)
+        public async Task<ServiceResponse<String>> GetChainRole(string address)
         {
+            ServiceResponse<string> response = new ServiceResponse<String>();
             string chainRole; // role of user in the chain
             try
             {
@@ -155,15 +156,20 @@ namespace SU_COIN_BACK_END.Services
                         chainRole = UserRoleConstants.BASE;
                         break;
                 }
+                
+                response.Message = String.Format(MessageConstants.USER_ROLE, chainRole);
+                response.Data = chainRole;
+                response.Success = true;
             } 
             catch (Exception e)
             {
                 string error = e.Message;
                 Console.WriteLine($"Error {error}");
-                chainRole = UserRoleConstants.BASE;
+                response.Message = MessageConstants.USER_ROLE_NOT_FOUND_IN_THE_CHAIN;
+                response.Success = false;
             }
 
-            return chainRole;
+            return response;
         }
     
         public async Task<ServiceResponse<List<EventLog<ProjectEvaluationEventDTO>>>> GetProjectEvaluationEventLogs()

@@ -49,7 +49,13 @@ namespace SU_COIN_BACK_END.Controllers
 
         [HttpGet("Whitelisted/{address}")]
         public async Task<IActionResult> IsWhiteListed(string address) {
-            bool response = await _chainInteractionService.GetChainRole(address) == UserRoleConstants.WHITELIST;
+            ServiceResponse<string> chainResponse = await _chainInteractionService.GetChainRole(address);
+            bool response = (chainResponse.Data == UserRoleConstants.WHITELIST);
+
+            if (!response)
+            {
+                return BadRequest(response);
+            }
             return Ok(response);
         }
     }

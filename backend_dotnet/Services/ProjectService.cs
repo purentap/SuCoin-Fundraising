@@ -228,7 +228,7 @@ namespace SU_COIN_BACK_END.Services {
             try
             {
                 string userRole = GetUserRole();
-                Console.WriteLine($"User role: {userRole}"); // Debuging
+                Console.WriteLine(String.Format(MessageConstants.USER_ROLE, userRole)); // Debuging
                 List<Project> projects = new List<Project>();
 
                 /* First fetch all the projects. Then check if the user is neither admin nor whitelist, just filter the approved projects */
@@ -333,7 +333,6 @@ namespace SU_COIN_BACK_END.Services {
             ServiceResponse<List<string>> response = new ServiceResponse<List<string>>();
             try 
             {
-                //List<Project> projects = new List<Project>();
                 List<string> hashes = new List<string>();
                 var hashResult = _context.Projects.FromSqlRaw("Select projectID,SHA2(FileHex,256) as FileHex from Projects"); // ProjectId&Hash Records
 
@@ -373,7 +372,7 @@ namespace SU_COIN_BACK_END.Services {
                 else // all projects
                 {
                     string userRole = GetUserRole();
-                    Console.WriteLine($"User role: {userRole}"); // Debuging
+                    Console.WriteLine(String.Format(MessageConstants.USER_ROLE, userRole)); // Debuging
                     if (userRole == UserRoleConstants.ADMIN)
                     {
                         hashes = await hashResult.Select(p => p.FileHex).ToListAsync();
