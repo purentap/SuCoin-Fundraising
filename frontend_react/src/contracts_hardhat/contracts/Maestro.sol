@@ -6,7 +6,7 @@ import "@openzeppelin/contracts/proxy/Clones.sol";
 
 import "./UpgradeableAuctions/Auction.sol";
 
-import "./UpgradeableTokens/ERC20MintableUpgradeable.sol";
+import "./UpgradeableTokens/ERC20MintableBurnableUpgradeable.sol";
 
 import "./ProjectRegister.sol";
 
@@ -101,7 +101,7 @@ contract Maestro {
             auctionNameAddressSet[nameArray[i]] = implementationContracts[i];
         }
 
-        tokenImplementationAddress = address(new ERC20MintableUpgradeable());
+        tokenImplementationAddress = address(new ERC20MintableBurnableUpgradeable());
 
         projectManager = ProjectRegister(_projectManager); 
 
@@ -241,7 +241,7 @@ modifier multiSig(bytes32 role,uint walletCount,uint timeLimitInBlocks){
 
         //Handle Auction Token Amaount
 
-        ERC20MintableUpgradeable tokenContract = ERC20MintableUpgradeable(projectTokens[projectHash].token);
+        ERC20MintableBurnableUpgradeable tokenContract = ERC20MintableBurnableUpgradeable(projectTokens[projectHash].token);
 
         if (userParams.numberOfTokensToBeDistributed != 0) //Capped Auction
             tokenContract.mint(address(clone),userParams.numberOfTokensToBeDistributed);   
@@ -264,7 +264,7 @@ modifier multiSig(bytes32 role,uint walletCount,uint timeLimitInBlocks){
 
 
 
-        ERC20MintableUpgradeable clone =  ERC20MintableUpgradeable(Clones.clone(tokenImplementationAddress));
+        ERC20MintableBurnableUpgradeable clone =  ERC20MintableBurnableUpgradeable(Clones.clone(tokenImplementationAddress));
 
         clone.initialize(tokenName,tokenSymbol,initialSupply);
 

@@ -83,7 +83,7 @@ abstract contract Auction is AccessControlUpgradeable,Multicall  {              
        uint limit;
     }
 
-     function manualFinish() public  stateUpdate() isFinished(){}
+     function manualFinish() public  quietStateUpdate() isFinished(){}
 
 
 
@@ -92,6 +92,13 @@ abstract contract Auction is AccessControlUpgradeable,Multicall  {              
             finalize();
         else
             _;
+    }
+
+    modifier quietStateUpdate() {
+          if (status == AuctionStatus.RUNNING && block.timestamp >= latestEndTime)
+            finalize();
+        _;
+          
     }
 
     modifier isFinished() {
@@ -105,8 +112,18 @@ abstract contract Auction is AccessControlUpgradeable,Multicall  {              
 
     }
 
-   function handleRemainder(uint bidCoinBits,uint currentRate) internal virtual returns (uint) {
-        uint remainder = bidCoinBits -  (bidCoinBits / currentRate) * currentRate;
+       function revertPrice(uint formattedAmount,address token) internal virtual view returns(uint) {
+             return formattedAmount / 10 ** ERC20(token).decimals();
+        }
+
+        function convertPrice(uint normalAmount,address token) internal virtual view returns(uint){
+            return normalAmount * 10 ** ERC20(token).decimals();
+        }
+
+
+ function handleRemainder(uint bidCoinBits,uint currentRate) internal virtual returns (uint) {
+       
+        uint remainder = bidCoinBits -  revertPrice((convertPrice(bidCoinBits,address(bidCoin)) / currentRate) * currentRate,address(bidCoin));
         return bidCoinBits - remainder;
 
     }

@@ -29,6 +29,7 @@ const Auction = () => {
         const {rate,currentRate,soldProjectTokens,numberOfTokensToBeDistributed,minPrice} = await getAllPublicVariables(abi,auctionContract)
 
         switch(auctionType) {
+            case "StrictDutchAuction":
             case "DutchAuction":
                 setSoldTokens(fixedNumberToNumber(soldProjectTokens[0]))
                 setPrice(fixedNumberToNumber(currentRate[0]))

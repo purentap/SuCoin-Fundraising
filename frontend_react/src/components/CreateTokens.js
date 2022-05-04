@@ -19,7 +19,7 @@ import { numberToFixedNumber } from '../helpers';
 import Maestro from "../contracts_hardhat/artifacts/contracts/Maestro.sol/Maestro.json"
 
 
-const maestro = { address: "0xEb3c8ce0F953cdC76F0e3D31B6512F26d081Aa81" }
+const maestro = { address: "0x83193Cdb4Eb270C294E7547C23EA1f55A2f78d91" }
 
 
 const CreateTokens = () => {

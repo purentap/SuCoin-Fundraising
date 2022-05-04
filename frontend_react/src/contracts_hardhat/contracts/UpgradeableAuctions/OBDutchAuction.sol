@@ -107,7 +107,7 @@ contract OBDutchAuction is PseudoCappedAuction {
             
 
             orders.userAddresses.push(msg.sender);
-            uint amount = convertPrice(bidCoinBits) / price;
+            uint amount = convertPrice(bidCoinBits,address(projectToken)) / price;
             orders.totalWanted += amount;
 
             if (soldProjectTokens != numberOfTokensToBeDistributed) {
@@ -136,7 +136,7 @@ contract OBDutchAuction is PseudoCappedAuction {
         currentRate = tree.last();
     }
 
-    function withDraw()  external stateUpdate() isFinished() override {    //Users can withdraw their tokens if the auction is finished
+    function withDraw()  external quietStateUpdate() isFinished() override {    //Users can withdraw their tokens if the auction is finished
 
 
         //This function may cause loss of some sucoins (owner gets more coins then needed)
@@ -145,8 +145,8 @@ contract OBDutchAuction is PseudoCappedAuction {
         require(userOrder.deposit > 0,"You already withdrew or your token distributed already");
 
         uint price = userOrder.price;
-        uint tokenAmount = convertPrice(userOrder.deposit)  / price;
-        uint cost =  revertPrice(tokenAmount * (minPrice - 1));
+        uint tokenAmount = convertPrice(userOrder.deposit,address(projectToken))  / price;
+        uint cost =  revertPrice(tokenAmount * (minPrice - 1),address(projectToken));
 
 
         //Higher or equal to minPrice gets the full order
@@ -181,11 +181,11 @@ contract OBDutchAuction is PseudoCappedAuction {
 
             if (availableToken != 0) {
                 projectToken.transfer(msg.sender,availableToken);
-                bidCoin.transfer(proposerWallet,revertPrice(availableToken * (price)));
+                bidCoin.transfer(proposerWallet,revertPrice(availableToken * (price),address(projectToken)));
             }
 
             if (availableToken != tokenAmount) 
-                bidCoin.transfer(msg.sender, revertPrice((tokenAmount - availableToken) * price));
+                bidCoin.transfer(msg.sender, revertPrice((tokenAmount - availableToken) * price,address(projectToken)));
 
             }
             
@@ -206,7 +206,7 @@ contract OBDutchAuction is PseudoCappedAuction {
 
             for (uint i = 0; i < priceAddreses.length; i++) {
                 UserOrder storage userOrder = UserOrders[priceAddreses[i]];
-                uint wantedTokenAmount =  convertPrice(userOrder.deposit) / userOrder.price;
+                uint wantedTokenAmount =  convertPrice(userOrder.deposit,address(projectToken)) / userOrder.price;
 
                 if (tempCount < wantedTokenAmount) {
                     userOrder.available = tempCount;

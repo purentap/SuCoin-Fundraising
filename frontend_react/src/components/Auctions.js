@@ -26,8 +26,6 @@ import axios from "axios"
 import { ethers } from 'ethers';
 
 
-import Auction from "../contracts_hardhat/artifacts/contracts/UpgradeableAuctions/Auction.sol/Auction.json"
-import ERC20MintableUpgradeable from "../contracts_hardhat/artifacts/contracts/UpgradeableTokens/ERC20MintableUpgradeable.sol/ERC20MintableUpgradeable.json"
 import Maestro from "../contracts_hardhat/artifacts/contracts/Maestro.sol/Maestro.json"
 
 
@@ -39,7 +37,7 @@ const options = [
     { value: 'fman', label: 'FMAN' }
 ]
 
-const MaestroAddress = "0xEb3c8ce0F953cdC76F0e3D31B6512F26d081Aa81";
+const MaestroAddress = "0x83193Cdb4Eb270C294E7547C23EA1f55A2f78d91";
 
 const IDs = []
 

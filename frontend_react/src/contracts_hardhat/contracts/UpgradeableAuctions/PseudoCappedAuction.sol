@@ -38,7 +38,7 @@ contract PseudoCappedAuction is CappedTokenAuction {
     
     }
 
-    function withDraw()  external virtual stateUpdate() isFinished() {    //Users can withdraw their tokens if the auction is finished
+    function withDraw()  external virtual quietStateUpdate() isFinished() {    //Users can withdraw their tokens if the auction is finished
 
 
         //This function may cause loss of some sucoins (owner gets more coins then needed)

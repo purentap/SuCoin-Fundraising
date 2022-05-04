@@ -1,12 +1,12 @@
 pragma solidity ^0.8.0;
 // SPDX-License-Identifier: MIT
 import "./Auction.sol";
-import "../UpgradeableTokens/ERC20MintableUpgradeable.sol";
+import "../UpgradeableTokens/ERC20MintableBurnableUpgradeable.sol";
 
 
 
 contract UncappedAuction is Auction {
-    ERC20MintableUpgradeable public projectToken;                                         //Auctioned coin
+    ERC20MintableBurnableUpgradeable public projectToken;                                         //Auctioned coin
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");            //Constant for checking minter role
 
 
@@ -28,7 +28,7 @@ contract UncappedAuction is Auction {
     }
 
     function __UncappedAuction_init_unchained(auctionParameters calldata params) internal onlyInitializing{
-        projectToken = ERC20MintableUpgradeable(params.token);
+        projectToken = ERC20MintableBurnableUpgradeable(params.token);
         rate = params.rate;
     }
 

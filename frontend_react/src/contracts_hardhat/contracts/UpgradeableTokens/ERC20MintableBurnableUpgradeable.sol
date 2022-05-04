@@ -4,8 +4,10 @@ pragma solidity ^0.8.4;
 import "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/ERC20BurnableUpgradeable.sol";
 
-contract ERC20MintableUpgradeable is Initializable, ERC20Upgradeable, AccessControlUpgradeable {
+
+contract ERC20MintableBurnableUpgradeable is Initializable, ERC20Upgradeable, AccessControlUpgradeable ,ERC20BurnableUpgradeable{
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
 
     /// @custom:oz-upgrades-unsafe-allow constructor

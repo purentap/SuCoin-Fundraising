@@ -24,7 +24,7 @@ contract FCFSAuction is CappedTokenAuction {
         currentRate = rate = params.rate;
     }
 
-    function finalize() internal override{
+    function finalize() internal override virtual{
         super.finalize();
     
         //Withdraw the tokens if they are not used
@@ -66,12 +66,13 @@ contract FCFSAuction is CappedTokenAuction {
 
     function handleValidTimeBid(uint bidCoinBits) internal virtual override {
 
+        setCurrentRate();
         //Contract needs to have tokens for bids
         uint buyableProjectTokens = numberOfTokensToBeDistributed - soldProjectTokens;
         require(buyableProjectTokens > 0,"No coins left for the auction");
         
 
-        setCurrentRate();
+      
 
         bidCoinBits = handleRemainder(bidCoinBits, currentRate);
 

@@ -25,7 +25,7 @@ contract OBFCFSAuction is FCFSAuction {
 
    
 
-    function withDraw()  external stateUpdate() isFinished() {    //Users can withdraw their tokens if the auction is finished
+    function withDraw()  external quietStateUpdate() isFinished() {    //Users can withdraw their tokens if the auction is finished
         uint amount = biddingBook[msg.sender];
         require(amount > 0, "You don't have any tokens to withdraw");
         biddingBook[msg.sender] = 0;
