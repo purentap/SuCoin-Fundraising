@@ -124,7 +124,7 @@ namespace SU_COIN_BACK_END.Services
                     else
                     {
                         response.Success = false;
-                        response.Message = "You should first create the nonce from /authentication/getnonce/{address}";
+                        response.Message = $"You should first create the nonce from /authentication/getnonce/{request.Address}";
                     }
                 }
                 else
@@ -136,7 +136,7 @@ namespace SU_COIN_BACK_END.Services
             catch (Exception e)
             {
                 response.Success = false;
-                response.Message = e.Message;
+                response.Message = "Failed to login" + String.Format(MessageConstants.ERROR_MESSAGE, e.Message);
             }
             return response;
         }
@@ -179,7 +179,7 @@ namespace SU_COIN_BACK_END.Services
             catch (Exception e)
             {
                 response.Success = false;
-                response.Message = e.Message;
+                response.Message = "Failed to register" + String.Format(MessageConstants.ERROR_MESSAGE, e.Message);
             }
             return response;
         }

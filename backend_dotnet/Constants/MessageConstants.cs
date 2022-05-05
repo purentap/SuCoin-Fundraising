@@ -15,6 +15,7 @@ namespace SU_COIN_BACK_END.Constants.MessageConstants
         public const string NOT_AUTHORIZED_TO_ACCESS = "You are not authorized to access this resource";
         public const string OK = "Ok";
         public const string CHAIN_INTERACTION_FAIL = "Error occured while interacting with chain";
+        public const string ERROR_MESSAGE = "\nException message: {0}";
     }
 }
 

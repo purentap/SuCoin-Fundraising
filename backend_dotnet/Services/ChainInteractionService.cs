@@ -68,7 +68,7 @@ namespace SU_COIN_BACK_END.Services
             catch (Exception e)
             {
                 response.Success = false;
-                response.Message = MessageConstants.CHAIN_INTERACTION_FAIL + $"\nException message: {e.Message}";
+                response.Message = MessageConstants.CHAIN_INTERACTION_FAIL + String.Format(MessageConstants.ERROR_MESSAGE, e.Message);
             }
             return response;
         }
@@ -96,7 +96,7 @@ namespace SU_COIN_BACK_END.Services
             catch (Exception e)
             {
                 response.Success = false;
-                response.Message = MessageConstants.CHAIN_INTERACTION_FAIL + $"\nException message: {e.Message}";
+                response.Message = MessageConstants.CHAIN_INTERACTION_FAIL + String.Format(MessageConstants.ERROR_MESSAGE, e.Message);
             }
             return response;
         }
@@ -124,7 +124,7 @@ namespace SU_COIN_BACK_END.Services
             catch (Exception e)
             {
                 response.Success = false;
-                response.Message = MessageConstants.CHAIN_INTERACTION_FAIL + $"\nException message: {e.Message}";
+                response.Message = MessageConstants.CHAIN_INTERACTION_FAIL + String.Format(MessageConstants.ERROR_MESSAGE);
             }
             return response;
         }
@@ -178,7 +178,7 @@ namespace SU_COIN_BACK_END.Services
             } 
             catch (Exception e)
             {
-                response.Message = MessageConstants.CHAIN_INTERACTION_FAIL + $"\nException message: {e.Message}";
+                response.Message = MessageConstants.CHAIN_INTERACTION_FAIL + String.Format(MessageConstants.ERROR_MESSAGE, e.Message);
                 response.Success = false;
             }
 
@@ -208,7 +208,7 @@ namespace SU_COIN_BACK_END.Services
             catch (Exception e)
             {
                 response.Success = false;
-                response.Message = MessageConstants.CHAIN_INTERACTION_FAIL + $"\nException message: {e.Message}";
+                response.Message = MessageConstants.CHAIN_INTERACTION_FAIL + String.Format(MessageConstants.ERROR_MESSAGE, e.Message);
             }
             return response;
         }

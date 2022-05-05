@@ -96,7 +96,6 @@ namespace SU_COIN_BACK_END.Services {
                     await _context.SaveChangesAsync();
 
                     response.Data = dbProject.ProjectName;
-                    //response.Message = MessageConstants.PROJECT_ADD_SUCCESS;
                     response.Message = MessageConstants.OK;
                     response.Success = true;
                 }
@@ -109,8 +108,7 @@ namespace SU_COIN_BACK_END.Services {
             catch (Exception e)
             {
                 response.Success = false;
-                //response.Message = MessageConstants.PROJECT_ADD_FAIL + "\nException message: " + e.Message;
-                response.Message = e.Message;
+                response.Message = "Failed to add project" + String.Format(MessageConstants.ERROR_MESSAGE, e.Message);
                 return response;
             }
             return response;
@@ -163,8 +161,7 @@ namespace SU_COIN_BACK_END.Services {
                     await _context.ProjectPermissions.AddAsync(permission);
                     await _context.SaveChangesAsync();
 
-                    response.Data = MessageConstants.OK;
-                    //response.Message = MessageConstants.PROJECT_ADD_SUCCESS;
+                    response.Data = dbProject.ProjectName;
                     response.Message = MessageConstants.OK;
                     response.Success = true;
                 }
@@ -177,8 +174,7 @@ namespace SU_COIN_BACK_END.Services {
             catch (Exception e)
             {
                 response.Success = false;
-                //response.Message = MessageConstants.PROJECT_ADD_FAIL + "\nException message: " + e.Message;
-                response.Message = e.Message;
+                response.Message = MessageConstants.PROJECT_ADD_FAIL + String.Format(MessageConstants.ERROR_MESSAGE, e.Message);
                 return response;
             }
             return response;
@@ -218,7 +214,7 @@ namespace SU_COIN_BACK_END.Services {
             catch (Exception e)
             {
                 response.Success = false;
-                response.Message = e.Message;
+                response.Message = "Failed to delete project" + String.Format(MessageConstants.ERROR_MESSAGE, e.Message);
             }
             return response;
         }
@@ -287,7 +283,7 @@ namespace SU_COIN_BACK_END.Services {
             }
             catch (Exception e)
             {
-                response.Message = e.Message;
+                response.Message = "Failed to get projects" + String.Format(MessageConstants.ERROR_MESSAGE, e.Message);
                 response.Success = false;
             }
 
@@ -324,7 +320,7 @@ namespace SU_COIN_BACK_END.Services {
             }
             catch (Exception e) // Error occurred while retrieving the project from the database
             {
-                response.Message = e.Message;
+                response.Message = "Failed to get project by id" + String.Format(MessageConstants.ERROR_MESSAGE, e.Message);
                 response.Success = false;
             }
             return response;
@@ -400,7 +396,7 @@ namespace SU_COIN_BACK_END.Services {
             }
             catch (Exception e) 
             {
-                response.Message = e.Message;
+                response.Message = "Failed to get all file hashes" + String.Format(MessageConstants.ERROR_MESSAGE, e.Message);
                 response.Success = false;
             }
 
@@ -458,7 +454,7 @@ namespace SU_COIN_BACK_END.Services {
             catch (Exception e)
             {
                 response.Success = false;
-                response.Message = e.Message;
+                response.Message = "Failed to rate project" + String.Format(MessageConstants.ERROR_MESSAGE, e.Message);
             }
             return response;
         }
@@ -495,7 +491,6 @@ namespace SU_COIN_BACK_END.Services {
                     await _context.SaveChangesAsync();
                     response.Data = _mapper.Map<ProjectDTO>(dbProject);
                     response.Success = true;           
-                    //response.Message = MessageConstants.PROJECT_UPDATE_SUCCESS;
                     response.Message = MessageConstants.OK;
                 }
                 else
@@ -506,8 +501,7 @@ namespace SU_COIN_BACK_END.Services {
             }
             catch (Exception e)
             {
-                //response.Message = MessageConstants.PROJECT_UPDATE_FAIL + "\nException Message: " + e.Message;
-                response.Message = e.Message;
+                response.Message = "Failed to update project" + String.Format(MessageConstants.ERROR_MESSAGE, e.Message);
                 response.Success = false;
             }
             return response;
@@ -546,7 +540,7 @@ namespace SU_COIN_BACK_END.Services {
             } 
             catch (Exception e)
             {
-                response.Message = e.Message;
+                response.Message = "Failed to get project by id" + String.Format(MessageConstants.ERROR_MESSAGE, e.Message);
                 response.Success = false;
             }
             return response;
@@ -583,7 +577,7 @@ namespace SU_COIN_BACK_END.Services {
             }
             catch (Exception e)
             {
-                response.Message = e.Message;
+                response.Message = "Failed to get project by status" + String.Format(MessageConstants.ERROR_MESSAGE, e.Message);
                 response.Success = false;
             }
             return response;
@@ -653,7 +647,7 @@ namespace SU_COIN_BACK_END.Services {
             }
             catch (Exception e)
             {
-                response.Message = e.Message;
+                response.Message = "Failed to change project status" + String.Format(MessageConstants.ERROR_MESSAGE, e.Message);
                 response.Success = false;
             }
             return response;
@@ -689,7 +683,7 @@ namespace SU_COIN_BACK_END.Services {
             }
             catch (Exception e)
             {
-                response.Message = e.Message;
+                response.Message = "Failed to update the markdown" + String.Format(MessageConstants.ERROR_MESSAGE, e.Message);
                 response.Success = false;
             }
             return response;
@@ -731,13 +725,13 @@ namespace SU_COIN_BACK_END.Services {
                 else
                 {
                     response.Success = false;
-                    response.Message = String.Format("No permissioned projects found for user: {0}", GetUsername());
+                    response.Message = $"No permissioned projects found user {GetUsername()}";
                 }
             }
             catch (Exception e)
             {
                 response.Success = false;
-                response.Message = e.Message;
+                response.Message = "Failed to get all permissioned projects" + String.Format(MessageConstants.ERROR_MESSAGE, e.Message);
             }
             return response;
         }
@@ -855,13 +849,13 @@ namespace SU_COIN_BACK_END.Services {
                 else
                 {
                     response.Success = false;
-                    response.Message = String.Format("No invitations found for user: {0}", GetUsername());
+                    response.Message = $"No invitations found for user: {GetUsername()}";
                 }
             }
             catch (Exception e)
             {
                 response.Success = false;
-                response.Message = e.Message;
+                response.Message = "Failed to get all invited projects" + String.Format(MessageConstants.ERROR_MESSAGE, e.Message);
             }
             return response;
         }
