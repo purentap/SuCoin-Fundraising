@@ -95,13 +95,13 @@ namespace SU_COIN_BACK_END.Services {
                     await _context.ProjectPermissions.AddAsync(permission);
                     await _context.SaveChangesAsync();
 
-                    response.Data = MessageConstants.OK;
-                    response.Message = MessageConstants.PROJECT_ADD_SUCCESS;
+                    response.Data = dbProject.ProjectName;
+                    //response.Message = MessageConstants.PROJECT_ADD_SUCCESS;
+                    response.Message = MessageConstants.OK;
                     response.Success = true;
                 }
                 else // The project could not be added, because some operations were applied to the project while adding the project to the database.
                 {
-                    response.Data = "Not Added";
                     response.Message = MessageConstants.PROJECT_ADD_FAIL;
                     response.Success = true;
                 }
@@ -109,7 +109,8 @@ namespace SU_COIN_BACK_END.Services {
             catch (Exception e)
             {
                 response.Success = false;
-                response.Message = MessageConstants.PROJECT_ADD_FAIL + "\nException message: " + e.Message;
+                //response.Message = MessageConstants.PROJECT_ADD_FAIL + "\nException message: " + e.Message;
+                response.Message = e.Message;
                 return response;
             }
             return response;
@@ -129,7 +130,7 @@ namespace SU_COIN_BACK_END.Services {
                 else if (!await IsProjectSubmittedToChain(project.FileHex))
                 {
                     response.Success = false;
-                    response.Message = MessageConstants.PROJECT_NOT_SUBMITTED_TO_CHAIN;
+                    response.Message = "Project pdf you are trying to register is not submitted to blockchain";
                     return response;
                 }
 
@@ -163,12 +164,12 @@ namespace SU_COIN_BACK_END.Services {
                     await _context.SaveChangesAsync();
 
                     response.Data = MessageConstants.OK;
-                    response.Message = MessageConstants.PROJECT_ADD_SUCCESS;
+                    //response.Message = MessageConstants.PROJECT_ADD_SUCCESS;
+                    response.Message = MessageConstants.OK;
                     response.Success = true;
                 }
                 else // The project could not be added, because some operations were applied to the project while adding the project to the database.
                 {
-                    response.Data = "Not Added";
                     response.Message = MessageConstants.PROJECT_ADD_FAIL;
                     response.Success = true;
                 }
@@ -176,7 +177,8 @@ namespace SU_COIN_BACK_END.Services {
             catch (Exception e)
             {
                 response.Success = false;
-                response.Message = MessageConstants.PROJECT_ADD_FAIL + "\nException message: " + e.Message;
+                //response.Message = MessageConstants.PROJECT_ADD_FAIL + "\nException message: " + e.Message;
+                response.Message = e.Message;
                 return response;
             }
             return response;
@@ -216,7 +218,7 @@ namespace SU_COIN_BACK_END.Services {
             catch (Exception e)
             {
                 response.Success = false;
-                response.Message = MessageConstants.PROJECT_DELETE_FAIL + "\nException message: " + e.Message;
+                response.Message = e.Message;
             }
             return response;
         }
@@ -492,8 +494,9 @@ namespace SU_COIN_BACK_END.Services {
                     _context.Projects.Update(dbProject);
                     await _context.SaveChangesAsync();
                     response.Data = _mapper.Map<ProjectDTO>(dbProject);
-                    response.Success = true;
-                    response.Message = MessageConstants.OK;              
+                    response.Success = true;           
+                    //response.Message = MessageConstants.PROJECT_UPDATE_SUCCESS;
+                    response.Message = MessageConstants.OK;
                 }
                 else
                 {
@@ -503,6 +506,7 @@ namespace SU_COIN_BACK_END.Services {
             }
             catch (Exception e)
             {
+                //response.Message = MessageConstants.PROJECT_UPDATE_FAIL + "\nException Message: " + e.Message;
                 response.Message = e.Message;
                 response.Success = false;
             }
@@ -597,7 +601,7 @@ namespace SU_COIN_BACK_END.Services {
                     if (!response_chain.Success)
                     {
                         response.Success = false;
-                        response.Message = "Error occured interacting with chain";
+                        response.Message = MessageConstants.CHAIN_INTERACTION_FAIL;
                         return response;
                     }
 

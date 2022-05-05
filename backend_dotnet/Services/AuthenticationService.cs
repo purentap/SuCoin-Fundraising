@@ -92,8 +92,6 @@ namespace SU_COIN_BACK_END.Services
                         var addressRec = signer.EncodeUTF8AndEcRecover("LOGIN: " + user.Nonce.ToString(), request.SignedMessage);
                         if (request.Address == addressRec) // verification of the user signature
                         { 
-                            response.Success = true;
-                            response.Message = MessageConstants.USER_LOGIN_SUCCES;
                             ServiceResponse<string> chainResponse = await _chainInteractionService.GetChainRole(user.Address);
                             Console.WriteLine($"Response Message --> {chainResponse.Message}"); // Debuging
                             if (chainResponse.Success)
@@ -103,27 +101,30 @@ namespace SU_COIN_BACK_END.Services
                                     user.Role = chainResponse.Data;
                                 }
 
+                                response.Success = true;
+                                response.Message = MessageConstants.OK;
                                 response.Data = GenerateToken(user);
+
                                 user.Nonce = null;
                                 _context.Users.Update(user);
                                 await _context.SaveChangesAsync();
                             }
                             else 
                             {
-                                response.Message = chainResponse.Message;
                                 response.Success = chainResponse.Success;
+                                response.Message = chainResponse.Message;
                             }
                         }
                         else
                         {
                             response.Success = false;
-                            response.Message = String.Format(MessageConstants.SIGNATURE_REJECTED, request.Address);
+                            response.Message =  $"Signature provided does belong to the address: {request.Address}";
                         }  
                     }
                     else
                     {
                         response.Success = false;
-                        response.Message = MessageConstants.NONCE_NOT_FOUND;
+                        response.Message = "You should first create the nonce from /authentication/getnonce/{address}";
                     }
                 }
                 else
@@ -150,7 +151,7 @@ namespace SU_COIN_BACK_END.Services
                 if (await UserExists(addressRec))
                 {
                     response.Success = false;
-                    response.Message = MessageConstants.USER_EXIST;
+                    response.Message = "User Already Exists";
                     return response;
                 }
                 else if (await UserNameExists(request.Username))
@@ -172,7 +173,7 @@ namespace SU_COIN_BACK_END.Services
                 await _context.Users.AddAsync(user);
                 await _context.SaveChangesAsync();
 
-                response.Message = MessageConstants.USER_REGISTER_SUCCESS;
+                response.Message = MessageConstants.OK;
                 response.Success = true;
             }
             catch (Exception e)

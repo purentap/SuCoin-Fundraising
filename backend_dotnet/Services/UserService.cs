@@ -129,6 +129,7 @@ namespace SU_COIN_BACK_END.Services
             }
             catch (Exception e)
             {
+                //response.Message = MessageConstants.USER_UPDATE_FAIL + "\nException message: " + e.Message;
                 response.Message = e.Message;
                 response.Success = false;
             }
@@ -212,19 +213,23 @@ namespace SU_COIN_BACK_END.Services
                 /* Default value for IsAccepted is false. If the user accepted the invitation, change its value of IsAccepted property as true. */
                 if (permission != null)
                 {
+                    string reply;
                     if (request.IsAccepted) // user accepted to join the project
                     {
                         permission.IsAccepted = true;
                         _context.ProjectPermissions.Update(permission);
-                        response.Message = String.Format($"Invitation to project {requested_projectID} is accepted");
+                        reply = "accepted";
                     }
                     else // user rejected to join the project team. Therefore, remove user's permission for this project
                     {
                         _context.ProjectPermissions.Remove(permission);
-                        response.Message = String.Format($"Invitation to project {requested_projectID} is rejected");
+                        reply = "rejected";
                     }
-                    await _context.SaveChangesAsync();
+
+                    response.Message = $"Invitation to project {requested_projectID} is {reply}";
                     response.Success = true;
+
+                    await _context.SaveChangesAsync();
                 }
                 else
                 {

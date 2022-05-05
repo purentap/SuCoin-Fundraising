@@ -68,7 +68,7 @@ namespace SU_COIN_BACK_END.Services
             catch (Exception e)
             {
                 response.Success = false;
-                response.Message = e.Message;
+                response.Message = MessageConstants.CHAIN_INTERACTION_FAIL + $"\nException message: {e.Message}";
             }
             return response;
         }
@@ -96,7 +96,7 @@ namespace SU_COIN_BACK_END.Services
             catch (Exception e)
             {
                 response.Success = false;
-                response.Message = e.Message;
+                response.Message = MessageConstants.CHAIN_INTERACTION_FAIL + $"\nException message: {e.Message}";
             }
             return response;
         }
@@ -124,7 +124,7 @@ namespace SU_COIN_BACK_END.Services
             catch (Exception e)
             {
                 response.Success = false;
-                response.Message = e.Message;
+                response.Message = MessageConstants.CHAIN_INTERACTION_FAIL + $"\nException message: {e.Message}";
             }
             return response;
         }
@@ -138,34 +138,47 @@ namespace SU_COIN_BACK_END.Services
                 var ABI = @"[{ ""inputs"": [ { ""internalType"": ""address"", ""name"": """", ""type"": ""address"" } ], ""name"": ""statusList"", ""outputs"": [ { ""internalType"": ""enum ProjectRegister.USER_STATUS"", ""name"": """", ""type"": ""uint8"" } ], ""stateMutability"": ""view"", ""type"": ""function"" }]";
                 var contract = _web3.Eth.GetContract(ABI, ContractConstants.RegisterContractAddress);
 
-                /* Fetch the status and then determine the role */
-
-                int status = await contract.GetFunction("statusList").CallAsync<int>(address);
-
-                Console.WriteLine(status);
-
-                switch (status)
+                if (contract != null)
                 {
-                    case 1:
-                        chainRole = UserRoleConstants.WHITELIST;
-                        break;
-                    case 2:
-                        chainRole = UserRoleConstants.BLACKLIST;
-                        break;
-                    default:
-                        chainRole = UserRoleConstants.BASE;
-                        break;
+                    /* Fetch the status and then determine the role */
+                    try
+                    {
+                        int status = await contract.GetFunction("statusList").CallAsync<int>(address);
+                        Console.WriteLine($"Status: {status}"); // Debuging
+
+                        switch (status)
+                        {
+                            case 1:
+                                chainRole = UserRoleConstants.WHITELIST;
+                                break;
+                            case 2:
+                                chainRole = UserRoleConstants.BLACKLIST;
+                                break;
+                            default:
+                                chainRole = UserRoleConstants.BASE;
+                                break;
+                        }
+                        
+                        response.Message = String.Format(MessageConstants.USER_ROLE, chainRole);
+                        response.Data = chainRole;
+                        response.Success = true;
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine($"Error message: {e.Message}");
+                        response.Message =  "User role not found in the chain";
+                        response.Success = false;
+                    }                    
                 }
-                
-                response.Message = String.Format(MessageConstants.USER_ROLE, chainRole);
-                response.Data = chainRole;
-                response.Success = true;
+                else
+                {
+                    response.Message = "There is no contract for the current ABI";
+                    response.Success = false;
+                }
             } 
             catch (Exception e)
             {
-                string error = e.Message;
-                Console.WriteLine($"Error {error}");
-                response.Message = MessageConstants.USER_ROLE_NOT_FOUND_IN_THE_CHAIN;
+                response.Message = MessageConstants.CHAIN_INTERACTION_FAIL + $"\nException message: {e.Message}";
                 response.Success = false;
             }
 
@@ -195,7 +208,7 @@ namespace SU_COIN_BACK_END.Services
             catch (Exception e)
             {
                 response.Success = false;
-                response.Message = e.Message;
+                response.Message = MessageConstants.CHAIN_INTERACTION_FAIL + $"\nException message: {e.Message}";
             }
             return response;
         }
