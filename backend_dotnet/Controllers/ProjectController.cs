@@ -113,9 +113,9 @@ namespace SU_COIN_BACK_END.Controllers
         public async Task<IActionResult> GetPdfById(int id)
         {
             ServiceResponse<byte[]> response = await _projectService.GetProjectPdfById(id);
-            if (!response.Success)
+            if (!response.Success || response.Data == null)
             {
-                return BadRequest(response);
+                return NotFound(response);
             }
             return File(response.Data, "application/pdf", "MyProjectReport.pdf");
         }
@@ -132,9 +132,10 @@ namespace SU_COIN_BACK_END.Controllers
             return Ok(response);
         }
 
-        [HttpPut("ChangeStatus/{id}")]
-        public async Task<IActionResult> ChangeStatus(int id)
-        { //Only admin or whitelisted can do it or it can be updated directly from blockchain
+        [HttpPut]
+        [Route("[action]/{id}")]
+        public async Task<IActionResult> ChangeStatus(int id) //Only admin or whitelisted can do it or it can be updated directly from blockchain
+        {
             ServiceResponse<ProjectDTO> response = await _projectService.ChangeStatus(id);
             if (!response.Success)
             {
@@ -143,7 +144,8 @@ namespace SU_COIN_BACK_END.Controllers
             return Ok(response);
         }
 
-        [HttpPut("UpdateMarkDown/{id}/{markdown}")]
+        [HttpPut]
+        [Route("[action]/{id}/{markddown}")]
         public async Task<IActionResult> UpdateMarkDown(int id, string markdown)
         {
             ServiceResponse<ProjectDTO> response = await _projectService.UpdateMarkDown(id, markdown);
@@ -154,7 +156,8 @@ namespace SU_COIN_BACK_END.Controllers
             return Ok(response);
         }
 
-        [HttpGet("GetAllPermissioned/{withHex}")]
+        [HttpGet]
+        [Route("GetAllPermissioned/{withHex}")]
         public async Task<IActionResult> GetAllPermissionedProjects(bool withHex)
         {
             ServiceResponse<List<ProjectDTO>> response = await _projectService.GetAllPermissionedProjects(withHex);
@@ -165,7 +168,8 @@ namespace SU_COIN_BACK_END.Controllers
             return Ok(response);
         }
 
-        [HttpGet("GetAllInvitations/")]
+        [HttpGet]
+        [Route("GetAllInvitations")]
         public async Task<IActionResult> GetAllInvitedProjects()
         {
             ServiceResponse<List<ProjectDTO>> response = await _projectService.GetAllInvitedProjects();
@@ -176,7 +180,8 @@ namespace SU_COIN_BACK_END.Controllers
             return Ok(response);
         }
 
-        [HttpGet("GetProjects/{numberOfProjects}")]
+        [HttpGet]
+        [Route("[action]/{numberOfProjects}")]
         [AllowAnonymous]
         public async Task<IActionResult> GetProjects(int numberOfProjects) 
         {
@@ -188,8 +193,9 @@ namespace SU_COIN_BACK_END.Controllers
             return Ok(response);
         }
 
-        [HttpGet("GetAllHashes/{areOnlyAuctionsStarted}")]
-        public async Task<IActionResult> GetAllFileHashes(bool areOnlyAuctionsStarted)
+        [HttpGet]
+        [Route("[action]/{areOnlyAuctionsStarted}")]
+        public async Task<IActionResult> GetAllHashes(bool areOnlyAuctionsStarted)
         {
             ServiceResponse<List<string>> response = await _projectService.GetAllFileHashes(areOnlyAuctionsStarted);
             if (!response.Success)

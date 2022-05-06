@@ -28,8 +28,10 @@ namespace SU_COIN_BACK_END.Controllers
             _userInterface = userInterface;
         }
 
-        [HttpGet("Get")]
-        public async Task<IActionResult> Get(){ //might also deliver the permission not only invitations
+        [HttpGet]
+        [Route("[action]")]
+        public async Task<IActionResult> Get() //might also deliver the permission not only invitations
+        { 
             ServiceResponse<UserDTO> response = await _userInterface.GetUser();
             if (!response.Success)
             {
@@ -38,9 +40,10 @@ namespace SU_COIN_BACK_END.Controllers
             return Ok(response);
         } 
 
-        //[HttpPost("Update")]
-        [HttpPut("Update")]
-        public async Task<IActionResult> UpdateUser(UserDTO request){
+        [HttpPut]
+        [Route("Update")]
+        public async Task<IActionResult> UpdateUser(UserDTO request)
+        {
             ServiceResponse<UserDTO> response = await _userInterface.UpdateUser(request);
             if (!response.Success)
             {
@@ -49,8 +52,10 @@ namespace SU_COIN_BACK_END.Controllers
             return Ok(response);
         } 
 
-        [HttpDelete("Delete")]
-        public async Task<IActionResult> DeleteUser(){
+        [HttpDelete]
+        [Route("Delete")]
+        public async Task<IActionResult> DeleteUser()
+        {
             ServiceResponse<string> response = await _userInterface.DeleteUser();
             if (!response.Success)
             {
@@ -59,8 +64,10 @@ namespace SU_COIN_BACK_END.Controllers
             return Ok(response);
         } 
 
-        [HttpPut("Invite")]
-        public async Task<IActionResult> InviteToProject(ProjectPermissionRequest request){
+        [HttpPut]
+        [Route("Invite")]
+        public async Task<IActionResult> InviteToProject(ProjectPermissionRequest request)
+        {
             ServiceResponse<string> response = await _userInterface.GivePermissionToProject(request);
             if (!response.Success)
             {
@@ -69,8 +76,10 @@ namespace SU_COIN_BACK_END.Controllers
             return Ok(response);
         } 
 
-        [HttpPost("InvitationReply")]
-        public async Task<IActionResult> ReplyProjectInvitation(ProjectPermissionRequest request){
+        [HttpPost]
+        [Route("InvitationReply")]
+        public async Task<IActionResult> ReplyProjectInvitation(ProjectPermissionRequest request)
+        {
             ServiceResponse<string> response = await _userInterface.EvaluatePendingProjectPermission(request);
             if (!response.Success)
             {
@@ -79,8 +88,10 @@ namespace SU_COIN_BACK_END.Controllers
             return Ok(response);
         }
 
-        [HttpGet("GetAll")]
-        public async Task<IActionResult> GetAllUsers(){ //Only for admin
+        [HttpGet]
+        [Route("GetAll")]
+        public async Task<IActionResult> GetAllUsers() //Only for admin
+        { 
             ServiceResponse<List<UserDTO>> response = await _userInterface.GetAllUsers();
             if (!response.Success)
             {
@@ -89,8 +100,10 @@ namespace SU_COIN_BACK_END.Controllers
             return Ok(response);
         }
 
-        [HttpDelete("RemoveCollab")]
-        public async Task<IActionResult> RemoveCollab(ProjectPermissionRequest request){
+        [HttpDelete]
+        [Route("[action]")]
+        public async Task<IActionResult> RemoveCollab(ProjectPermissionRequest request)
+        {
             ServiceResponse<string> response = await _userInterface.RemovePermissionToProject(request);
             if (!response.Success)
             {

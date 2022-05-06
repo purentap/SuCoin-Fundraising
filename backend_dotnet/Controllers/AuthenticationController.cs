@@ -21,13 +21,15 @@ namespace SU_COIN_BACK_END.Controllers
     public class AuthenticationController: ControllerBase
     {       
         private readonly IAuthencticationService _authenticationService;
-        public AuthenticationController(IAuthencticationService authencticationService){
+        public AuthenticationController(IAuthencticationService authencticationService)
+        {
             _authenticationService = authencticationService;
         }
 
         [HttpPost("Login")]
         [AllowAnonymous]
-        public async Task<IActionResult> Login(UserLoginRequest request){
+        public async Task<IActionResult> Login(UserLoginRequest request)
+        {
             ServiceResponse<string> response = await _authenticationService.Login(request);
             if (!response.Success)
             {
@@ -38,7 +40,8 @@ namespace SU_COIN_BACK_END.Controllers
 
         [HttpPut("Register")]
         [AllowAnonymous]
-        public async Task<IActionResult> Register(UserRegisterRequest request){
+        public async Task<IActionResult> Register(UserRegisterRequest request)
+        {
             ServiceResponse<string> response = await _authenticationService.Register(request);
             if (!response.Success)
             {
@@ -49,7 +52,8 @@ namespace SU_COIN_BACK_END.Controllers
 
         [HttpGet("GetNonce/{address}")]
         [AllowAnonymous]
-        public async Task<IActionResult> GetNonce(string address){
+        public async Task<IActionResult> GetNonce(string address)
+        {
             ServiceResponse<int> response = await _authenticationService.GetNonce(address);
             if (!response.Success)
             {

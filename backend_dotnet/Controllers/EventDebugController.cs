@@ -23,12 +23,14 @@ namespace SU_COIN_BACK_END.Controllers
     public class EventDebugController: ControllerBase
     {       
         private readonly IChainInteractionService _chainInteractionService;
-        public EventDebugController(IChainInteractionService chainInteractionService){
+        public EventDebugController(IChainInteractionService chainInteractionService)
+        {
             _chainInteractionService = chainInteractionService;
         }
 
         [HttpGet("Debug")]
-        public async Task<IActionResult> Debug() {
+        public async Task<IActionResult> Debug() 
+        {
             ServiceResponse<List<EventLog<ProjectEvaluationEventDTO>>> response = await _chainInteractionService.GetProjectEvaluationEventLogs();
             if (!response.Success)
             {
@@ -38,7 +40,8 @@ namespace SU_COIN_BACK_END.Controllers
         }
 
         [HttpGet("DebugRemove/{address}")]
-        public async Task<IActionResult> DebugRemove(string address) {
+        public async Task<IActionResult> DebugRemove(string address) 
+        {
             ServiceResponse<List<EventLog<WhitelistRemoveEventDTO>>> response = await _chainInteractionService.GetWhiteListRemoveEventLogs(address);
             if (!response.Success)
             {
@@ -48,7 +51,8 @@ namespace SU_COIN_BACK_END.Controllers
         }
 
         [HttpGet("Whitelisted/{address}")]
-        public async Task<IActionResult> IsWhiteListed(string address) {
+        public async Task<IActionResult> IsWhiteListed(string address) 
+        {
             ServiceResponse<string> chainResponse = await _chainInteractionService.GetChainRole(address);
             bool response = (chainResponse.Data == UserRoleConstants.WHITELIST);
 
