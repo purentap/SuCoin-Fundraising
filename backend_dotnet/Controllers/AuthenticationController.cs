@@ -26,7 +26,8 @@ namespace SU_COIN_BACK_END.Controllers
             _authenticationService = authencticationService;
         }
 
-        [HttpPost("Login")]
+        [HttpPost]
+        [Route("[action]")]
         [AllowAnonymous]
         public async Task<IActionResult> Login(UserLoginRequest request)
         {
@@ -38,7 +39,8 @@ namespace SU_COIN_BACK_END.Controllers
             return Ok(response);
         } 
 
-        [HttpPut("Register")]
+        [HttpPut]
+        [Route("[action]")]
         [AllowAnonymous]
         public async Task<IActionResult> Register(UserRegisterRequest request)
         {
@@ -50,7 +52,8 @@ namespace SU_COIN_BACK_END.Controllers
             return Ok(response);
         }
 
-        [HttpGet("GetNonce/{address}")]
+        [HttpGet]
+        [Route("[action]/{address}")]
         [AllowAnonymous]
         public async Task<IActionResult> GetNonce(string address)
         {

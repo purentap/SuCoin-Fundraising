@@ -27,7 +27,8 @@ namespace SU_COIN_BACK_END.Controllers
             _projectService = projectService;
         }
 
-        [HttpGet("Get/All/{withHex}")]
+        [HttpGet]
+        [Route("Get/All/{withHex}")]
         [AllowAnonymous]
         public async Task<IActionResult> GetAllProjects(bool withHex)
         {
@@ -40,7 +41,8 @@ namespace SU_COIN_BACK_END.Controllers
         }
 
 
-        [HttpGet("Get/{id}")]
+        [HttpGet]
+        [Route("Get/{id}")]
         [AllowAnonymous]
         public async Task<IActionResult> GetProjectByID(int Id)
         {
@@ -52,7 +54,8 @@ namespace SU_COIN_BACK_END.Controllers
             return Ok(response);
         }
 
-        [HttpPut("Update")]
+        [HttpPut]
+        [Route("Update")]
         public async Task<IActionResult> UpdateProject(ProjectDTO project)
         {
             ServiceResponse<ProjectDTO> response = await _projectService.UpdateProject(project);
@@ -63,7 +66,8 @@ namespace SU_COIN_BACK_END.Controllers
             return Ok(response);
         }
 
-        [HttpDelete("Delete/{id}")]
+        [HttpDelete]
+        [Route("Delete/{id}")]
         public async Task<IActionResult> DeleteProject(int Id)
         {
             ServiceResponse<bool> response = await _projectService.DeleteProject(Id);
@@ -74,7 +78,8 @@ namespace SU_COIN_BACK_END.Controllers
             return Ok(response);
         }
 
-        [HttpPost("Add")]
+        [HttpPost]
+        [Route("Add")]
         public async Task<IActionResult> AddProject(ProjectDTO project)
         {
             ServiceResponse<string> response = await _projectService.AddProject(project);
@@ -85,7 +90,8 @@ namespace SU_COIN_BACK_END.Controllers
             return Ok(response);
         }
 
-        [HttpPost("AddAfterChain")]
+        [HttpPost]
+        [Route("AddAfterChain")]
         public async Task<IActionResult> AddProjectAfterChain(ProjectDTO project)
         {
             ServiceResponse<string> response = await _projectService.AddProjectAfterChain(project);
@@ -97,7 +103,8 @@ namespace SU_COIN_BACK_END.Controllers
             return Ok(response);
         }
 
-        [HttpPut("Rate/{id}/{rating}")]
+        [HttpPut]
+        [Route("Rate/{id}/{rating}")]
         public async Task<IActionResult> RateProject(int id, double rating)
         {
             ServiceResponse<ProjectDTO> response = await _projectService.RateProject(id, rating);
@@ -108,7 +115,8 @@ namespace SU_COIN_BACK_END.Controllers
             return Ok(response);
         }
 
-        [HttpGet("GetPDF/{id}")]
+        [HttpGet]
+        [Route("GetPDF/{id}")]
         [AllowAnonymous]
         public async Task<IActionResult> GetPdfById(int id)
         {
@@ -119,8 +127,9 @@ namespace SU_COIN_BACK_END.Controllers
             }
             return File(response.Data, "application/pdf", "MyProjectReport.pdf");
         }
-
-        [HttpGet("GetByStatus/{status}")]
+        
+        [HttpGet]
+        [Route("GetByStatus/{status}")]
         [AllowAnonymous]
         public async Task<IActionResult> GetProjectByStatus(string status)
         {
@@ -198,6 +207,30 @@ namespace SU_COIN_BACK_END.Controllers
         public async Task<IActionResult> GetAllHashes(bool areOnlyAuctionsStarted)
         {
             ServiceResponse<List<string>> response = await _projectService.GetAllFileHashes(areOnlyAuctionsStarted);
+            if (!response.Success)
+            {
+                return BadRequest(response);
+            }
+            return Ok(response.Data);
+        }
+
+        [HttpPut]
+        [Route("ViewerReply/{id}/{reply}")]
+        public async Task<IActionResult> ReplyProjectPreview(int id, bool reply)
+        {            
+            ServiceResponse<bool> response = await _projectService.ReplyProjectPreview(id, reply);
+            if (!response.Success)
+            {
+                return BadRequest(response);
+            }
+            return Ok(response.Data);
+        }
+
+        [HttpPut]
+        [Route("[action]/{id}")]
+        public async Task<IActionResult> StartAuction(int id)
+        {            
+            ServiceResponse<bool> response = await _projectService.StartAuction(id);
             if (!response.Success)
             {
                 return BadRequest(response);

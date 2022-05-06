@@ -591,54 +591,62 @@ namespace SU_COIN_BACK_END.Services {
                 Project? project = await _context.Projects.FirstOrDefaultAsync(c => c.ProjectID == id);
                 if (project != null)
                 {
-                    ServiceResponse<List<EventLog<ProjectEvaluationEventDTO>>> response_chain = await _chainInteractionService.GetProjectEvaluationEventLogs();
-                    if (!response_chain.Success)
+                    if (project.ViewerAccepted)
                     {
-                        response.Success = false;
-                        response.Message = MessageConstants.CHAIN_INTERACTION_FAIL;
-                        return response;
-                    }
-
-                    SHA256 sha256 = SHA256.Create();
-                    byte[] hashval = sha256.ComputeHash(Encoding.ASCII.GetBytes(project.FileHex));
-                    StringBuilder sb = new StringBuilder();
-
-                    foreach (byte b in hashval)
-                    {
-                        sb.Append(b.ToString("x2"));
-                    }
-
-                    String hash_Str = sb.ToString();
-                    string status = ProjectStatusConstants.PENDING;
-
-                    for (int i = 0; i < response_chain.Data.Count; i++)
-                    {   
-                        bool isValidHash = ((response_chain.Data[i].Log.Topics[1]).ToString() == ("0x"+ hash_Str).ToString());
-                        bool isProjectApproved = response_chain.Data[i].Event.isApproved;
-                        
-                        if (isValidHash)
+                        ServiceResponse<List<EventLog<ProjectEvaluationEventDTO>>> response_chain = await _chainInteractionService.GetProjectEvaluationEventLogs();
+                        if (!response_chain.Success)
                         {
-                            if (isProjectApproved) 
-                            {
-                                status = ProjectStatusConstants.APPROVED;
-                            }
-                            else
-                            {
-                                status = ProjectStatusConstants.REJECTED;
-                            }
-                            break;
+                            response.Success = false;
+                            response.Message = MessageConstants.CHAIN_INTERACTION_FAIL;
+                            return response;
                         }
+
+                        SHA256 sha256 = SHA256.Create();
+                        byte[] hashval = sha256.ComputeHash(Encoding.ASCII.GetBytes(project.FileHex));
+                        StringBuilder sb = new StringBuilder();
+
+                        foreach (byte b in hashval)
+                        {
+                            sb.Append(b.ToString("x2"));
+                        }
+
+                        String hash_Str = sb.ToString();
+                        string status = ProjectStatusConstants.PENDING;
+
+                        for (int i = 0; i < response_chain.Data.Count; i++)
+                        {   
+                            bool isValidHash = ((response_chain.Data[i].Log.Topics[1]).ToString() == ("0x"+ hash_Str).ToString());
+                            bool isProjectApproved = response_chain.Data[i].Event.isApproved;
+                            
+                            if (isValidHash)
+                            {
+                                if (isProjectApproved) 
+                                {
+                                    status = ProjectStatusConstants.APPROVED;
+                                }
+                                else
+                                {
+                                    status = ProjectStatusConstants.REJECTED;
+                                }
+                                break;
+                            }
+                        }
+
+                        var previous_status = project.Status;
+                        project.Status = status;
+                        _context.Projects.Update(project);
+                        await _context.SaveChangesAsync();
+
+                        response.Success = true;
+                        response.Message = "Status changed from " + previous_status + " to " +  status + ".";
+                        response.Data = _mapper.Map<ProjectDTO>(project);
                     }
-
-                    var previous_status = project.Status;
-                    project.Status = status;
-                    _context.Projects.Update(project);
-                    await _context.SaveChangesAsync();
-
-                    response.Success = true;
-                    response.Message = "Status changed from " + previous_status + " to " +  status + ".";
-                    response.Data = _mapper.Map<ProjectDTO>(project);
-                }
+                    else
+                    {
+                        response.Message = "Project is not accepted by viewer";
+                        response.Success = false;
+                    }
+                }    
                 else
                 {
                     response.Success = false;
@@ -735,8 +743,96 @@ namespace SU_COIN_BACK_END.Services {
             }
             return response;
         }
+
+        public async Task<ServiceResponse<bool>> ReplyProjectPreview(int id, bool reply)
+        {
+            ServiceResponse<bool> response = new ServiceResponse<bool>();
+            try
+            {
+                Project? project = await _context.Projects.FirstOrDefaultAsync(project => project.ProjectID == id);
+                if (project != null)
+                {
+                    if (reply)
+                    {
+                        project.ViewerAccepted = true;
+                        response.Data = true;
+                        response.Message = MessageConstants.OK;
+                        response.Success = true;
+                    }
+                    else
+                    {
+                        response = await DeleteProject(id);
+                    }
+                }
+                else
+                {
+                    response.Message = MessageConstants.PROJECT_NOT_FOUND;
+                }
+            }
+            catch (Exception e)
+            {
+                response.Message = "Failed to reply project preview" + String.Format(MessageConstants.ERROR_MESSAGE, e.Message);
+                response.Success = false;
+            }
+            return response;
+        }
        
-    
+        public async Task<ServiceResponse<bool>> StartAuction(int projectID)
+        {
+            ServiceResponse<bool> response = new ServiceResponse<bool>();
+            try
+            {
+                Project? project = await _context.Projects.FirstOrDefaultAsync(project => project.ProjectID == projectID);
+                if (project != null)
+                {
+                    if (project.Status == ProjectStatusConstants.APPROVED)
+                    {
+                        int userID = GetUserId();
+                        ProjectPermission? permission = await _context.ProjectPermissions
+                        .FirstOrDefaultAsync(permission => permission.ProjectID == projectID && permission.UserID == userID);
+                        if (permission != null)
+                        {
+                            if (permission.Role == UserPermissionRoleConstants.OWNER)
+                            {
+                                project.IsAuctionStarted = true;
+                                _context.Projects.Update(project);
+                                await _context.SaveChangesAsync();
+
+                                response.Message = MessageConstants.OK;
+                                response.Data = true;
+                                response.Success = true;
+                            }
+                            else
+                            {
+                                response.Message = MessageConstants.NOT_AUTHORIZED_TO_ACCESS;
+                                response.Success = false;
+                            }
+                        }
+                        else
+                        {
+                            response.Message = MessageConstants.PROJECT_PERMISSION_MANAGE_DENIED;
+                            response.Success = false;
+                        }
+                    }
+                    else
+                    {
+                        response.Message = "Project is not approved. Therefore, not ready to be auctioned";
+                        response.Success = false;
+                    }
+                }
+                else
+                {
+                    response.Message = MessageConstants.PROJECT_NOT_FOUND;
+                    response.Success = false;
+                }
+            }
+            catch (Exception e)
+            {
+                response.Message = "Failed to start auction" + String.Format(MessageConstants.ERROR_MESSAGE, e.Message);
+                response.Success = false;
+            }
+            return response;
+        }
         public async Task<bool> IsProjectSubmittedToChain(string fileHex)
         {
             try

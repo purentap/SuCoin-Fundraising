@@ -28,7 +28,8 @@ namespace SU_COIN_BACK_END.Controllers
             _chainInteractionService = chainInteractionService;
         }
 
-        [HttpGet("Debug")]
+        [HttpGet]
+        [Route("[action]")]
         public async Task<IActionResult> Debug() 
         {
             ServiceResponse<List<EventLog<ProjectEvaluationEventDTO>>> response = await _chainInteractionService.GetProjectEvaluationEventLogs();
@@ -39,7 +40,8 @@ namespace SU_COIN_BACK_END.Controllers
             return Ok(response);
         }
 
-        [HttpGet("DebugRemove/{address}")]
+        [HttpGet]
+        [Route("[action]/{address}")]
         public async Task<IActionResult> DebugRemove(string address) 
         {
             ServiceResponse<List<EventLog<WhitelistRemoveEventDTO>>> response = await _chainInteractionService.GetWhiteListRemoveEventLogs(address);
@@ -50,7 +52,8 @@ namespace SU_COIN_BACK_END.Controllers
             return Ok(response);
         }
 
-        [HttpGet("Whitelisted/{address}")]
+        [HttpGet]
+        [Route("Whitelisted/{address}")]
         public async Task<IActionResult> IsWhiteListed(string address) 
         {
             ServiceResponse<string> chainResponse = await _chainInteractionService.GetChainRole(address);
