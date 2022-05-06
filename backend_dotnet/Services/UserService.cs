@@ -99,32 +99,42 @@ namespace SU_COIN_BACK_END.Services
             ServiceResponse<UserDTO> response = new ServiceResponse<UserDTO>();
             try
             {
-                User? dbUser = await _context.Users.FirstOrDefaultAsync(c => c.Id == GetUserId());
                 if (user != null)
-                {   
-                    if (await _authenticationService.UserNameExists(user.Username))
+                {
+                    User? dbUser = await _context.Users.FirstOrDefaultAsync(c => c.Id == GetUserId());
+                    if (dbUser != null)
+                    {
+                        /* If username is not same with the current one and exists in the database, 
+                           then we may say that user is trying to get another existing username */
+                        if (user.Username != GetUsername() && await _authenticationService.UserNameExists(user.Username))
+                        {
+                            response.Success = false;
+                            response.Message = MessageConstants.USER_NAME_EXIST;
+                            return response;
+                        }
+
+                        /* Update properties */
+                        dbUser.MailAddress = user.MailAddress;
+                        dbUser.Name = user.Name;
+                        dbUser.Surname = user.Surname;
+                        dbUser.Username = user.Username;
+
+                        _context.Users.Update(dbUser);
+                        await _context.SaveChangesAsync();
+                        response.Message = MessageConstants.OK;
+                        response.Success = true;
+                        response.Data = _mapper.Map<UserDTO>(dbUser);
+                    }
+                    else
                     {
                         response.Success = false;
-                        response.Message = MessageConstants.USER_NAME_EXIST;
-                        return response;
+                        response.Message = MessageConstants.USER_NOT_FOUND;                        
                     }
-
-                    /* Update properties */
-                    dbUser.MailAddress = user.MailAddress;
-                    dbUser.Name = user.Name;
-                    dbUser.Surname = user.Surname;
-                    dbUser.Username = user.Username;
-
-                    _context.Users.Update(dbUser);
-                    await _context.SaveChangesAsync();
-                    response.Message = MessageConstants.OK;
-                    response.Success = true;
-                    response.Data = _mapper.Map<UserDTO>(dbUser);
                 }
                 else 
                 {
                     response.Success = false;
-                    response.Message = MessageConstants.USER_NOT_FOUND;
+                    response.Message = String.Format(MessageConstants.INVALID_INPUT, "User value is null");
                 }
             }
             catch (Exception e)

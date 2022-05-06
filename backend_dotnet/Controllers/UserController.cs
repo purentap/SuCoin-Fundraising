@@ -38,7 +38,8 @@ namespace SU_COIN_BACK_END.Controllers
             return Ok(response);
         } 
 
-        [HttpPost("Update")]
+        //[HttpPost("Update")]
+        [HttpPut("Update")]
         public async Task<IActionResult> UpdateUser(UserDTO request){
             ServiceResponse<UserDTO> response = await _userInterface.UpdateUser(request);
             if (!response.Success)

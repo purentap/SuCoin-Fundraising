@@ -16,6 +16,7 @@ namespace SU_COIN_BACK_END.Constants.MessageConstants
         public const string OK = "Ok";
         public const string CHAIN_INTERACTION_FAIL = "Error occured while interacting with chain";
         public const string ERROR_MESSAGE = "\nException message: {0}";
+        public const string INVALID_INPUT = "Invalid input: {0}";
     }
 }
 

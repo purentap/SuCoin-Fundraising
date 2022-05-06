@@ -265,7 +265,7 @@ namespace SU_COIN_BACK_END.Services {
                 {
                     if (count < 0) // Invalid parameter
                     {
-                        response.Message = "Parameter for project amount must be non-negative";
+                        response.Message = String.Format(MessageConstants.INVALID_INPUT, "Project amount must be non-negative");
                         response.Success = false;
                     }
                     else 
@@ -411,7 +411,7 @@ namespace SU_COIN_BACK_END.Services {
                 if (rating_value < 0 || rating_value > 10) // rating is invalid
                 {
                     response.Success = false;
-                    response.Message = "Rating input is invalid, it should be in [0,10]";
+                    response.Message = String.Format(MessageConstants.INVALID_INPUT, "Rating should be in [0,10]");
                 }
 
                 Project? project = await _context.Projects.FirstOrDefaultAsync(c => c.ProjectID == projectID);
@@ -752,12 +752,16 @@ namespace SU_COIN_BACK_END.Services {
                         sb.Append(b.ToString("x2"));
                     }
                     String hash_Str = sb.ToString();
-                    for (int i = 0; i < response.Data.Count; i++)
+                    if (response.Data != null)
                     {
-                        if (response.Data[i].Log.Data == "0x" + hash_Str)
+                        for (int i = 0; i < response.Data.Count; i++)
                         {
-                            return true;
+                            if (response.Data[i].Log.Data == "0x" + hash_Str)
+                            {
+                                return true;
+                            }
                         }
+                        return false;
                     }
                     return false;
                 }
