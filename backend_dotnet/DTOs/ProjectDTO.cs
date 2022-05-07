@@ -6,6 +6,8 @@ namespace SU_COIN_BACK_END.DTOs
     {
         public int ProjectID { get; set; }
         public string? ProjectName { get; set; }
+        public Nullable<System.DateTime> Date { get; set; }
+        public bool IsAuctionCreated { get; set; } = false;
         public string? ProjectDescription { get; set; }
         public string? ImageUrl { get; set; } = null;
         public Nullable<double> Rating { get; set; } = null;
