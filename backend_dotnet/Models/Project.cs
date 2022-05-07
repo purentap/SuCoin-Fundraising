@@ -7,6 +7,7 @@ namespace SU_COIN_BACK_END.Models
         public int ProjectID { get; set; }
         public string? ProjectName { get; set; }
         public Nullable<System.DateTime> Date { get; set; }
+        public bool IsAuctionCreated { get; set; } = false;
         public bool IsAuctionStarted { get; set; } = false;
         public bool ViewerAccepted { get; set; } = false;
         public string FileHex { get; set; } = "";
