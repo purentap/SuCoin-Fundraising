@@ -59,7 +59,7 @@ namespace SU_COIN_BACK_END.Services {
             }
             try
             {
-				if (project.ProjectName == null)
+                if (project.ProjectName == null)
                 {
                     response.Success = false;
                     response.Message = "Project name is not added";
@@ -521,7 +521,7 @@ namespace SU_COIN_BACK_END.Services {
                 {
                     Func<int,Task<bool>> checkUserInTheTeam = async userID => await _context.ProjectPermissions
                     .AnyAsync(p => (p.ProjectID == projectID) && (p.UserID == userID) && p.IsAccepted); // lambda expression which checks whether is user in any team
-                  
+                    
                     if (project.FileHex == null) // There is a project related with the id, but there is no pdf file for the project
                     {
                         response.Message = "Pdf not found";
