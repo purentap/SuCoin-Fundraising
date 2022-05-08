@@ -58,7 +58,7 @@ namespace SU_COIN_BACK_END.Services
             catch (Exception e)
             {
                 response.Success = false;
-                response.Message = "Failed to delete the user" + String.Format(MessageConstants.ERROR_MESSAGE, e.Message);
+                response.Message = String.Format(MessageConstants.FAIL_MESSAGE, "delete user", e.Message);
             }
             return response;
         }
@@ -88,7 +88,7 @@ namespace SU_COIN_BACK_END.Services
             }
             catch (Exception e)
             {
-                response.Message = "Failed to get user" + String.Format(MessageConstants.ERROR_MESSAGE, e.Message);
+                response.Message = String.Format(MessageConstants.FAIL_MESSAGE, "get user", e.Message);
                 response.Success = false;
             }
             return response;
@@ -139,7 +139,7 @@ namespace SU_COIN_BACK_END.Services
             }
             catch (Exception e)
             {
-                response.Message = "Failed to update the user" + String.Format(MessageConstants.ERROR_MESSAGE, e.Message);
+                response.Message = String.Format(MessageConstants.FAIL_MESSAGE, "update user", e.Message);
                 response.Success = false;
             }
             return response;
@@ -204,7 +204,7 @@ namespace SU_COIN_BACK_END.Services
             catch (Exception e)
             {
                 response.Success = false;
-                response.Message = "Failed to give permission to the project" + String.Format(MessageConstants.ERROR_MESSAGE, e.Message);
+                response.Message = String.Format(MessageConstants.FAIL_MESSAGE, "give permission to the project", e.Message);
             }
             return response;
         }
@@ -249,7 +249,7 @@ namespace SU_COIN_BACK_END.Services
             catch (Exception e)
             {
                 response.Success = false;
-                response.Message = "Failed to evaluate the pending projects" + String.Format(MessageConstants.ERROR_MESSAGE, e.Message);
+                response.Message = String.Format(MessageConstants.FAIL_MESSAGE, "evaluate pending projects", e.Message);
             }
             return response;
         }
@@ -281,7 +281,7 @@ namespace SU_COIN_BACK_END.Services
                 }
             } catch (Exception e) {    
                 response.Success = false;
-                response.Message = "Failed to get all users" + String.Format(MessageConstants.ERROR_MESSAGE, e.Message);
+                response.Message = String.Format(MessageConstants.FAIL_MESSAGE, "get all users", e.Message);
             }
             return response;
         }
@@ -354,7 +354,7 @@ namespace SU_COIN_BACK_END.Services
             catch (Exception e)
             {
                 response.Success = false;
-                response.Message = "Failed to remove permission" + String.Format(MessageConstants.ERROR_MESSAGE, e.Message);
+                response.Message = String.Format(MessageConstants.FAIL_MESSAGE, "remove permission", e.Message);
             }
             return response;
         }

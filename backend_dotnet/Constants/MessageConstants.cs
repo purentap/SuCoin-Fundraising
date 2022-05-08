@@ -14,8 +14,8 @@ namespace SU_COIN_BACK_END.Constants.MessageConstants
         public const string EVENT_NOT_FOUND = "No event has found";
         public const string NOT_AUTHORIZED_TO_ACCESS = "You are not authorized to access this resource";
         public const string OK = "Ok";
-        public const string CHAIN_INTERACTION_FAIL = "Error occured while interacting with chain";
-        public const string ERROR_MESSAGE = "\nException message: {0}";
+        public const string CHAIN_INTERACTION_FAIL = "Failed to interact with chain\nException message: {0}";
+        public const string FAIL_MESSAGE = "Failed to {0}\nException message: {1}";
         public const string INVALID_INPUT = "Invalid input: {0}";
     }
 }

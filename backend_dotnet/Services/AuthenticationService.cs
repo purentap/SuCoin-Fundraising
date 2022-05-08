@@ -136,7 +136,7 @@ namespace SU_COIN_BACK_END.Services
             catch (Exception e)
             {
                 response.Success = false;
-                response.Message = "Failed to login" + String.Format(MessageConstants.ERROR_MESSAGE, e.Message);
+                response.Message = String.Format(MessageConstants.FAIL_MESSAGE, "login", e.Message);
             }
             return response;
         }
@@ -179,7 +179,7 @@ namespace SU_COIN_BACK_END.Services
             catch (Exception e)
             {
                 response.Success = false;
-                response.Message = "Failed to register" + String.Format(MessageConstants.ERROR_MESSAGE, e.Message);
+                response.Message = String.Format(MessageConstants.FAIL_MESSAGE, "register", e.Message);
             }
             return response;
         }
