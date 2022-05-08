@@ -51,15 +51,21 @@ namespace SU_COIN_BACK_END.Services {
         {
             ServiceResponse<string> response = new ServiceResponse<string>();
 
-            if (GetUserRole() == UserRoleConstants.BLACKLIST) {
+            if (GetUserRole() == UserRoleConstants.BLACKLIST) 
+            {
                     response.Success = false;
                     response.Message = MessageConstants.USER_IS_BLACKLISTED;
                     return response;
             }
-
             try
             {
-                if (await ProjectNameExists(project.ProjectName))
+				if (project.ProjectName == null)
+                {
+                    response.Success = false;
+                    response.Message = "Project name is not added";
+                    return response;
+                }
+                else if (await ProjectNameExists(project.ProjectName))
                 {
                     response.Success = false;
                     response.Message = MessageConstants.PROJECT_NAME_EXISTS;
@@ -68,12 +74,7 @@ namespace SU_COIN_BACK_END.Services {
 
                 /* Project has not been created in the database. Create the new project */
                 Project new_project = _mapper.Map<Project>(project);
-                new_project.FileHex = project.FileHex;
                 new_project.Date = DateTime.Now;
-                new_project.IsAuctionStarted = false;
-                new_project.Status = ProjectStatusConstants.PENDING;
-                new_project.MarkDown = "";
-                new_project.Rating = 0;
                 new_project.ProposerAddress = GetUserAddress();
 
                 await _context.Projects.AddAsync(new_project);
@@ -109,7 +110,6 @@ namespace SU_COIN_BACK_END.Services {
             {
                 response.Success = false;
                 response.Message = "Failed to add project" + String.Format(MessageConstants.ERROR_MESSAGE, e.Message);
-                return response;
             }
             return response;
         }
@@ -240,17 +240,19 @@ namespace SU_COIN_BACK_END.Services {
                     project => project.ProjectID,
                     (hash,projects) => new Project
                     {
-                        ProjectID = projects.ProjectID, 
-                        ProjectName = projects.ProjectName, 
-                        Date = projects.Date, 
+                        ProjectID = projects.ProjectID,
+                        ProjectName = projects.ProjectName,
+                        Date = projects.Date,
+                        ViewerAccepted = projects.ViewerAccepted,
                         IsAuctionCreated = projects.IsAuctionCreated, 
-                        IsAuctionStarted = projects.IsAuctionStarted, 
-                        ProjectDescription = projects.ProjectDescription, 
-                        ProposerAddress = projects.ProposerAddress, 
-                        ImageUrl = projects.ImageUrl, 
-                        Rating = projects.Rating, 
+                        IsAuctionStarted = projects.IsAuctionStarted,
+                        ProjectDescription = projects.ProjectDescription,
+                        ImageUrl = projects.ImageUrl,
+                        Rating = projects.Rating,
                         Status = projects.Status,
-                        FileHex =  hash.FileHex, // hash value is combined to project with FileHex property
+                        FileHex =  hash.FileHex,
+                        MarkDown = projects.MarkDown,
+                        ProposerAddress = projects.ProposerAddress
                     }
                 );
 
@@ -517,12 +519,15 @@ namespace SU_COIN_BACK_END.Services {
                 Project? project = await _context.Projects.FirstOrDefaultAsync(c => c.ProjectID == projectID);
                 if (project != null) // project exists
                 {
-                    string userRole = GetUserRole();
-                    Func<int,Task<bool>> checkUserInATeam = async userID => await _context.ProjectPermissions
+                    Func<int,Task<bool>> checkUserInTheTeam = async userID => await _context.ProjectPermissions
                     .AnyAsync(p => (p.ProjectID == projectID) && (p.UserID == userID) && p.IsAccepted); // lambda expression which checks whether is user in any team
-                    bool isUserInATeam = await checkUserInATeam(GetUserId());
-
-                    if (project.Status != ProjectStatusConstants.APPROVED && userRole == UserRoleConstants.BASE && !isUserInATeam)
+                  
+                    if (project.FileHex == null) // There is a project related with the id, but there is no pdf file for the project
+                    {
+                        response.Message = "Pdf not found";
+                        response.Success = false;
+                    }
+                    else if (project.Status != ProjectStatusConstants.APPROVED && GetUserRole() == UserRoleConstants.BASE && !await checkUserInTheTeam(GetUserId()))
                     {
                         response.Message = MessageConstants.NOT_AUTHORIZED_TO_ACCESS;
                         response.Success = false;

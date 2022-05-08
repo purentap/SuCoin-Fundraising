@@ -10,11 +10,9 @@ namespace SU_COIN_BACK_END.DTOs
         public bool IsAuctionCreated { get; set; } = false;
         public string? ProjectDescription { get; set; }
         public string? ImageUrl { get; set; } = null;
-        public Nullable<double> Rating { get; set; } = null;
+        public double Rating { get; set; } = 0;
         public string Status { get; set; } = ProjectStatusConstants.PENDING;
         public string MarkDown { get; set; } = "";
         public string FileHex { get; set; } = "";
-        public string? ProposerAddress { get; set; } = null;
-
     }
 }

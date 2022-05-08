@@ -121,7 +121,7 @@ namespace SU_COIN_BACK_END.Controllers
         public async Task<IActionResult> GetPdfById(int id)
         {
             ServiceResponse<byte[]> response = await _projectService.GetProjectPdfById(id);
-            if (!response.Success || response.Data == null)
+            if (!response.Success)
             {
                 return NotFound(response);
             }
