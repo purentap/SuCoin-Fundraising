@@ -13,7 +13,7 @@ using SU_COIN_BACK_END.Models;
 using SU_COIN_BACK_END.DTOs;
 using SU_COIN_BACK_END.Response;
 using SU_COIN_BACK_END.Request;
-
+using SU_COIN_BACK_END.Constants.MessageConstants;
 namespace SU_COIN_BACK_END.Controllers
 {
     [ApiController]
@@ -34,22 +34,35 @@ namespace SU_COIN_BACK_END.Controllers
             ServiceResponse<string> response = await _authenticationService.Login(request);
             if (!response.Success)
             {
+                if (response.Message == MessageConstants.USER_NOT_FOUND)
+                {
+                    return NotFound();
+                }
+                if (response.Message == null)
+                {
+                    return StatusCode(StatusCodes.Status500InternalServerError, "null Message");
+                }
                 return BadRequest(response);
             }
             return Ok(response);
         } 
 
-        [HttpPut]
+        [HttpPost]
         [Route("[action]")]
         [AllowAnonymous]
         public async Task<IActionResult> Register(UserRegisterRequest request)
         {
             ServiceResponse<string> response = await _authenticationService.Register(request);
             if (!response.Success)
-            {
+            {                
+                if (response.Message == null)
+                {
+                    return StatusCode(StatusCodes.Status500InternalServerError, "null Message");
+                }
                 return BadRequest(response);
             }
-            return Ok(response);
+            return Created($"users/{response.Data}", request);
+
         }
 
         [HttpGet]
@@ -60,6 +73,10 @@ namespace SU_COIN_BACK_END.Controllers
             ServiceResponse<int> response = await _authenticationService.GetNonce(address);
             if (!response.Success)
             {
+                if (response.Message == MessageConstants.USER_NOT_FOUND)
+                {
+                    return NotFound(response);
+                }
                 return BadRequest(response);
             }
             return Ok(response);

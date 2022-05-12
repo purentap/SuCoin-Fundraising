@@ -174,6 +174,7 @@ namespace SU_COIN_BACK_END.Services
                 await _context.SaveChangesAsync();
 
                 response.Message = MessageConstants.OK;
+                response.Data = Convert.ToString(user.Id);
                 response.Success = true;
             }
             catch (Exception e)

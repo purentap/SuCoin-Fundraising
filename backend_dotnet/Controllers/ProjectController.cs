@@ -12,6 +12,7 @@ using SU_COIN_BACK_END.SU_COIN_INTERFACE;
 using SU_COIN_BACK_END.Models;
 using SU_COIN_BACK_END.DTOs;
 using SU_COIN_BACK_END.Response;
+using SU_COIN_BACK_END.Constants.MessageConstants;
 
 namespace SU_COIN_BACK_END.Controllers
 {
@@ -40,7 +41,6 @@ namespace SU_COIN_BACK_END.Controllers
             return Ok(response);
         }
 
-
         [HttpGet]
         [Route("Get/{id}")]
         [AllowAnonymous]
@@ -49,6 +49,10 @@ namespace SU_COIN_BACK_END.Controllers
             ServiceResponse<ProjectDTO> response = await _projectService.GetProjectById(Id);
             if (!response.Success)
             {
+                if (response.Message == MessageConstants.PROJECT_NOT_FOUND)
+                {
+                    return NotFound();
+                }
                 return BadRequest(response);
             }
             return Ok(response);
@@ -61,6 +65,10 @@ namespace SU_COIN_BACK_END.Controllers
             ServiceResponse<ProjectDTO> response = await _projectService.UpdateProject(project);
             if (!response.Success)
             {
+                if (response.Message == MessageConstants.PROJECT_NOT_FOUND)
+                {
+                    return NotFound();
+                }
                 return BadRequest(response);
             }
             return Ok(response);
@@ -73,6 +81,10 @@ namespace SU_COIN_BACK_END.Controllers
             ServiceResponse<bool> response = await _projectService.DeleteProject(Id);
             if (!response.Success)
             {
+                if (response.Message == MessageConstants.PROJECT_NOT_FOUND)
+                {
+                    return NotFound();
+                }
                 return BadRequest(response);
             }
             return Ok(response);
@@ -85,9 +97,14 @@ namespace SU_COIN_BACK_END.Controllers
             ServiceResponse<string> response = await _projectService.AddProject(project);
             if (!response.Success)
             {
+                if (response.Message == MessageConstants.PROJECT_NOT_FOUND)
+                {
+                    return NotFound();
+                }
                 return BadRequest(response);
             }
-            return Ok(response);
+            //return Ok(response);
+            return Created($"projects/{project.ProjectID}", project);
         }
 
         [HttpPost]
@@ -98,9 +115,14 @@ namespace SU_COIN_BACK_END.Controllers
             Console.WriteLine(response.Message);
             if (!response.Success)
             {
+                if (response.Message == MessageConstants.PROJECT_NOT_FOUND)
+                {
+                    return NotFound();
+                }
                 return BadRequest(response);
             }
-            return Ok(response);
+            //return Ok(response);
+            return Created($"projects/{project.ProjectID}", project);
         }
 
         [HttpPut]
@@ -110,6 +132,10 @@ namespace SU_COIN_BACK_END.Controllers
             ServiceResponse<ProjectDTO> response = await _projectService.RateProject(id, rating);
             if (!response.Success)
             {
+                if (response.Message == MessageConstants.PROJECT_NOT_FOUND)
+                {
+                    return NotFound(response);
+                }
                 return BadRequest(response);
             }
             return Ok(response);
@@ -123,7 +149,11 @@ namespace SU_COIN_BACK_END.Controllers
             ServiceResponse<byte[]> response = await _projectService.GetProjectPdfById(id);
             if (!response.Success)
             {
-                return NotFound(response);
+                if (response.Message == MessageConstants.PROJECT_NOT_FOUND)
+                {
+                    return NotFound();
+                }
+                return BadRequest(response);
             }
             return File(response.Data, "application/pdf", "MyProjectReport.pdf");
         }
@@ -160,6 +190,10 @@ namespace SU_COIN_BACK_END.Controllers
             ServiceResponse<ProjectDTO> response = await _projectService.UpdateMarkDown(id, markdown);
             if (!response.Success)
             {
+                if (response.Message == MessageConstants.PROJECT_NOT_FOUND)
+                {
+                    return NotFound();
+                }
                 return BadRequest(response);
             }
             return Ok(response);
@@ -221,6 +255,10 @@ namespace SU_COIN_BACK_END.Controllers
             ServiceResponse<bool> response = await _projectService.ReplyProjectPreview(id, reply);
             if (!response.Success)
             {
+                if (response.Message == MessageConstants.PROJECT_NOT_FOUND)
+                {
+                    return NotFound();
+                }
                 return BadRequest(response);
             }
             return Ok(response.Data);
@@ -233,6 +271,10 @@ namespace SU_COIN_BACK_END.Controllers
             ServiceResponse<bool> response = await _projectService.StartAuction(id);
             if (!response.Success)
             {
+                if (response.Message == MessageConstants.PROJECT_NOT_FOUND)
+                {
+                    return NotFound();
+                }
                 return BadRequest(response);
             }
             return Ok(response.Data);

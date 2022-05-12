@@ -15,6 +15,7 @@ using SU_COIN_BACK_END.Response;
 using SU_COIN_BACK_END.Request;
 using Nethereum.Contracts;
 using SU_COIN_BACK_END.Constants.UserRoleConstants;
+using SU_COIN_BACK_END.Constants.MessageConstants;
 
 namespace SU_COIN_BACK_END.Controllers
 {
@@ -35,7 +36,11 @@ namespace SU_COIN_BACK_END.Controllers
             ServiceResponse<List<EventLog<ProjectEvaluationEventDTO>>> response = await _chainInteractionService.GetProjectEvaluationEventLogs();
             if (!response.Success)
             {
-                return BadRequest(response);
+                if (response.Message == MessageConstants.EVENT_NOT_FOUND)
+                {
+                    return NotFound();
+                }
+                return NotFound(response);
             }
             return Ok(response);
         }
@@ -47,7 +52,27 @@ namespace SU_COIN_BACK_END.Controllers
             ServiceResponse<List<EventLog<WhitelistRemoveEventDTO>>> response = await _chainInteractionService.GetWhiteListRemoveEventLogs(address);
             if (!response.Success)
             {
-                return BadRequest(response);
+                if (response.Message == MessageConstants.NOT_WHITLISTED)
+                {
+                    return BadRequest(response);
+                }
+                return NotFound(response);
+            }
+            return Ok(response);
+        }
+
+        [HttpGet]
+        [Route("[action]/{address}")]
+        public async Task<IActionResult> DebugAdd(string address) 
+        {
+            ServiceResponse<List<EventLog<WhitelistInsertEventDTO>>> response = await _chainInteractionService.GetWhiteListInsertEventLogs(address);
+            if (!response.Success)
+            {
+                if (response.Message == MessageConstants.NOT_WHITLISTED)
+                {
+                    return BadRequest(response);
+                }
+                return NotFound(response);
             }
             return Ok(response);
         }
@@ -57,12 +82,17 @@ namespace SU_COIN_BACK_END.Controllers
         public async Task<IActionResult> IsWhiteListed(string address) 
         {
             ServiceResponse<string> chainResponse = await _chainInteractionService.GetChainRole(address);
-            bool response = (chainResponse.Data == UserRoleConstants.WHITELIST);
 
-            if (!response)
+            if (!chainResponse.Success)
             {
-                return BadRequest(response);
+                if (chainResponse.Message == MessageConstants.CHAIN_INTERACTION_FAIL)
+                {
+                    return NotFound();
+                }
+                return BadRequest(chainResponse);
             }
+
+            bool response = (chainResponse.Data == UserRoleConstants.WHITELIST);
             return Ok(response);
         }
     }

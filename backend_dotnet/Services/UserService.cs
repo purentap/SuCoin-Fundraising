@@ -279,7 +279,9 @@ namespace SU_COIN_BACK_END.Services
                     response.Message = MessageConstants.USER_NOT_FOUND;
                     response.Success = false;
                 }
-            } catch (Exception e) {    
+            } 
+            catch (Exception e) 
+            {    
                 response.Success = false;
                 response.Message = String.Format(MessageConstants.FAIL_MESSAGE, "get all users", e.Message);
             }

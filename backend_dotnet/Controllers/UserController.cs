@@ -13,6 +13,7 @@ using SU_COIN_BACK_END.Models;
 using SU_COIN_BACK_END.DTOs;
 using SU_COIN_BACK_END.Response;
 using SU_COIN_BACK_END.Request;
+using SU_COIN_BACK_END.Constants.MessageConstants;
 
 namespace SU_COIN_BACK_END.Controllers
 {
@@ -35,6 +36,10 @@ namespace SU_COIN_BACK_END.Controllers
             ServiceResponse<UserDTO> response = await _userInterface.GetUser();
             if (!response.Success)
             {
+                if (response.Message == MessageConstants.USER_NOT_FOUND)
+                {
+                    return NotFound();
+                }
                 return BadRequest(response);
             }
             return Ok(response);
@@ -47,6 +52,10 @@ namespace SU_COIN_BACK_END.Controllers
             ServiceResponse<UserDTO> response = await _userInterface.UpdateUser(request);
             if (!response.Success)
             {
+                if (response.Message == MessageConstants.USER_NOT_FOUND)
+                {
+                    return NotFound();
+                }
                 return BadRequest(response);
             }
             return Ok(response);
@@ -59,6 +68,10 @@ namespace SU_COIN_BACK_END.Controllers
             ServiceResponse<string> response = await _userInterface.DeleteUser();
             if (!response.Success)
             {
+                if (response.Message == MessageConstants.USER_NOT_FOUND)
+                {
+                    return NotFound();
+                }
                 return BadRequest(response);
             }
             return Ok(response);
@@ -71,6 +84,10 @@ namespace SU_COIN_BACK_END.Controllers
             ServiceResponse<string> response = await _userInterface.GivePermissionToProject(request);
             if (!response.Success)
             {
+                if (response.Message == MessageConstants.PROJECT_NOT_FOUND || response.Message == MessageConstants.USER_NOT_FOUND)
+                {
+                    return NotFound(response);
+                }
                 return BadRequest(response);
             }
             return Ok(response);
@@ -83,6 +100,10 @@ namespace SU_COIN_BACK_END.Controllers
             ServiceResponse<string> response = await _userInterface.EvaluatePendingProjectPermission(request);
             if (!response.Success)
             {
+                if (response.Message == MessageConstants.PROJECT_NOT_FOUND || response.Message == MessageConstants.USER_NOT_FOUND)
+                {
+                    return NotFound(response);
+                }
                 return BadRequest(response);
             }
             return Ok(response);
@@ -95,6 +116,10 @@ namespace SU_COIN_BACK_END.Controllers
             ServiceResponse<List<UserDTO>> response = await _userInterface.GetAllUsers();
             if (!response.Success)
             {
+                if (response.Message == MessageConstants.PROJECT_NOT_FOUND || response.Message == MessageConstants.USER_NOT_FOUND)
+                {
+                    return NotFound(response);
+                }
                 return BadRequest(response);
             }
             return Ok(response);
@@ -107,6 +132,10 @@ namespace SU_COIN_BACK_END.Controllers
             ServiceResponse<string> response = await _userInterface.RemovePermissionToProject(request);
             if (!response.Success)
             {
+                if (response.Message == MessageConstants.PROJECT_NOT_FOUND || response.Message == MessageConstants.USER_NOT_FOUND)
+                {
+                    return NotFound(response);
+                }
                 return BadRequest(response);
             }
             return Ok(response);

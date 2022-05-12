@@ -67,15 +67,26 @@ namespace SU_COIN_BACK_END.Services
             }
             catch (Exception e)
             {
+                Console.WriteLine($"Exception message: {e.Message}");
                 response.Success = false;
-                response.Message = String.Format(MessageConstants.CHAIN_INTERACTION_FAIL, e.Message);
+                response.Message = MessageConstants.CHAIN_INTERACTION_FAIL;
             }
             return response;
         }
 
         public async Task<ServiceResponse<List<EventLog<WhitelistInsertEventDTO>>>> GetWhiteListInsertEventLogs(string address)
         {
+            ServiceResponse<string> role_response = new ServiceResponse<string>();
+            role_response = await GetChainRole(address);
             ServiceResponse<List<EventLog<WhitelistInsertEventDTO>>> response = new ServiceResponse<List<EventLog<WhitelistInsertEventDTO>>>();
+    
+            if (role_response.Data != UserRoleConstants.WHITELIST)
+            {
+                response.Message = MessageConstants.NOT_WHITLISTED;
+                response.Success = false;
+                return response;
+            }
+            
             try
             {
                 var whitelistInsertEventHandler = _web3.Eth.GetEvent<WhitelistInsertEventDTO>(ContractConstants.RegisterContractAddress);
@@ -95,15 +106,26 @@ namespace SU_COIN_BACK_END.Services
             }
             catch (Exception e)
             {
+                Console.WriteLine($"Exception message: {e.Message}");
                 response.Success = false;
-                response.Message = String.Format(MessageConstants.CHAIN_INTERACTION_FAIL, e.Message);
+                response.Message = MessageConstants.CHAIN_INTERACTION_FAIL;
             }
             return response;
         }
 
         public async Task<ServiceResponse<List<EventLog<WhitelistRemoveEventDTO>>>> GetWhiteListRemoveEventLogs(string address)
         {
+            ServiceResponse<string> role_response = new ServiceResponse<string>();
+            role_response = await GetChainRole(address);
             ServiceResponse<List<EventLog<WhitelistRemoveEventDTO>>> response = new ServiceResponse<List<EventLog<WhitelistRemoveEventDTO>>>();
+
+            if (role_response.Data != UserRoleConstants.WHITELIST)
+            {
+                response.Message = MessageConstants.NOT_WHITLISTED;
+                response.Success = false;
+                return response;
+            }
+
             try
             {
                 var whitelistRemoveEventHandler = _web3.Eth.GetEvent<WhitelistRemoveEventDTO>(ContractConstants.RegisterContractAddress);
@@ -123,8 +145,9 @@ namespace SU_COIN_BACK_END.Services
             } 
             catch (Exception e)
             {
+                Console.WriteLine($"Exception message: {e.Message}");
                 response.Success = false;
-                response.Message = String.Format(MessageConstants.CHAIN_INTERACTION_FAIL, e.Message);
+                response.Message = MessageConstants.CHAIN_INTERACTION_FAIL;
             }
             return response;
         }
@@ -178,7 +201,8 @@ namespace SU_COIN_BACK_END.Services
             } 
             catch (Exception e)
             {
-                response.Message = String.Format(MessageConstants.CHAIN_INTERACTION_FAIL, e.Message);
+                Console.WriteLine($"Exception message: {e.Message}");
+                response.Message = MessageConstants.CHAIN_INTERACTION_FAIL;
                 response.Success = false;
             }
 
@@ -207,8 +231,9 @@ namespace SU_COIN_BACK_END.Services
             }
             catch (Exception e)
             {
+                Console.WriteLine($"Exception message: {e.Message}");
                 response.Success = false;
-                response.Message = String.Format(MessageConstants.CHAIN_INTERACTION_FAIL, e.Message);
+                response.Message = MessageConstants.CHAIN_INTERACTION_FAIL;
             }
             return response;
         }
