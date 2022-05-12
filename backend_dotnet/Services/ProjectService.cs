@@ -268,8 +268,8 @@ namespace SU_COIN_BACK_END.Services {
                 if (projects != null)
                 {
                     if (count < 0) // Invalid parameter
-                    {
-                        response.Message = String.Format(MessageConstants.INVALID_INPUT, "Project amount must be non-negative");
+                    {                      
+                        response.Message = MessageConstants.INVALID_INPUT;
                         response.Success = false;
                     }
                     else 
@@ -415,7 +415,7 @@ namespace SU_COIN_BACK_END.Services {
                 if (rating_value < 0 || rating_value > 10) // rating is invalid
                 {
                     response.Success = false;
-                    response.Message = String.Format(MessageConstants.INVALID_INPUT, "Rating should be in [0,10]");
+                    response.Message = MessageConstants.INVALID_INPUT;
                 }
 
                 Project? project = await _context.Projects.FirstOrDefaultAsync(c => c.ProjectID == projectID);
@@ -514,6 +514,12 @@ namespace SU_COIN_BACK_END.Services {
         public async Task<ServiceResponse<byte[]>> GetProjectPdfById(int projectID)
         {
             ServiceResponse<byte[]> response = new ServiceResponse<byte[]>();
+            if (projectID < 0)
+            {
+                response.Message = MessageConstants.INVALID_INPUT;
+                response.Success = false;
+            }
+
             try
             {
                 Project? project = await _context.Projects.FirstOrDefaultAsync(c => c.ProjectID == projectID);

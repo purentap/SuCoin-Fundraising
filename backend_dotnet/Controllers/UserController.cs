@@ -46,8 +46,8 @@ namespace SU_COIN_BACK_END.Controllers
         } 
 
         [HttpPut]
-        [Route("Update")]
-        public async Task<IActionResult> UpdateUser(UserDTO request)
+        [Route("[action]")]
+        public async Task<IActionResult> Update(UserDTO request)
         {
             ServiceResponse<UserDTO> response = await _userInterface.UpdateUser(request);
             if (!response.Success)
@@ -62,8 +62,8 @@ namespace SU_COIN_BACK_END.Controllers
         } 
 
         [HttpDelete]
-        [Route("Delete")]
-        public async Task<IActionResult> DeleteUser()
+        [Route("[action]")]
+        public async Task<IActionResult> Delete()
         {
             ServiceResponse<string> response = await _userInterface.DeleteUser();
             if (!response.Success)
@@ -77,23 +77,27 @@ namespace SU_COIN_BACK_END.Controllers
             return Ok(response);
         } 
 
-        [HttpPut]
+        [HttpPost]
         [Route("Invite")]
         public async Task<IActionResult> InviteToProject(ProjectPermissionRequest request)
         {
-            ServiceResponse<string> response = await _userInterface.GivePermissionToProject(request);
+            ServiceResponse<int> response = await _userInterface.GivePermissionToProject(request);
             if (!response.Success)
             {
+                if (response.Message == MessageConstants.PROJECT_PERMISSION_MANAGE_DENIED)
+                {
+                    return Forbid();
+                }
                 if (response.Message == MessageConstants.PROJECT_NOT_FOUND || response.Message == MessageConstants.USER_NOT_FOUND)
                 {
                     return NotFound(response);
                 }
                 return BadRequest(response);
             }
-            return Ok(response);
+            return Created($"user/invite/{response.Data}", response);
         } 
 
-        [HttpPost]
+        [HttpPut]
         [Route("InvitationReply")]
         public async Task<IActionResult> ReplyProjectInvitation(ProjectPermissionRequest request)
         {
@@ -103,6 +107,10 @@ namespace SU_COIN_BACK_END.Controllers
                 if (response.Message == MessageConstants.PROJECT_NOT_FOUND || response.Message == MessageConstants.USER_NOT_FOUND)
                 {
                     return NotFound(response);
+                }
+                if (response.Message == MessageConstants.PROJECT_PERMISSION_MANAGE_DENIED || response.Message == MessageConstants.NOT_AUTHORIZED_TO_ACCESS)
+                {
+                    return Forbid();
                 }
                 return BadRequest(response);
             }
@@ -116,7 +124,11 @@ namespace SU_COIN_BACK_END.Controllers
             ServiceResponse<List<UserDTO>> response = await _userInterface.GetAllUsers();
             if (!response.Success)
             {
-                if (response.Message == MessageConstants.PROJECT_NOT_FOUND || response.Message == MessageConstants.USER_NOT_FOUND)
+                if (response.Message == MessageConstants.NOT_AUTHORIZED_TO_ACCESS)
+                {
+                    return Forbid();
+                }
+                if (response.Message == MessageConstants.USER_NOT_FOUND)
                 {
                     return NotFound(response);
                 }
@@ -132,6 +144,10 @@ namespace SU_COIN_BACK_END.Controllers
             ServiceResponse<string> response = await _userInterface.RemovePermissionToProject(request);
             if (!response.Success)
             {
+                if (response.Message == MessageConstants.PROJECT_PERMISSION_MANAGE_DENIED)
+                {
+                    return Forbid();
+                }
                 if (response.Message == MessageConstants.PROJECT_NOT_FOUND || response.Message == MessageConstants.USER_NOT_FOUND)
                 {
                     return NotFound(response);

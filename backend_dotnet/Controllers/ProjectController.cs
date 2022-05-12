@@ -69,6 +69,10 @@ namespace SU_COIN_BACK_END.Controllers
                 {
                     return NotFound();
                 }
+                if (response.Message == MessageConstants.PROJECT_PERMISSION_MANAGE_DENIED)
+                {
+                    return Forbid();
+                }
                 return BadRequest(response);
             }
             return Ok(response);
@@ -84,6 +88,10 @@ namespace SU_COIN_BACK_END.Controllers
                 if (response.Message == MessageConstants.PROJECT_NOT_FOUND)
                 {
                     return NotFound();
+                }
+                if (response.Message == MessageConstants.PROJECT_PERMISSION_MANAGE_DENIED)
+                {
+                    return Forbid();
                 }
                 return BadRequest(response);
             }
@@ -101,10 +109,13 @@ namespace SU_COIN_BACK_END.Controllers
                 {
                     return NotFound();
                 }
+                if (response.Message == MessageConstants.USER_IS_BLACKLISTED)
+                {
+                    return Forbid();
+                }
                 return BadRequest(response);
             }
-            //return Ok(response);
-            return Created($"projects/{project.ProjectID}", project);
+            return Created($"projects/{response.Data}", response);
         }
 
         [HttpPost]
@@ -121,7 +132,6 @@ namespace SU_COIN_BACK_END.Controllers
                 }
                 return BadRequest(response);
             }
-            //return Ok(response);
             return Created($"projects/{project.ProjectID}", project);
         }
 
@@ -132,6 +142,10 @@ namespace SU_COIN_BACK_END.Controllers
             ServiceResponse<ProjectDTO> response = await _projectService.RateProject(id, rating);
             if (!response.Success)
             {
+                if (response.Message == MessageConstants.INVALID_INPUT)
+                {
+                    return BadRequest("Rating should be in [0,10]");
+                }
                 if (response.Message == MessageConstants.PROJECT_NOT_FOUND)
                 {
                     return NotFound(response);
@@ -149,6 +163,14 @@ namespace SU_COIN_BACK_END.Controllers
             ServiceResponse<byte[]> response = await _projectService.GetProjectPdfById(id);
             if (!response.Success)
             {
+                if (response.Message == MessageConstants.INVALID_INPUT)
+                {
+                    return BadRequest();
+                }
+                if (response.Message == MessageConstants.NOT_AUTHORIZED_TO_ACCESS)
+                {
+                    return Forbid();
+                }
                 if (response.Message == MessageConstants.PROJECT_NOT_FOUND)
                 {
                     return NotFound();
@@ -190,6 +212,10 @@ namespace SU_COIN_BACK_END.Controllers
             ServiceResponse<ProjectDTO> response = await _projectService.UpdateMarkDown(id, markdown);
             if (!response.Success)
             {
+                if (response.Message == MessageConstants.PROJECT_PERMISSION_MANAGE_DENIED || response.Message == MessageConstants.NOT_AUTHORIZED_TO_ACCESS)
+                {
+                    return Forbid();
+                }
                 if (response.Message == MessageConstants.PROJECT_NOT_FOUND)
                 {
                     return NotFound();
@@ -231,7 +257,10 @@ namespace SU_COIN_BACK_END.Controllers
             ServiceResponse<List<ProjectDTO>> response = await _projectService.GetProjects(numberOfProjects: numberOfProjects);
             if (!response.Success)
             {
-                return BadRequest(response);
+                if (response.Message == MessageConstants.INVALID_INPUT) 
+                {
+                    return BadRequest("Project amount must be non-negative");
+                }
             }
             return Ok(response);
         }
@@ -243,6 +272,10 @@ namespace SU_COIN_BACK_END.Controllers
             ServiceResponse<List<string>> response = await _projectService.GetAllFileHashes(areOnlyAuctionsStarted);
             if (!response.Success)
             {
+                if (response.Message == MessageConstants.NOT_AUTHORIZED_TO_ACCESS)
+                {
+                    return Forbid();
+                }
                 return BadRequest(response);
             }
             return Ok(response.Data);
@@ -274,6 +307,10 @@ namespace SU_COIN_BACK_END.Controllers
                 if (response.Message == MessageConstants.PROJECT_NOT_FOUND)
                 {
                     return NotFound();
+                }
+                if (response.Message == MessageConstants.PROJECT_PERMISSION_MANAGE_DENIED)
+                {
+                    return Forbid();
                 }
                 return BadRequest(response);
             }

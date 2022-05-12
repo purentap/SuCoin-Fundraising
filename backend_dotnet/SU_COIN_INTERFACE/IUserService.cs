@@ -11,7 +11,7 @@ namespace SU_COIN_BACK_END.SU_COIN_INTERFACE
         Task<ServiceResponse<string>> DeleteUser();
         Task<ServiceResponse<UserDTO>> UpdateUser(UserDTO user);
         Task<ServiceResponse<UserDTO>> GetUser();
-        Task<ServiceResponse<string>> GivePermissionToProject(ProjectPermissionRequest request);
+        Task<ServiceResponse<int>> GivePermissionToProject(ProjectPermissionRequest request);
         Task<ServiceResponse<string>> EvaluatePendingProjectPermission(ProjectPermissionRequest request);
         Task<ServiceResponse<List<UserDTO>>> GetAllUsers();
         Task<ServiceResponse<string>> RemovePermissionToProject(ProjectPermissionRequest request);

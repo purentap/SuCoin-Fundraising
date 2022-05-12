@@ -134,7 +134,8 @@ namespace SU_COIN_BACK_END.Services
                 else 
                 {
                     response.Success = false;
-                    response.Message = String.Format(MessageConstants.INVALID_INPUT, "User value is null");
+                    //response.Message = String.Format(MessageConstants.INVALID_INPUT, "User value is null");
+                    response.Message = MessageConstants.INVALID_INPUT;
                 }
             }
             catch (Exception e)
@@ -145,9 +146,9 @@ namespace SU_COIN_BACK_END.Services
             return response;
         }
 
-        public async Task<ServiceResponse<string>> GivePermissionToProject(ProjectPermissionRequest request)
+        public async Task<ServiceResponse<int>> GivePermissionToProject(ProjectPermissionRequest request)
         {
-            ServiceResponse<string> response = new ServiceResponse<string>();
+            ServiceResponse<int> response = new ServiceResponse<int>();
             try
             {
                 ProjectPermission? permission = await _context.ProjectPermissions
@@ -191,6 +192,7 @@ namespace SU_COIN_BACK_END.Services
                         await _context.SaveChangesAsync();
 
                         response.Success = true;
+                        response.Data = new_permission.ID;
                         response.Message = String.Format($"Invitation to collaborate project {request.ProjectID} has been sent");
                     }
                 }
