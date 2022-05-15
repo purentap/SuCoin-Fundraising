@@ -5,7 +5,7 @@ namespace SU_COIN_BACK_END.DTOs
     public class ProjectDTO
     {
         public int ProjectID { get; set; }
-        public string? ProjectName { get; set; }
+        public string ProjectName { get; set; } = "";
         public Nullable<System.DateTime> Date { get; set; }
         public bool IsAuctionCreated { get; set; } = false;
         public string? ProjectDescription { get; set; }

@@ -161,43 +161,41 @@ namespace SU_COIN_BACK_END.Services
                 var ABI = @"[{ ""inputs"": [ { ""internalType"": ""address"", ""name"": """", ""type"": ""address"" } ], ""name"": ""statusList"", ""outputs"": [ { ""internalType"": ""enum ProjectRegister.USER_STATUS"", ""name"": """", ""type"": ""uint8"" } ], ""stateMutability"": ""view"", ""type"": ""function"" }]";
                 var contract = _web3.Eth.GetContract(ABI, ContractConstants.RegisterContractAddress);
 
-                if (contract != null)
-                {
-                    /* Fetch the status and then determine the role */
-                    try
-                    {
-                        int status = await contract.GetFunction("statusList").CallAsync<int>(address);
-                        Console.WriteLine($"Status: {status}"); // Debuging
-
-                        switch (status)
-                        {
-                            case 1:
-                                chainRole = UserRoleConstants.WHITELIST;
-                                break;
-                            case 2:
-                                chainRole = UserRoleConstants.BLACKLIST;
-                                break;
-                            default:
-                                chainRole = UserRoleConstants.BASE;
-                                break;
-                        }
-                        
-                        response.Message = String.Format(MessageConstants.USER_ROLE, chainRole);
-                        response.Data = chainRole;
-                        response.Success = true;
-                    }
-                    catch (Exception e)
-                    {
-                        Console.WriteLine($"Error message: {e.Message}");
-                        response.Message =  "User role not found in the chain";
-                        response.Success = false;
-                    }                    
-                }
-                else
+                if (contract == null)
                 {
                     response.Message = "There is no contract for the current ABI";
                     response.Success = false;
+                    return response;
                 }
+                    /* Fetch the status and then determine the role */
+                try
+                {
+                    int status = await contract.GetFunction("statusList").CallAsync<int>(address);
+                    Console.WriteLine($"Status: {status}"); // Debuging
+
+                    switch (status)
+                    {
+                        case 1:
+                            chainRole = UserRoleConstants.WHITELIST;
+                            break;
+                        case 2:
+                            chainRole = UserRoleConstants.BLACKLIST;
+                            break;
+                        default:
+                            chainRole = UserRoleConstants.BASE;
+                            break;
+                    }
+                        
+                    response.Message = String.Format(MessageConstants.USER_ROLE, chainRole);
+                    response.Data = chainRole;
+                    response.Success = true;
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine($"Error message: {e.Message}");
+                    response.Message =  MessageConstants.USER_ROLE_NOT_FOUND_IN_CHAIN;
+                    response.Success = false;
+                }                    
             } 
             catch (Exception e)
             {
@@ -205,7 +203,6 @@ namespace SU_COIN_BACK_END.Services
                 response.Message = MessageConstants.CHAIN_INTERACTION_FAIL;
                 response.Success = false;
             }
-
             return response;
         }
     

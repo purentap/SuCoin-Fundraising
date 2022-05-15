@@ -53,9 +53,9 @@ namespace SU_COIN_BACK_END.Services {
 
             if (GetUserRole() == UserRoleConstants.BLACKLIST) 
             {
-                    response.Success = false;
-                    response.Message = MessageConstants.USER_IS_BLACKLISTED;
-                    return response;
+                response.Success = false;
+                response.Message = MessageConstants.USER_IS_BLACKLISTED;
+                return response;
             }
             try
             {
@@ -93,6 +93,7 @@ namespace SU_COIN_BACK_END.Services {
                         Role = UserPermissionRoleConstants.OWNER,
                         IsAccepted = true 
                     };
+
                     await _context.ProjectPermissions.AddAsync(permission);
                     await _context.SaveChangesAsync();
 
@@ -180,12 +181,19 @@ namespace SU_COIN_BACK_END.Services {
             return response;
         }
 
-        public async Task<ServiceResponse<bool>> DeleteProject(int ID) //If auction started aviod deleting
+        public async Task<ServiceResponse<string>> DeleteProject(int id) //If auction started aviod deleting
         {
-            ServiceResponse<bool> response = new ServiceResponse<bool>();
+            ServiceResponse<string> response = new ServiceResponse<string>();
+            if (id < 0)
+            {
+                response.Success = false;
+                response.Message = MessageConstants.INVALID_INPUT;
+                return response;
+            }
+
             try
             {
-                if (!await HasOwnerPermission(ID)) // owner does not allow you to delete the project
+                if (!await HasOwnerPermission(id)) // owner does not allow you to delete the project
                 {
                     response.Success = false;
                     response.Message = MessageConstants.PROJECT_PERMISSION_MANAGE_DENIED;
@@ -193,23 +201,22 @@ namespace SU_COIN_BACK_END.Services {
                 }
 
                 /* For security reasons, we need to recheck the database and then delete the project */
-                Project? project = await _context.Projects.FirstOrDefaultAsync(c => c.ProjectID == ID);
+                Project? project = await _context.Projects.FirstOrDefaultAsync(c => c.ProjectID == id);
 
-                if (project != null)
-                {
-                    /* Remove both the current project and the related project permissions */
-                    _context.ProjectPermissions.RemoveRange(_context.ProjectPermissions.Where(c => c.ProjectID == ID));
-                    _context.Remove(project);
-                    await _context.SaveChangesAsync();
-                    response.Message = MessageConstants.OK;
-                    response.Data = true;
-                    response.Success = true;
-                }
-                else
+                if (project == null)
                 {
                     response.Message = MessageConstants.PROJECT_NOT_FOUND;
                     response.Success = false;
+                    return response;
                 }
+                
+                /* Remove both the current project and the related project permissions */
+                _context.ProjectPermissions.RemoveRange(_context.ProjectPermissions.Where(c => c.ProjectID == id));
+                _context.Remove(project);
+                await _context.SaveChangesAsync();
+                response.Message = MessageConstants.OK;
+                response.Data = "Project is deleted successfully";
+                response.Success = true;
             }
             catch (Exception e)
             {
@@ -265,25 +272,23 @@ namespace SU_COIN_BACK_END.Services {
                         
                 /* If there is any project, send the project data to the mapper */
                 
-                if (projects != null)
-                {
-                    if (count < 0) // Invalid parameter
-                    {                      
-                        response.Message = MessageConstants.INVALID_INPUT;
-                        response.Success = false;
-                    }
-                    else 
-                    {
-                        response.Data = (projects.Take(count).Select(c => _mapper.Map<ProjectDTO>(c))).ToList(); // map projects to projectDTOs
-                        response.Message = MessageConstants.OK;
-                        response.Success = true;  
-                    }           
-                }
-                else
+                if (projects == null)
                 {
                     response.Message = MessageConstants.PROJECT_NOT_FOUND;
                     response.Success = true;
+                    return response;
                 }
+                
+                if (count < 0) // Invalid parameter
+                {                      
+                    response.Message = MessageConstants.INVALID_INPUT;
+                    response.Success = false;
+                    return response;
+                }
+
+                response.Data = (projects.Take(count).Select(c => _mapper.Map<ProjectDTO>(c))).ToList(); // map projects to projectDTOs
+                response.Message = MessageConstants.OK;
+                response.Success = true;           
             }
             catch (Exception e)
             {
@@ -294,32 +299,39 @@ namespace SU_COIN_BACK_END.Services {
             return response;
         }
 
-        public async Task<ServiceResponse<ProjectDTO>> GetProjectById(int ID)
+        public async Task<ServiceResponse<ProjectDTO>> GetProjectById(int id)
         {
             ServiceResponse<ProjectDTO> response = new ServiceResponse<ProjectDTO>();
+            if (id < 0)
+            {
+                response.Success = false;
+                response.Message = MessageConstants.INVALID_INPUT;
+                return response;
+            }
+
             try
             {
-                Project? project = await _context.Projects.FirstOrDefaultAsync(c => c.ProjectID == ID);
+                Project? project = await _context.Projects.FirstOrDefaultAsync(c => c.ProjectID == id);
 
-                if (project != null)
-                {
-                    string userRole = GetUserRole();
-                    if (userRole == UserRoleConstants.ADMIN || userRole == UserRoleConstants.WHITELIST || project.Status == ProjectStatusConstants.APPROVED) 
-                    {
-                        response.Data = _mapper.Map<ProjectDTO>(project);
-                        response.Message = MessageConstants.OK;
-                        response.Success = true;
-                    }
-                    else
-                    {
-                        response.Success = false;
-                        response.Message = MessageConstants.NOT_AUTHORIZED_TO_ACCESS;
-                    }
-                }
-                else 
+                if (project == null)
                 {
                     response.Success = false;
                     response.Message = MessageConstants.PROJECT_NOT_FOUND;
+                    return response;
+                }
+                    
+                string userRole = GetUserRole();
+                
+                if (userRole == UserRoleConstants.ADMIN || userRole == UserRoleConstants.WHITELIST || project.Status == ProjectStatusConstants.APPROVED) 
+                {
+                    response.Data = _mapper.Map<ProjectDTO>(project);
+                    response.Message = MessageConstants.OK;
+                    response.Success = true;
+                }
+                else
+                {
+                    response.Success = false;
+                    response.Message = MessageConstants.NOT_AUTHORIZED_TO_ACCESS;
                 }
             }
             catch (Exception e) // Error occurred while retrieving the project from the database
@@ -378,7 +390,7 @@ namespace SU_COIN_BACK_END.Services {
                     if (userRole == UserRoleConstants.ADMIN)
                     {
                         hashes = await hashResult.Select(p => p.FileHex).ToListAsync();
-                        if (hashes != null) 
+                        if (hashes.Count == 0) 
                         {
                             response.Data = hashes;
                             response.Message = MessageConstants.OK;
@@ -420,40 +432,40 @@ namespace SU_COIN_BACK_END.Services {
 
                 Project? project = await _context.Projects.FirstOrDefaultAsync(c => c.ProjectID == projectID);
 
-                if (project != null)
-                {
-                    int userID = GetUserId();
-                    Rating? rating = await _context.Ratings.FirstOrDefaultAsync(c => c.UserID == userID && c.ProjectID == projectID);
-
-                    if (rating != null)
-                    {
-                        rating.Rate = rating_value;
-                        _context.Ratings.Update(rating);
-                    }
-                    else
-                    {
-                        Rating new_rating = new Rating 
-                        {
-                            UserID = userID, 
-                            ProjectID = projectID, 
-                            Rate = rating_value 
-                        };
-                        await _context.Ratings.AddAsync(new_rating);
-                    }
-
-                    await _context.SaveChangesAsync();
-                    project.Rating = _context.Ratings.Where(c => c.ProjectID == projectID).Average(x => x.Rate);
-                    _context.Update(project);
-                    await _context.SaveChangesAsync();
-                    response.Success = true;
-                    response.Message = MessageConstants.OK;
-                    response.Data = _mapper.Map<ProjectDTO>(project);
-                } 
-                else
+                if (project == null)
                 {
                     response.Success = false;
                     response.Message = MessageConstants.PROJECT_NOT_FOUND;
+                    return response;
                 }
+                    
+                int userID = GetUserId();
+                Rating? rating = await _context.Ratings.FirstOrDefaultAsync(c => c.UserID == userID && c.ProjectID == projectID);
+
+                if (rating != null)
+                {
+                    rating.Rate = rating_value;
+                    _context.Ratings.Update(rating);
+                }
+                else
+                {
+                    Rating new_rating = new Rating 
+                    {
+                        UserID = userID, 
+                        ProjectID = projectID, 
+                        Rate = rating_value 
+                    };
+                    await _context.Ratings.AddAsync(new_rating);
+                }
+
+                await _context.SaveChangesAsync();
+                project.Rating = _context.Ratings.Where(c => c.ProjectID == projectID).Average(x => x.Rate);
+                _context.Update(project);
+                await _context.SaveChangesAsync();
+                
+                response.Success = true;
+                response.Message = MessageConstants.OK;
+                response.Data = _mapper.Map<ProjectDTO>(project);
             }
             catch (Exception e)
             {
@@ -486,22 +498,22 @@ namespace SU_COIN_BACK_END.Services {
 
                 Project? dbProject = await _context.Projects.FirstOrDefaultAsync(c => c.ProjectID == project.ProjectID);
 
-                if (dbProject != null)
-                {
-                    dbProject.ProjectName = project.ProjectName;
-                    dbProject.ProjectDescription = project.ProjectDescription;
-                    dbProject.ImageUrl = project.ImageUrl;
-                    _context.Projects.Update(dbProject);
-                    await _context.SaveChangesAsync();
-                    response.Data = _mapper.Map<ProjectDTO>(dbProject);
-                    response.Success = true;           
-                    response.Message = MessageConstants.OK;
-                }
-                else
+                if (dbProject == null)
                 {
                     response.Message = MessageConstants.PROJECT_NOT_FOUND;
                     response.Success = false;
+                    return response;
                 }
+                
+                dbProject.ProjectName = project.ProjectName;
+                dbProject.ProjectDescription = project.ProjectDescription;
+                dbProject.ImageUrl = project.ImageUrl;
+                _context.Projects.Update(dbProject);
+                await _context.SaveChangesAsync();
+                response.Data = _mapper.Map<ProjectDTO>(dbProject);
+                response.Success = true;           
+                response.Message = MessageConstants.OK;
+
             }
             catch (Exception e)
             {
@@ -523,32 +535,31 @@ namespace SU_COIN_BACK_END.Services {
             try
             {
                 Project? project = await _context.Projects.FirstOrDefaultAsync(c => c.ProjectID == projectID);
-                if (project != null) // project exists
-                {
-                    Func<int,Task<bool>> checkUserInTheTeam = async userID => await _context.ProjectPermissions
-                    .AnyAsync(p => (p.ProjectID == projectID) && (p.UserID == userID) && p.IsAccepted); // lambda expression which checks whether is user in any team
-                    
-                    if (project.FileHex == null) // There is a project related with the id, but there is no pdf file for the project
-                    {
-                        response.Message = "Pdf not found";
-                        response.Success = false;
-                    }
-                    else if (project.Status != ProjectStatusConstants.APPROVED && GetUserRole() == UserRoleConstants.BASE && !await checkUserInTheTeam(GetUserId()))
-                    {
-                        response.Message = MessageConstants.NOT_AUTHORIZED_TO_ACCESS;
-                        response.Success = false;
-                    }
-                    else
-                    {
-                        response.Data = Convert.FromHexString(project.FileHex);
-                        response.Message = MessageConstants.OK;
-                        response.Success = true;
-                    }
-                }
-                else
+                if (project == null) // project exists
                 {
                     response.Message = MessageConstants.PROJECT_NOT_FOUND;
                     response.Success = false;
+                    return response;
+                }
+                    
+                Func<int,Task<bool>> checkUserInTheTeam = async userID => await _context.ProjectPermissions
+                .AnyAsync(p => (p.ProjectID == projectID) && (p.UserID == userID) && p.IsAccepted); // lambda expression which checks whether is user in any team
+                    
+                if (project.FileHex == null) // There is a project related with the id, but there is no pdf file for the project
+                {
+                    response.Message = "Pdf not found";
+                    response.Success = false;
+                }
+                else if (project.Status != ProjectStatusConstants.APPROVED && GetUserRole() == UserRoleConstants.BASE && !await checkUserInTheTeam(GetUserId()))
+                {
+                    response.Message = MessageConstants.NOT_AUTHORIZED_TO_ACCESS;
+                    response.Success = false;
+                }
+                else
+                {
+                    response.Data = Convert.FromHexString(project.FileHex);
+                    response.Message = MessageConstants.OK;
+                    response.Success = true;
                 }
             } 
             catch (Exception e)
@@ -599,72 +610,74 @@ namespace SU_COIN_BACK_END.Services {
         public async Task<ServiceResponse<ProjectDTO>> ChangeStatus(int id) 
         {
             ServiceResponse<ProjectDTO> response = new ServiceResponse<ProjectDTO>();
+            if (id < 0)
+            {
+                response.Success = false;
+                response.Message = MessageConstants.INVALID_INPUT;
+                return response;
+            }
+
             try
             {
                 Project? project = await _context.Projects.FirstOrDefaultAsync(c => c.ProjectID == id);
-                if (project != null)
-                {
-                    if (project.ViewerAccepted)
-                    {
-                        ServiceResponse<List<EventLog<ProjectEvaluationEventDTO>>> response_chain = await _chainInteractionService.GetProjectEvaluationEventLogs();
-                        if (!response_chain.Success)
-                        {
-                            response.Success = false;
-                            response.Message = MessageConstants.CHAIN_INTERACTION_FAIL;
-                            return response;
-                        }
-
-                        SHA256 sha256 = SHA256.Create();
-                        byte[] hashval = sha256.ComputeHash(Encoding.ASCII.GetBytes(project.FileHex));
-                        StringBuilder sb = new StringBuilder();
-
-                        foreach (byte b in hashval)
-                        {
-                            sb.Append(b.ToString("x2"));
-                        }
-
-                        String hash_Str = sb.ToString();
-                        string status = ProjectStatusConstants.PENDING;
-
-                        for (int i = 0; i < response_chain.Data.Count; i++)
-                        {   
-                            bool isValidHash = ((response_chain.Data[i].Log.Topics[1]).ToString() == ("0x"+ hash_Str).ToString());
-                            bool isProjectApproved = response_chain.Data[i].Event.isApproved;
-                            
-                            if (isValidHash)
-                            {
-                                if (isProjectApproved) 
-                                {
-                                    status = ProjectStatusConstants.APPROVED;
-                                }
-                                else
-                                {
-                                    status = ProjectStatusConstants.REJECTED;
-                                }
-                                break;
-                            }
-                        }
-
-                        var previous_status = project.Status;
-                        project.Status = status;
-                        _context.Projects.Update(project);
-                        await _context.SaveChangesAsync();
-
-                        response.Success = true;
-                        response.Message = "Status changed from " + previous_status + " to " +  status + ".";
-                        response.Data = _mapper.Map<ProjectDTO>(project);
-                    }
-                    else
-                    {
-                        response.Message = "Project is not accepted by viewer";
-                        response.Success = false;
-                    }
-                }    
-                else
+                if (project == null)
                 {
                     response.Success = false;
                     response.Message = MessageConstants.PROJECT_NOT_FOUND;
+                    return response;
                 }
+                
+                if (!project.ViewerAccepted)
+                {
+                    response.Message = "Project is not accepted by viewer";
+                    response.Success = false;
+                    return response;
+                }
+                        
+                ServiceResponse<List<EventLog<ProjectEvaluationEventDTO>>> response_chain = await _chainInteractionService.GetProjectEvaluationEventLogs();
+                if (!response_chain.Success)
+                {
+                    response.Success = false;
+                    response.Message = MessageConstants.CHAIN_INTERACTION_FAIL;
+                    return response;
+                }
+                else if (response_chain.Data == null)
+                {
+                    throw new Exception(MessageConstants.CHAIN_INTERACTION_FAIL);
+                }
+
+                SHA256 sha256 = SHA256.Create();
+                byte[] hashval = sha256.ComputeHash(Encoding.ASCII.GetBytes(project.FileHex));
+                StringBuilder sb = new StringBuilder();
+
+                foreach (byte b in hashval)
+                {
+                    sb.Append(b.ToString("x2"));
+                }
+
+                String hash_Str = sb.ToString();
+                string status = ProjectStatusConstants.PENDING;
+
+                for (int i = 0; i < response_chain.Data.Count; i++)
+                {   
+                    bool isValidHash = ((response_chain.Data[i].Log.Topics[1]).ToString() == ("0x"+ hash_Str).ToString());
+                    bool isProjectApproved = response_chain.Data[i].Event.isApproved;
+
+                    if (isValidHash)
+                    {
+                        status = isProjectApproved ? ProjectStatusConstants.APPROVED : ProjectStatusConstants.REJECTED;
+                        break;
+                    }
+                }
+
+                string? previous_status = project.Status;
+                project.Status = status;
+                _context.Projects.Update(project);
+                await _context.SaveChangesAsync();
+
+                response.Success = true;
+                response.Message = "Status changed from " + previous_status + " to " +  status + ".";
+                response.Data = _mapper.Map<ProjectDTO>(project);
             }
             catch (Exception e)
             {
@@ -687,20 +700,19 @@ namespace SU_COIN_BACK_END.Services {
 
                 Project? dbProject = await _context.Projects.FirstOrDefaultAsync(c => c.ProjectID == projectID);
 
-                if (dbProject != null)
-                {
-                    dbProject.MarkDown = markdown;
-                    _context.Update(dbProject);
-                    await _context.SaveChangesAsync();
-                    response.Data = _mapper.Map<ProjectDTO>(dbProject);
-                    response.Success = true;
-                    response.Message = MessageConstants.OK;
-                }
-                else
+                if (dbProject == null)
                 {
                     response.Message = MessageConstants.PROJECT_NOT_FOUND;
                     response.Success = false;
+                    return response;
                 }
+
+                dbProject.MarkDown = markdown;
+                _context.Update(dbProject);
+                await _context.SaveChangesAsync();
+                response.Data = _mapper.Map<ProjectDTO>(dbProject);
+                response.Success = true;
+                response.Message = MessageConstants.OK;
             }
             catch (Exception e)
             {
@@ -719,35 +731,34 @@ namespace SU_COIN_BACK_END.Services {
                 .Where(c => c.UserID == GetUserId() && c.IsAccepted).ToListAsync(); // all project permissions of the logged in user
                 List<Project> allProjects = new List<Project>(); // all permissioned projects of the logged in user
 
-                if (projectPermissions != null)
-                {
-                    for (int i = 0; i < projectPermissions.Count; i++)
-                    {
-                        /* First fetch all the projects. Then, filter the permissioned projects */
-                        Project? project = await _context.Projects
-                        .Select(p => withHex ? p : new Project 
-                        {
-                            ProjectID = p.ProjectID, 
-                            ProjectName = p.ProjectName, 
-                            Date = p.Date, 
-                            ProjectDescription = p.ProjectDescription, 
-                            ImageUrl = p.ImageUrl, 
-                            Rating = p.Rating, 
-                            Status = p.Status
-                        })
-                        .FirstOrDefaultAsync(c => c.ProjectID == projectPermissions[i].ProjectID);
-                        allProjects.Add(project);
-                    }
-
-                    response.Data = (allProjects.Select(c => _mapper.Map<ProjectDTO>(c))).ToList();
-                    response.Success = true;
-                    response.Message = MessageConstants.OK;
-                }
-                else
+                if (projectPermissions == null)
                 {
                     response.Success = false;
                     response.Message = $"No permissioned projects found user {GetUsername()}";
+                    return response;
                 }
+
+                for (int i = 0; i < projectPermissions.Count; i++)
+                {
+                    /* First fetch all the projects. Then, filter the permissioned projects */
+                    Project? project = await _context.Projects
+                    .Select(p => withHex ? p : new Project 
+                    {
+                        ProjectID = p.ProjectID, 
+                        ProjectName = p.ProjectName, 
+                        Date = p.Date, 
+                        ProjectDescription = p.ProjectDescription, 
+                        ImageUrl = p.ImageUrl, 
+                        Rating = p.Rating, 
+                        Status = p.Status
+                    })
+                    .FirstOrDefaultAsync(c => c.ProjectID == projectPermissions[i].ProjectID);
+                    allProjects.Add(project);
+                }
+
+                response.Data = (allProjects.Select(c => _mapper.Map<ProjectDTO>(c))).ToList();
+                response.Success = true;
+                response.Message = MessageConstants.OK;
             }
             catch (Exception e)
             {
@@ -757,29 +768,31 @@ namespace SU_COIN_BACK_END.Services {
             return response;
         }
 
-        public async Task<ServiceResponse<bool>> ReplyProjectPreview(int id, bool reply)
+        public async Task<ServiceResponse<string>> ReplyProjectPreview(int id, bool reply)
         {
-            ServiceResponse<bool> response = new ServiceResponse<bool>();
+            ServiceResponse<string> response = new ServiceResponse<string>();
             try
             {
                 Project? project = await _context.Projects.FirstOrDefaultAsync(project => project.ProjectID == id);
-                if (project != null)
+                if (project == null)
                 {
-                    if (reply)
-                    {
-                        project.ViewerAccepted = true;
-                        response.Data = true;
-                        response.Message = MessageConstants.OK;
-                        response.Success = true;
-                    }
-                    else
-                    {
-                        response = await DeleteProject(id);
-                    }
+                    response.Message = MessageConstants.PROJECT_NOT_FOUND;
+                    response.Success = false;
+                    return response;
+                }
+
+                /* Evaluate the project as an viewer */
+                if (reply)
+                {
+                    project.ViewerAccepted = true;
+                    response.Message = MessageConstants.OK;
+                    response.Data = "Project preview is approved by the viewer";
+                    response.Success = true;
                 }
                 else
                 {
-                    response.Message = MessageConstants.PROJECT_NOT_FOUND;
+                    response = await DeleteProject(id);
+                    response.Data = "Project preview is rejected by the viewer";
                 }
             }
             catch (Exception e)
@@ -796,48 +809,45 @@ namespace SU_COIN_BACK_END.Services {
             try
             {
                 Project? project = await _context.Projects.FirstOrDefaultAsync(project => project.ProjectID == projectID);
-                if (project != null)
-                {
-                    if (project.Status == ProjectStatusConstants.APPROVED)
-                    {
-                        int userID = GetUserId();
-                        ProjectPermission? permission = await _context.ProjectPermissions
-                        .FirstOrDefaultAsync(permission => permission.ProjectID == projectID && permission.UserID == userID);
-                        if (permission != null)
-                        {
-                            if (permission.Role == UserPermissionRoleConstants.OWNER)
-                            {
-                                project.IsAuctionStarted = true;
-                                _context.Projects.Update(project);
-                                await _context.SaveChangesAsync();
-
-                                response.Message = MessageConstants.OK;
-                                response.Data = true;
-                                response.Success = true;
-                            }
-                            else
-                            {
-                                response.Message = MessageConstants.NOT_AUTHORIZED_TO_ACCESS;
-                                response.Success = false;
-                            }
-                        }
-                        else
-                        {
-                            response.Message = MessageConstants.PROJECT_PERMISSION_MANAGE_DENIED;
-                            response.Success = false;
-                        }
-                    }
-                    else
-                    {
-                        response.Message = "Project is not approved. Therefore, not ready to be auctioned";
-                        response.Success = false;
-                    }
-                }
-                else
+                if (project == null)
                 {
                     response.Message = MessageConstants.PROJECT_NOT_FOUND;
                     response.Success = false;
+                    return response;
                 }
+                    
+                if (project.Status != ProjectStatusConstants.APPROVED)
+                {
+                    response.Message = "Project is not approved. Therefore, not ready to be auctioned";
+                    response.Success = false;
+                    return response;
+                }
+                    
+                int userID = GetUserId();
+                ProjectPermission? permission = await _context.ProjectPermissions
+                .FirstOrDefaultAsync(permission => permission.ProjectID == projectID && permission.UserID == userID);
+
+                if (permission == null)
+                {
+                    response.Message = MessageConstants.PROJECT_PERMISSION_MANAGE_DENIED;
+                    response.Success = false;                    
+                    return response;
+                }
+                
+                if (permission.Role != UserPermissionRoleConstants.OWNER)
+                {
+                    response.Message = MessageConstants.NOT_AUTHORIZED_TO_ACCESS;
+                    response.Success = false;
+                    return response;
+                }
+                                
+                project.IsAuctionStarted = true;
+                _context.Projects.Update(project);
+                await _context.SaveChangesAsync();
+
+                response.Message = MessageConstants.OK;
+                response.Data = true;
+                response.Success = true;
             }
             catch (Exception e)
             {
@@ -889,8 +899,7 @@ namespace SU_COIN_BACK_END.Services {
 
         public async Task<bool> HasPermission(int projectId)
         {
-            if (await _context.ProjectPermissions
-                .AnyAsync(x => x.ProjectID == projectId && x.UserID == GetUserId() && x.IsAccepted))
+            if (await _context.ProjectPermissions.AnyAsync(x => x.ProjectID == projectId && x.UserID == GetUserId() && x.IsAccepted))
             {
                 return true;
             }
@@ -899,9 +908,8 @@ namespace SU_COIN_BACK_END.Services {
 
         public async Task<bool> HasOwnerPermission(int projectId)
         {
-            if (await _context.ProjectPermissions
-                    .AnyAsync(x => x.ProjectID == projectId && x.UserID == GetUserId() 
-                        && x.Role == UserPermissionRoleConstants.OWNER && x.IsAccepted))
+            if (await _context.ProjectPermissions.AnyAsync(x => x.ProjectID == projectId && x.UserID == GetUserId() 
+            && x.Role == UserPermissionRoleConstants.OWNER && x.IsAccepted))
             {
                 return true;
             }
@@ -935,35 +943,34 @@ namespace SU_COIN_BACK_END.Services {
                 .Where(c => c.UserID == GetUserId() && !c.IsAccepted).ToListAsync(); // all project Invitations of the logged in user
                 List<Project> allProjects = new List<Project>(); // all permissioned projects of the logged in user
 
-                if (projectPermissions != null)
-                {
-                    for (int i = 0; i < projectPermissions.Count; i++)
-                    {
-                        /* First fetch all the projects. Then, filter the invited projects */
-                        Project? project = await _context.Projects
-                        .Select(p => new Project 
-                        {
-                            ProjectID = p.ProjectID, 
-                            ProjectName = p.ProjectName, 
-                            Date = p.Date, 
-                            ProjectDescription = p.ProjectDescription, 
-                            ImageUrl = p.ImageUrl, 
-                            Rating = p.Rating, 
-                            Status = p.Status
-                        })
-                        .FirstOrDefaultAsync(c => c.ProjectID == projectPermissions[i].ProjectID);
-                        allProjects.Add(project);
-                    }
-
-                    response.Data = (allProjects.Select(c => _mapper.Map<ProjectDTO>(c))).ToList();
-                    response.Success = true;
-                    response.Message = MessageConstants.OK;
-                }
-                else
+                if (projectPermissions == null)
                 {
                     response.Success = false;
                     response.Message = $"No invitations found for user: {GetUsername()}";
+                    return response;
                 }
+                    
+                for (int i = 0; i < projectPermissions.Count; i++)
+                {
+                    /* First fetch all the projects. Then, filter the invited projects */
+                    Project? project = await _context.Projects
+                    .Select(p => new Project 
+                    {
+                        ProjectID = p.ProjectID, 
+                        ProjectName = p.ProjectName, 
+                        Date = p.Date, 
+                        ProjectDescription = p.ProjectDescription, 
+                        ImageUrl = p.ImageUrl, 
+                        Rating = p.Rating, 
+                        Status = p.Status
+                    })
+                    .FirstOrDefaultAsync(c => c.ProjectID == projectPermissions[i].ProjectID);
+                    allProjects.Add(project);
+                }
+
+                response.Data = (allProjects.Select(c => _mapper.Map<ProjectDTO>(c))).ToList();
+                response.Success = true;
+                response.Message = MessageConstants.OK;
             }
             catch (Exception e)
             {

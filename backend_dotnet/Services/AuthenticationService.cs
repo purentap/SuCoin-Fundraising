@@ -84,53 +84,56 @@ namespace SU_COIN_BACK_END.Services
             try
             {  
                 User? user = await _context.Users.FirstOrDefaultAsync(c => c.Address == request.Address);
-                if (user != null)
-                {   
-                    if (user.Nonce != null) 
-                    {
-                        var signer = new EthereumMessageSigner();
-                        var addressRec = signer.EncodeUTF8AndEcRecover("LOGIN: " + user.Nonce.ToString(), request.SignedMessage);
-                        if (request.Address == addressRec) // verification of the user signature
-                        { 
-                            ServiceResponse<string> chainResponse = await _chainInteractionService.GetChainRole(user.Address);
-                            Console.WriteLine($"Response Message --> {chainResponse.Message}"); // Debuging
-                            if (chainResponse.Success)
-                            {
-                                if (user.Role != UserRoleConstants.ADMIN)
-                                {
-                                    user.Role = chainResponse.Data;
-                                }
+                if (user == null) // user check
+                {
+                    response.Message = MessageConstants.USER_NOT_FOUND;
+                    response.Success = false;
+                    return response;
+                }
 
-                                response.Success = true;
-                                response.Message = MessageConstants.OK;
-                                response.Data = GenerateToken(user);
+                if (user.Nonce == null) // nonce check
+                {
+                    response.Success = false;
+                    response.Message = $"You should first create the nonce from /authentication/getnonce/{request.Address}";
+                    return response;
+                }
 
-                                user.Nonce = null;
-                                _context.Users.Update(user);
-                                await _context.SaveChangesAsync();
-                            }
-                            else 
-                            {
-                                response.Success = chainResponse.Success;
-                                response.Message = chainResponse.Message;
-                            }
-                        }
-                        else
-                        {
-                            response.Success = false;
-                            response.Message =  $"Signature provided does belong to the address: {request.Address}";
-                        }  
-                    }
-                    else
-                    {
-                        response.Success = false;
-                        response.Message = $"You should first create the nonce from /authentication/getnonce/{request.Address}";
-                    }
+                var signer = new EthereumMessageSigner();
+                var addressRec = signer.EncodeUTF8AndEcRecover("LOGIN: " + user.Nonce.ToString(), request.SignedMessage);
+                
+                if (request.Address != addressRec) // verification of the user signature
+                {
+                    response.Success = false;
+                    response.Message =  $"Signature provided does belong to the address: {request.Address}";
+                    return response;
+                }
+                
+                ServiceResponse<string> chainResponse = await _chainInteractionService.GetChainRole(user.Address);
+                Console.WriteLine($"Response Message --> {chainResponse.Message}"); // Debuging
+
+                if (!chainResponse.Success)
+                {
+                    response.Success = chainResponse.Success;
+                    response.Message = chainResponse.Message;
+                }
+                else if (chainResponse.Data == null) // Although response returned successfully, user role is not found in the chain
+                {
+                    throw new Exception(MessageConstants.USER_ROLE_NOT_FOUND_IN_CHAIN);
                 }
                 else
                 {
-                    response.Success = false;
-                    response.Message = MessageConstants.USER_NOT_FOUND;
+                    if (user.Role != UserRoleConstants.ADMIN)
+                    {
+                        user.Role = chainResponse.Data;
+                    }
+
+                    response.Success = true;
+                    response.Message = MessageConstants.OK;
+                    response.Data = GenerateToken(user);
+
+                    user.Nonce = null; // to provide security
+                    _context.Users.Update(user);
+                    await _context.SaveChangesAsync();
                 }
             }
             catch (Exception e)
@@ -146,6 +149,13 @@ namespace SU_COIN_BACK_END.Services
             ServiceResponse<string> response = new ServiceResponse<string>();
             try
             {
+                if (request == null || request.Name == null || request.Surname == null || request.MailAddress == null || request.Username == null)
+                {
+                    response.Success = false;
+                    response.Message = MessageConstants.INVALID_INPUT;
+                    return response;
+                }
+
                 var signer = new EthereumMessageSigner();
                 var addressRec = signer.EncodeUTF8AndEcRecover("REGISTER", request.SignedMessage);
                 if (await UserExists(addressRec))
@@ -154,7 +164,7 @@ namespace SU_COIN_BACK_END.Services
                     response.Message = "User Already Exists";
                     return response;
                 }
-                else if (await UserNameExists(request.Username))
+                if (await UserNameExists(request.Username))
                 {
                     response.Success = false;
                     response.Message = MessageConstants.USER_NAME_EXIST;

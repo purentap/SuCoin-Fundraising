@@ -18,6 +18,7 @@ namespace SU_COIN_BACK_END.Constants.MessageConstants
         public const string FAIL_MESSAGE = "Failed to {0}\nException message: {1}";
         public const string INVALID_INPUT = "Invalid input";
         public const string NOT_WHITLISTED = "Not Whitelisted";
+        public const string USER_ROLE_NOT_FOUND_IN_CHAIN = "User role not found in the chain";
     }
 }
 

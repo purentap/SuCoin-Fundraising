@@ -82,7 +82,7 @@ namespace SU_COIN_BACK_END.Controllers
         [Route("Delete/{id}")]
         public async Task<IActionResult> DeleteProject(int Id)
         {
-            ServiceResponse<bool> response = await _projectService.DeleteProject(Id);
+            ServiceResponse<string> response = await _projectService.DeleteProject(Id);
             if (!response.Success)
             {
                 if (response.Message == MessageConstants.PROJECT_NOT_FOUND)
@@ -285,7 +285,7 @@ namespace SU_COIN_BACK_END.Controllers
         [Route("ViewerReply/{id}/{reply}")]
         public async Task<IActionResult> ReplyProjectPreview(int id, bool reply)
         {            
-            ServiceResponse<bool> response = await _projectService.ReplyProjectPreview(id, reply);
+            ServiceResponse<string> response = await _projectService.ReplyProjectPreview(id, reply);
             if (!response.Success)
             {
                 if (response.Message == MessageConstants.PROJECT_NOT_FOUND)

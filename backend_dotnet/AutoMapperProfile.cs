@@ -3,8 +3,8 @@ using AutoMapper;
 using SU_COIN_BACK_END.Models;
 using SU_COIN_BACK_END.DTOs;
 
-namespace SU_COIN_BACK_END{
-
+namespace SU_COIN_BACK_END
+{
     public class AutoMapperProfile : Profile
     {
         public AutoMapperProfile(){

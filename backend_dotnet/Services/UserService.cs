@@ -42,18 +42,17 @@ namespace SU_COIN_BACK_END.Services
             {
                 User? user = await _context.Users.FirstOrDefaultAsync(c => c.Id == GetUserId());
 
-                if (user != null)
-                {
-                    _context.Remove(user);
-                    await _context.SaveChangesAsync();
-                    response.Message = MessageConstants.OK;
-                    response.Success = true;
-                }
-                else
+                if (user == null)
                 {
                     response.Success = false;
                     response.Message = MessageConstants.USER_NOT_FOUND;
+                    return response;
                 }
+                
+                _context.Remove(user);
+                await _context.SaveChangesAsync();
+                response.Message = MessageConstants.OK;
+                response.Success = true;
             }
             catch (Exception e)
             {
@@ -71,20 +70,20 @@ namespace SU_COIN_BACK_END.Services
                 int userID = GetUserId();
                 User? user = await _context.Users.FirstOrDefaultAsync(c => c.Id == userID);
 
-                if (user != null)
+                if (user == null)
                 {   
-                    response.Message = MessageConstants.OK;
-                    response.Success = true;
-                    response.Data = _mapper.Map<UserDTO>(user);
-                    response.Data.Invitations = await _context.ProjectPermissions
-                        .Where(c => c.UserID == userID && !c.IsAccepted)
-                        .ToListAsync();
-                }
-                else
-                {
                     response.Success = false;
                     response.Message = MessageConstants.USER_NOT_FOUND;
+                    return response;
                 }
+                
+                response.Message = MessageConstants.OK;
+                response.Success = true;
+                response.Data = _mapper.Map<UserDTO>(user);
+                
+                response.Data.Invitations = await _context.ProjectPermissions
+                .Where(c => c.UserID == userID && !c.IsAccepted)
+                .ToListAsync();
             }
             catch (Exception e)
             {
@@ -99,44 +98,43 @@ namespace SU_COIN_BACK_END.Services
             ServiceResponse<UserDTO> response = new ServiceResponse<UserDTO>();
             try
             {
-                if (user != null)
-                {
-                    User? dbUser = await _context.Users.FirstOrDefaultAsync(c => c.Id == GetUserId());
-                    if (dbUser != null)
-                    {
-                        /* If username is not same with the current one and exists in the database, 
-                           then we may say that user is trying to get another existing username */
-                        if (user.Username != GetUsername() && await _authenticationService.UserNameExists(user.Username))
-                        {
-                            response.Success = false;
-                            response.Message = MessageConstants.USER_NAME_EXIST;
-                            return response;
-                        }
-
-                        /* Update properties */
-                        dbUser.MailAddress = user.MailAddress;
-                        dbUser.Name = user.Name;
-                        dbUser.Surname = user.Surname;
-                        dbUser.Username = user.Username;
-
-                        _context.Users.Update(dbUser);
-                        await _context.SaveChangesAsync();
-                        response.Message = MessageConstants.OK;
-                        response.Success = true;
-                        response.Data = _mapper.Map<UserDTO>(dbUser);
-                    }
-                    else
-                    {
-                        response.Success = false;
-                        response.Message = MessageConstants.USER_NOT_FOUND;                        
-                    }
-                }
-                else 
+                if (user == null || user.Name == null || user.Surname == null || user.Address == null || user.MailAddress == null || user.Username == null)
                 {
                     response.Success = false;
-                    //response.Message = String.Format(MessageConstants.INVALID_INPUT, "User value is null");
                     response.Message = MessageConstants.INVALID_INPUT;
+                    return response;
                 }
+                    
+                User? dbUser = await _context.Users.FirstOrDefaultAsync(c => c.Id == GetUserId());
+                if (dbUser == null)
+                {
+                    response.Success = false;
+                    response.Message = MessageConstants.USER_NOT_FOUND;
+                    return response;
+                }
+                        
+                /* If username is not same with the current one and exists in the database, 
+                then we may say that user is trying to get another existing username */
+                
+                if (user.Username != GetUsername() && await _authenticationService.UserNameExists(user.Username))
+                {
+                    response.Success = false;
+                    response.Message = MessageConstants.USER_NAME_EXIST;
+                    return response;
+                }
+
+                /* Update properties */
+                dbUser.MailAddress = user.MailAddress;
+                dbUser.Name = user.Name;
+                dbUser.Surname = user.Surname;
+                dbUser.Username = user.Username;
+
+                _context.Users.Update(dbUser);
+                await _context.SaveChangesAsync();
+                
+                response.Message = MessageConstants.OK;
+                response.Success = true;
+                response.Data = _mapper.Map<UserDTO>(dbUser);
             }
             catch (Exception e)
             {
@@ -153,27 +151,34 @@ namespace SU_COIN_BACK_END.Services
             {
                 ProjectPermission? permission = await _context.ProjectPermissions
                     .FirstOrDefaultAsync(c => c.ProjectID == request.ProjectID && c.UserID == GetUserId() 
-                        && c.Role == UserPermissionRoleConstants.OWNER && c.IsAccepted);
+                    && c.Role == UserPermissionRoleConstants.OWNER && c.IsAccepted);
                         
-                if (permission != null)
+                if (permission == null)
                 {
-                    if (GetUsername() == request.Username)
-                    {
-                        response.Success = false;
-                        response.Message = "You cannot give permission to yourself"; 
-                        return response;
-                    }
+                    response.Success = false;
+                    response.Message = MessageConstants.PROJECT_PERMISSION_MANAGE_DENIED;
+                    return response;
+                }
 
-                    User? user = await _context.Users.FirstOrDefaultAsync(c => c.Username == request.Username);
 
-                    if (user == null)
-                    {
-                        response.Success = false;
-                        response.Message = MessageConstants.USER_NOT_FOUND;
-                        return response;
-                    }
-                    else if (_context.ProjectPermissions
-                            .Any(c => c.ProjectID == request.ProjectID && c.UserID == user.Id)) // Such a projectPermission entity already exists in the database
+                if (GetUsername() == request.Username)
+                {
+                    response.Success = false;
+                    response.Message = "You cannot give permission to yourself"; 
+                    return response;
+                }
+
+                User? user = await _context.Users.FirstOrDefaultAsync(c => c.Username == request.Username);
+
+                if (user == null)
+                {
+                    response.Success = false;
+                    response.Message = MessageConstants.USER_NOT_FOUND;
+                    return response;
+                }
+                
+                if (_context.ProjectPermissions
+                    .Any(c => c.ProjectID == request.ProjectID && c.UserID == user.Id)) // Such a projectPermission entity already exists in the database
                     {
                         response.Success = false;
                         response.Message = "Invitation already exists or accepted";
@@ -194,14 +199,7 @@ namespace SU_COIN_BACK_END.Services
                         response.Success = true;
                         response.Data = new_permission.ID;
                         response.Message = String.Format($"Invitation to collaborate project {request.ProjectID} has been sent");
-                    }
                 }
-                else
-                {
-                    response.Success = false;
-                    response.Message = MessageConstants.PROJECT_PERMISSION_MANAGE_DENIED;
-                }
-
             }
             catch (Exception e)
             {
@@ -222,31 +220,31 @@ namespace SU_COIN_BACK_END.Services
                 .FirstOrDefaultAsync(c => c.ProjectID == requested_projectID && c.UserID == GetUserId() && !c.IsAccepted); // pending permissions
 
                 /* Default value for IsAccepted is false. If the user accepted the invitation, change its value of IsAccepted property as true. */
-                if (permission != null)
-                {
-                    string reply;
-                    if (request.IsAccepted) // user accepted to join the project
-                    {
-                        permission.IsAccepted = true;
-                        _context.ProjectPermissions.Update(permission);
-                        reply = "accepted";
-                    }
-                    else // user rejected to join the project team. Therefore, remove user's permission for this project
-                    {
-                        _context.ProjectPermissions.Remove(permission);
-                        reply = "rejected";
-                    }
-
-                    response.Message = $"Invitation to project {requested_projectID} is {reply}";
-                    response.Success = true;
-
-                    await _context.SaveChangesAsync();
-                }
-                else
+                if (permission == null)
                 {
                     response.Success = false;
                     response.Message = MessageConstants.PROJECT_PERMISSION_MANAGE_DENIED;
+                    return response;
                 }
+                    
+                string reply;
+                
+                if (request.IsAccepted) // user accepted to join the project
+                {
+                    permission.IsAccepted = true;
+                    _context.ProjectPermissions.Update(permission);
+                    reply = "accepted";
+                }
+                else // user rejected to join the project team. Therefore, remove user's permission for this project
+                {
+                    _context.ProjectPermissions.Remove(permission);
+                    reply = "rejected";
+                }
+
+                response.Message = $"Invitation to project {requested_projectID} is {reply}";
+                response.Success = true;
+
+                await _context.SaveChangesAsync();
             }
             catch (Exception e)
             {
@@ -270,17 +268,16 @@ namespace SU_COIN_BACK_END.Services
 
                 List<User> users = await _context.Users.ToListAsync();
 
-                if (users != null)
-                {
-                    response.Data = (users.Select(c => _mapper.Map<UserDTO>(c))).ToList();
-                    response.Message = MessageConstants.OK;
-                    response.Success = true;
-                }
-                else 
+                if (users == null)
                 {
                     response.Message = MessageConstants.USER_NOT_FOUND;
                     response.Success = false;
+                    return response;
                 }
+                
+                response.Data = (users.Select(c => _mapper.Map<UserDTO>(c))).ToList();
+                response.Message = MessageConstants.OK;
+                response.Success = true;
             } 
             catch (Exception e) 
             {    
@@ -299,60 +296,59 @@ namespace SU_COIN_BACK_END.Services
                 ProjectPermission? permission = await _context.ProjectPermissions
                     .FirstOrDefaultAsync(c => c.ProjectID == request.ProjectID && c.UserID == loggedIn_userID && c.IsAccepted);
                 
-                if (permission != null)
-                {
-                    if (permission.Role == UserPermissionRoleConstants.OWNER)
-                    {
-                        User? user = await _context.Users.FirstOrDefaultAsync(c => c.Username == request.Username);
-                        
-                        if (user == null) 
-                        {
-                            response.Success = false;
-                            response.Message = MessageConstants.USER_NOT_FOUND;
-                            return response;
-                        }
-                        else if (loggedIn_userID == user.Id) // remove yourself
-                        {
-                            response.Success = false;
-                            response.Message = "You cannot remove ownership before you transfer it to someone else."; 
-                            return response;
-                        }
-                        
-                        ProjectPermission? perm = await _context.ProjectPermissions
-                            .FirstOrDefaultAsync(c => c.ProjectID == request.ProjectID && c.UserID == user.Id && c.IsAccepted);
-
-                        if (perm != null)
-                        {
-                            _context.ProjectPermissions.Remove(perm);
-                            await _context.SaveChangesAsync();
-                            response.Success = true;
-                            response.Message = String.Format($"User {request.Username} removed from collabration in project {request.ProjectID}");
-                        }
-                        else
-                        {
-                            response.Success = false;
-                            response.Message = "User does not have permission to remove";
-                        }
-                    }
-                    else // Not the owner of the project
-                    {
-                        if (GetUsername() != request.Username) // Trying to remove permission of another person
-                        {
-                            response.Success = false;
-                            response.Message = "You cannot remove permission of other user without being owner."; 
-                            return response;
-                        }
-                        /* Remove your own permission */
-                        _context.ProjectPermissions.Remove(permission);
-                        await _context.SaveChangesAsync();
-                        response.Success = true;
-                        response.Message = String.Format($"User {request.Username} removed from collaboration in project {request.ProjectID}");
-                    }
-                }
-                else // logged in user does not have any permission for any project
+                if (permission == null)
                 {
                     response.Success = false;
                     response.Message = MessageConstants.PROJECT_PERMISSION_MANAGE_DENIED;
+                    return response;
+                }
+                    
+                if (permission.Role == UserPermissionRoleConstants.OWNER)
+                {
+                    User? user = await _context.Users.FirstOrDefaultAsync(c => c.Username == request.Username);
+                        
+                    if (user == null) // logged in user does not have any permission for any project
+                    {
+                        response.Success = false;
+                        response.Message = MessageConstants.USER_NOT_FOUND;
+                        return response;
+                    }
+                        
+                    if (loggedIn_userID == user.Id) // remove yourself
+                    {
+                        response.Success = false;
+                        response.Message = "You cannot remove ownership before you transfer it to someone else."; 
+                        return response;
+                    }
+                        
+                    ProjectPermission? perm = await _context.ProjectPermissions
+                    .FirstOrDefaultAsync(c => c.ProjectID == request.ProjectID && c.UserID == user.Id && c.IsAccepted);
+
+                    if (perm == null)
+                    {                        
+                        response.Success = false;
+                        response.Message = "User does not have permission to remove";
+                        return response;
+                    }
+                        _context.ProjectPermissions.Remove(perm);
+                        await _context.SaveChangesAsync();
+                        response.Success = true;
+                        response.Message = String.Format($"User {request.Username} removed from collabration in project {request.ProjectID}");
+                }
+                else // Not the owner of the project
+                {
+                    if (GetUsername() != request.Username) // Trying to remove permission of another person
+                    {
+                        response.Success = false;
+                        response.Message = "You cannot remove permission of other user without being owner."; 
+                        return response;
+                    }
+                    
+                    /* Remove your own permission */
+                    _context.ProjectPermissions.Remove(permission);
+                    await _context.SaveChangesAsync();
+                    response.Success = true;
+                    response.Message = String.Format($"User {request.Username} removed from collaboration in project {request.ProjectID}");
                 }
             }
             catch (Exception e)
