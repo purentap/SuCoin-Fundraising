@@ -53,17 +53,17 @@ namespace SU_COIN_BACK_END.Services
                 var registerEventHandler = _web3.Eth.GetEvent<ProjectRegisterEventDTO>(ContractConstants.RegisterContractAddress);
                 var filterAllRegisterEvents = registerEventHandler.CreateFilterInput(GetUserAddress());
                 var allEvents = await registerEventHandler.GetAllChangesAsync(filterAllRegisterEvents);
-                if (allEvents != null) // user registered projects so far
-                {
-                    response.Message = MessageConstants.OK;
-                    response.Success = true;
-                    response.Data = allEvents;
-                }
-                else
+                
+                if (allEvents == null) // user has not registered projects so far
                 {
                     response.Success = false;
                     response.Message = MessageConstants.EVENT_NOT_FOUND;
+                    return response;
                 }
+                    
+                response.Message = MessageConstants.OK;
+                response.Success = true;
+                response.Data = allEvents;
             }
             catch (Exception e)
             {
@@ -92,17 +92,16 @@ namespace SU_COIN_BACK_END.Services
                 var whitelistInsertEventHandler = _web3.Eth.GetEvent<WhitelistInsertEventDTO>(ContractConstants.RegisterContractAddress);
                 var filterAllWhitelistEvents = whitelistInsertEventHandler.CreateFilterInput(address);
                 var allEvents = await whitelistInsertEventHandler.GetAllChangesAsync(filterAllWhitelistEvents);
-                if (allEvents != null) // user has been inserted into the whitelist before
-                {
-                    response.Message = MessageConstants.OK;
-                    response.Success = true;
-                    response.Data = allEvents;
-                }
-                else
+                
+                if (allEvents == null) // user has not been inserted into the whitelist before
                 {
                     response.Success = false;
                     response.Message = MessageConstants.EVENT_NOT_FOUND;
-                }  
+                }
+
+                response.Message = MessageConstants.OK;
+                response.Success = true;
+                response.Data = allEvents; 
             }
             catch (Exception e)
             {
@@ -131,17 +130,17 @@ namespace SU_COIN_BACK_END.Services
                 var whitelistRemoveEventHandler = _web3.Eth.GetEvent<WhitelistRemoveEventDTO>(ContractConstants.RegisterContractAddress);
                 var filterAllWhitelistEvents = whitelistRemoveEventHandler.CreateFilterInput(address);
                 var allEvents = await whitelistRemoveEventHandler.GetAllChangesAsync(filterAllWhitelistEvents);
-                if (allEvents != null) // user has beem removed from the whitelist before
-                {
-                    response.Message = MessageConstants.OK;
-                    response.Success = true;
-                    response.Data = allEvents;
-                }
-                else
+                
+                if (allEvents == null) // user has not been removed from the whitelist before
                 {
                     response.Success = false;
                     response.Message = MessageConstants.EVENT_NOT_FOUND;
-                }  
+                    return response;
+                }
+                    
+                response.Message = MessageConstants.OK;
+                response.Success = true;
+                response.Data = allEvents; 
             } 
             catch (Exception e)
             {
@@ -152,10 +151,9 @@ namespace SU_COIN_BACK_END.Services
             return response;
         }
 
-        public async Task<ServiceResponse<String>> GetChainRole(string address)
+        public async Task<ServiceResponse<string>> GetChainRole(string address)
         {
-            ServiceResponse<string> response = new ServiceResponse<String>();
-            string chainRole; // role of user in the chain
+            ServiceResponse<string> response = new ServiceResponse<string>();
             try
             {
                 var ABI = @"[{ ""inputs"": [ { ""internalType"": ""address"", ""name"": """", ""type"": ""address"" } ], ""name"": ""statusList"", ""outputs"": [ { ""internalType"": ""enum ProjectRegister.USER_STATUS"", ""name"": """", ""type"": ""uint8"" } ], ""stateMutability"": ""view"", ""type"": ""function"" }]";
@@ -167,9 +165,11 @@ namespace SU_COIN_BACK_END.Services
                     response.Success = false;
                     return response;
                 }
-                    /* Fetch the status and then determine the role */
+                
+                /* Fetch the status and then determine the role */
                 try
                 {
+                    string chainRole; // role of user in the chain
                     int status = await contract.GetFunction("statusList").CallAsync<int>(address);
                     Console.WriteLine($"Status: {status}"); // Debuging
 
@@ -214,17 +214,15 @@ namespace SU_COIN_BACK_END.Services
                 var whitelistInsertEventHandler = _web3.Eth.GetEvent<ProjectEvaluationEventDTO>(ContractConstants.RegisterContractAddress);
                 var filterAllProjEvalEvents = whitelistInsertEventHandler.CreateFilterInput();
                 var allEvents = await whitelistInsertEventHandler.GetAllChangesAsync(filterAllProjEvalEvents);
-                if (allEvents != null) // projects have been evaluated before
-                {
-                    response.Message = MessageConstants.OK;
-                    response.Success = true;
-                    response.Data = allEvents;
-                }
-                else
+                if (allEvents == null) // projects have not been evaluated before
                 {
                     response.Success = false;
                     response.Message = MessageConstants.EVENT_NOT_FOUND;
-                }  
+                    return response;
+                }
+                    response.Message = MessageConstants.OK;
+                    response.Success = true;
+                    response.Data = allEvents;
             }
             catch (Exception e)
             {
@@ -234,6 +232,5 @@ namespace SU_COIN_BACK_END.Services
             }
             return response;
         }
-
     }
 }
