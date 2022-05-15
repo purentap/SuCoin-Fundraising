@@ -43,7 +43,6 @@ namespace SU_COIN_BACK_END.Controllers
 
         [HttpGet]
         [Route("Get/{id}")]
-        [AllowAnonymous]
         public async Task<IActionResult> GetProjectByID(int Id)
         {
             ServiceResponse<ProjectDTO> response = await _projectService.GetProjectById(Id);
@@ -52,6 +51,10 @@ namespace SU_COIN_BACK_END.Controllers
                 if (response.Message == MessageConstants.PROJECT_NOT_FOUND)
                 {
                     return NotFound();
+                }
+                if (response.Message == MessageConstants.PROJECT_NOT_ACCEPTED_BY_VIEWER || response.Message == MessageConstants.NOT_AUTHORIZED_TO_ACCESS)
+                {
+                    return Forbid();
                 }
                 return BadRequest(response);
             }
@@ -157,7 +160,6 @@ namespace SU_COIN_BACK_END.Controllers
 
         [HttpGet]
         [Route("GetPDF/{id}")]
-        [AllowAnonymous]
         public async Task<IActionResult> GetPdfById(int id)
         {
             ServiceResponse<byte[]> response = await _projectService.GetProjectPdfById(id);
@@ -171,9 +173,9 @@ namespace SU_COIN_BACK_END.Controllers
                 {
                     return Forbid();
                 }
-                if (response.Message == MessageConstants.PROJECT_NOT_FOUND)
+                if (response.Message == MessageConstants.PROJECT_NOT_FOUND || response.Message == MessageConstants.PROPOSAL_FILE_NOT_FOUND)
                 {
-                    return NotFound();
+                    return NotFound(response);
                 }
                 return BadRequest(response);
             }
@@ -200,6 +202,10 @@ namespace SU_COIN_BACK_END.Controllers
             ServiceResponse<ProjectDTO> response = await _projectService.ChangeStatus(id);
             if (!response.Success)
             {
+                if (response.Message == MessageConstants.PROJECT_NOT_ACCEPTED_BY_VIEWER || response.Message == MessageConstants.NOT_AUTHORIZED_TO_ACCESS)
+                {
+                    return Forbid();
+                }
                 return BadRequest(response);
             }
             return Ok(response);
@@ -278,7 +284,7 @@ namespace SU_COIN_BACK_END.Controllers
                 }
                 return BadRequest(response);
             }
-            return Ok(response.Data);
+            return Ok(response);
         }
 
         [HttpPut]
@@ -294,7 +300,7 @@ namespace SU_COIN_BACK_END.Controllers
                 }
                 return BadRequest(response);
             }
-            return Ok(response.Data);
+            return Ok(response);
         }
 
         [HttpPut]
@@ -308,13 +314,13 @@ namespace SU_COIN_BACK_END.Controllers
                 {
                     return NotFound();
                 }
-                if (response.Message == MessageConstants.PROJECT_PERMISSION_MANAGE_DENIED)
+                if (response.Message == MessageConstants.PROJECT_NOT_ACCEPTED_BY_VIEWER || response.Message == MessageConstants.PROJECT_PERMISSION_MANAGE_DENIED)
                 {
                     return Forbid();
                 }
                 return BadRequest(response);
             }
-            return Ok(response.Data);
+            return Ok(response);
         }
     }
 }

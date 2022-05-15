@@ -220,9 +220,10 @@ namespace SU_COIN_BACK_END.Services
                     response.Message = MessageConstants.EVENT_NOT_FOUND;
                     return response;
                 }
-                    response.Message = MessageConstants.OK;
-                    response.Success = true;
-                    response.Data = allEvents;
+                    
+                response.Message = MessageConstants.OK;
+                response.Success = true;
+                response.Data = allEvents;
             }
             catch (Exception e)
             {

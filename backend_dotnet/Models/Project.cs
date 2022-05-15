@@ -10,7 +10,7 @@ namespace SU_COIN_BACK_END.Models
         public bool ViewerAccepted { get; set; } = false;
         public bool IsAuctionCreated { get; set; }
         public bool IsAuctionStarted { get; set; } = false;
-        public string? FileHex { get; set; }
+        public string? FileHex { get; set; } = "";
         public string? ProjectDescription { get; set; }
         public string? ImageUrl { get; set; }
         public double Rating { get; set; }

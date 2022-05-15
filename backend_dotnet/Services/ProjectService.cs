@@ -238,8 +238,7 @@ namespace SU_COIN_BACK_END.Services {
 
                 /* First fetch all the projects. Then check if the user is neither admin nor whitelist, just filter the approved projects */
 
-                var hashResult = _context.Projects.FromSqlRaw("Select projectID,SHA2(FileHex,256) as FileHex from Projects"); // ProjectId&Hash Records
-        
+                var hashResult = _context.Projects.FromSqlRaw("Select projectID,SHA2(FileHex,256) as FileHex From Projects Where ViewerAccepted = 1"); // ProjectId&Hash Records
 
                 var hashedVersion =  hashResult.Join( // Newly constructed query project list which includes hash of the fileHexs
                     _context.Projects,
@@ -319,6 +318,12 @@ namespace SU_COIN_BACK_END.Services {
                     response.Message = MessageConstants.PROJECT_NOT_FOUND;
                     return response;
                 }
+                if (!project.ViewerAccepted)
+                {
+                    response.Success = false;
+                    response.Message = MessageConstants.PROJECT_NOT_ACCEPTED_BY_VIEWER;
+                    return response;                    
+                }
                     
                 string userRole = GetUserRole();
                 
@@ -348,7 +353,7 @@ namespace SU_COIN_BACK_END.Services {
             try 
             {
                 List<string> hashes = new List<string>();
-                var hashResult = _context.Projects.FromSqlRaw("Select projectID,SHA2(FileHex,256) as FileHex from Projects"); // ProjectId&Hash Records
+                var hashResult = _context.Projects.FromSqlRaw("Select projectID,SHA2(FileHex,256) as FileHex From Projects Where ViewerAccepted = 1"); // ProjectId&Hash Records
 
                 var hashedVersion = hashResult.Join(  // Newly constructed query project list which includes hash of the fileHexs
                     _context.Projects,
@@ -371,17 +376,16 @@ namespace SU_COIN_BACK_END.Services {
                 if (areOnlyAuctionsStarted)
                 {
                     hashes =  await hashedVersion.Where(p => p.IsAuctionStarted).Select(p => p.FileHex).ToListAsync();
-                    if (hashes != null)
-                    {
-                        response.Data = hashes;
-                        response.Message = MessageConstants.OK;
-                        response.Success = true;
-                    }
-                    else
+                    if (hashes == null)
                     {
                         response.Message = MessageConstants.PROJECT_NOT_FOUND;
-                        response.Success = true;
+                        response.Success = false;
+                        return response;
                     }
+
+                    response.Data = hashes;
+                    response.Message = MessageConstants.OK;
+                    response.Success = true;
                 }
                 else // all projects
                 {
@@ -390,17 +394,16 @@ namespace SU_COIN_BACK_END.Services {
                     if (userRole == UserRoleConstants.ADMIN)
                     {
                         hashes = await hashResult.Select(p => p.FileHex).ToListAsync();
-                        if (hashes.Count == 0) 
-                        {
-                            response.Data = hashes;
-                            response.Message = MessageConstants.OK;
-                            response.Success = true;
-                        }
-                        else 
+                        if (hashes == null) 
                         {
                             response.Message = MessageConstants.PROJECT_NOT_FOUND;
                             response.Success = true;
+                            return response;
                         }
+                            
+                        response.Data = hashes;
+                        response.Message = MessageConstants.OK;
+                        response.Success = true;
                     }
                     else 
                     {
@@ -408,14 +411,12 @@ namespace SU_COIN_BACK_END.Services {
                         response.Message = MessageConstants.NOT_AUTHORIZED_TO_ACCESS;
                     }
                 }
-
             }
             catch (Exception e) 
             {
                 response.Message = String.Format(MessageConstants.FAIL_MESSAGE, "get all file hashes", e.Message);
                 response.Success = false;
             }
-
             return response;
         }
 
@@ -436,6 +437,12 @@ namespace SU_COIN_BACK_END.Services {
                 {
                     response.Success = false;
                     response.Message = MessageConstants.PROJECT_NOT_FOUND;
+                    return response;
+                }
+                if (!project.ViewerAccepted)
+                {
+                    response.Success = false;
+                    response.Message = MessageConstants.PROJECT_NOT_ACCEPTED_BY_VIEWER;
                     return response;
                 }
                     
@@ -541,16 +548,17 @@ namespace SU_COIN_BACK_END.Services {
                     response.Success = false;
                     return response;
                 }
+                if (project.FileHex == null) // There is a project related with the id, but there is no pdf file for the project
+                {
+                    response.Message = MessageConstants.PROPOSAL_FILE_NOT_FOUND;
+                    response.Success = false;
+                    return response;
+                }
                     
                 Func<int,Task<bool>> checkUserInTheTeam = async userID => await _context.ProjectPermissions
                 .AnyAsync(p => (p.ProjectID == projectID) && (p.UserID == userID) && p.IsAccepted); // lambda expression which checks whether is user in any team
-                    
-                if (project.FileHex == null) // There is a project related with the id, but there is no pdf file for the project
-                {
-                    response.Message = "Pdf not found";
-                    response.Success = false;
-                }
-                else if (project.Status != ProjectStatusConstants.APPROVED && GetUserRole() == UserRoleConstants.BASE && !await checkUserInTheTeam(GetUserId()))
+                
+                if (project.Status != ProjectStatusConstants.APPROVED && GetUserRole() == UserRoleConstants.BASE && !await checkUserInTheTeam(GetUserId()))
                 {
                     response.Message = MessageConstants.NOT_AUTHORIZED_TO_ACCESS;
                     response.Success = false;
@@ -587,17 +595,16 @@ namespace SU_COIN_BACK_END.Services {
                     projects = await _context.Projects.Where(c => c.Status == ProjectStatusConstants.APPROVED).ToListAsync();
                 }
                 
-                if (projects != null)
-                {
-                    response.Data = (projects.Select(c => _mapper.Map<ProjectDTO>(c))).ToList();
-                    response.Message = MessageConstants.OK;
-                    response.Success = true;
-                }
-                else
+                if (projects == null)
                 {
                     response.Message = MessageConstants.PROJECT_NOT_FOUND;
                     response.Success = false;
+                    return response;
                 }
+                    
+                response.Data = (projects.Select(c => _mapper.Map<ProjectDTO>(c))).ToList();
+                response.Message = MessageConstants.OK;
+                response.Success = true;
             }
             catch (Exception e)
             {
@@ -629,7 +636,7 @@ namespace SU_COIN_BACK_END.Services {
                 
                 if (!project.ViewerAccepted)
                 {
-                    response.Message = "Project is not accepted by viewer";
+                    response.Message = MessageConstants.PROJECT_NOT_ACCEPTED_BY_VIEWER;
                     response.Success = false;
                     return response;
                 }
@@ -644,6 +651,12 @@ namespace SU_COIN_BACK_END.Services {
                 else if (response_chain.Data == null)
                 {
                     throw new Exception(MessageConstants.CHAIN_INTERACTION_FAIL);
+                }
+                if (project.FileHex == null)
+                {
+                    response.Success = false;
+                    response.Message = MessageConstants.PROPOSAL_FILE_NOT_FOUND;
+                    return response;
                 }
 
                 SHA256 sha256 = SHA256.Create();
@@ -793,6 +806,7 @@ namespace SU_COIN_BACK_END.Services {
                 {
                     response = await DeleteProject(id);
                     response.Data = "Project preview is rejected by the viewer";
+                    response.Success = true;
                 }
             }
             catch (Exception e)
@@ -815,7 +829,12 @@ namespace SU_COIN_BACK_END.Services {
                     response.Success = false;
                     return response;
                 }
-                    
+                if (!project.ViewerAccepted)
+                {
+                    response.Message = MessageConstants.PROJECT_NOT_ACCEPTED_BY_VIEWER;
+                    response.Success = false;
+                    return response;
+                }
                 if (project.Status != ProjectStatusConstants.APPROVED)
                 {
                     response.Message = "Project is not approved. Therefore, not ready to be auctioned";
@@ -861,33 +880,35 @@ namespace SU_COIN_BACK_END.Services {
             try
             {
                 ServiceResponse<List<EventLog<ProjectRegisterEventDTO>>> response = await _chainInteractionService.GetRegisterEventLogs();
-                if (response.Success)
-                {
-                    SHA256 sha256 = SHA256.Create();
-                    byte[] hashval = sha256.ComputeHash(Encoding.ASCII.GetBytes(fileHex));
-                    StringBuilder sb = new StringBuilder();
-                    foreach (byte b in hashval)
-                    {
-                        sb.Append(b.ToString("x2"));
-                    }
-                    String hash_Str = sb.ToString();
-                    if (response.Data != null)
-                    {
-                        for (int i = 0; i < response.Data.Count; i++)
-                        {
-                            if (response.Data[i].Log.Data == "0x" + hash_Str)
-                            {
-                                return true;
-                            }
-                        }
-                        return false;
-                    }
-                    return false;
-                }
-                else 
+                if (!response.Success)
                 {
                     return false;
                 }
+                    
+                SHA256 sha256 = SHA256.Create();
+                byte[] hashval = sha256.ComputeHash(Encoding.ASCII.GetBytes(fileHex));
+                StringBuilder sb = new StringBuilder();
+                
+                foreach (byte b in hashval)
+                {
+                    sb.Append(b.ToString("x2"));
+                }
+                    
+                String hash_Str = sb.ToString();
+
+                if (response.Data == null)
+                {
+                    return false;
+                }
+                        
+                for (int i = 0; i < response.Data.Count; i++)
+                {
+                    if (response.Data[i].Log.Data == "0x" + hash_Str)
+                    {
+                        return true;
+                    }
+                }
+                return false;
             }
             catch (Exception e)
             {
