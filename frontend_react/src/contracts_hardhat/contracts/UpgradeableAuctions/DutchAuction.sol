@@ -24,7 +24,8 @@ contract DutchAuction is FCFSAuction {
     function __DutchAuction_init_unchained(auctionParameters calldata params) internal onlyInitializing{
         finalRate = params.finalRate;
         
-        require((finalRate <= rate),"Final Rate must be lower or equal than Initial rate");
+        require((finalRate > 0),"Final Rate must be higher than 0");
+        require((finalRate < rate),"Final Rate must be lower than Initial rate");
     }
 
 
