@@ -38,6 +38,8 @@ import { useState } from "react";
 import NoImage from "../../images/no_image.jpg";
 import axios from "axios";
 import Cookies from "js-cookie";
+
+import {getFileFromIpfs} from "../../helpers.js"
 //id,imageUrl,desc,title,status,approvals
 
 function ProjectsCard(props) {
@@ -126,30 +128,13 @@ function ProjectsCard(props) {
 
   const onDownloadPDF = async () => {
     try {
-      const apiInstance = axios.create({
-        baseURL: "https://localhost:5001",
-        responseType: "blob",
-      });
-      apiInstance.defaults.headers.common[
-        "Authorization"
-      ] = `Bearer ${Cookies.get("token")}`;
-      let response2 = new Promise((resolve, reject) => {
-        apiInstance
-          .get("/Project/GetPDF/" + props.projectID)
-          .then((res) => {
-            console.log("Succesfully got project pdf");
-            downloadFile(res.data, props.projectID);
-            return res;
-          })
-          .catch((e) => {
-            const err = "Unable to get the project PDF";
-            reject(err);
-          });
-      });
-      let result = await response2;
-    } catch (error) {
+      console.log(props)
+      getFileFromIpfs(props.fileHex).then(res => downloadFile(res.data,props.projectID))
+    }
+    catch (error) {
       console.log(error);
     }
+  
   };
 
   return (

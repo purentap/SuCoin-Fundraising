@@ -1,5 +1,8 @@
 import { BigNumber, FixedNumber,ethers } from "ethers";
 import { AbiCoder, defaultAbiCoder } from 'ethers/lib/utils';
+import axios from "axios"
+
+const ipfsPath = "https://sulaunch.infura-ipfs.io/ipfs/"
 
 const CryptoJS = require('crypto-js');
 
@@ -29,6 +32,27 @@ export const getAllPublicVariables = async (abi,auctionContract) => {
 
 
 } 
+
+export const getFileFromIpfs = async (ipfsHash) => {
+  
+  let encodedHash = ethers.utils.base58.encode("0x" + "1220" + ipfsHash)
+
+    console.log(encodedHash)
+    const apiInstance = axios.create({
+      baseURL: ipfsPath,
+      responseType: "blob",
+    })
+
+    let response = apiInstance
+                    .get(encodedHash)
+                    .catch((e) => {
+                      const err = "Unable to add the project"
+                      console.log(e)
+                    })
+  
+    return response
+  }
+
 
 export const hexToHash = (fileHex) => ("0x" + CryptoJS.SHA256(fileHex)).toString()
 

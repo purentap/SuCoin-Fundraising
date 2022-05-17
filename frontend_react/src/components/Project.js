@@ -95,7 +95,11 @@ const Project = ({navigation}) => {
     const signer = await provider.getSigner()
     const registerContract = await new ethers.Contract(abi.address, ethersAbi.abi, signer)
 
-    const hashResult = "0x" + await CryptoJS.SHA256(project.fileHex).toString()
+    const hashResult = "0x" + project.fileHex
+
+    if (project.fileHex != undefined) {
+    
+
     const projInfo = await registerContract.projectsRegistered(hashResult)
 
     if (await registerContract.statusList(await signer.getAddress()) == 1) {
@@ -108,7 +112,8 @@ const Project = ({navigation}) => {
     setOwner(await projInfo.proposer)
     setSigner(await signer.getAddress())
     setHash(hashResult)
-
+  }
+  
   }, [project])
 
 

@@ -5,6 +5,7 @@ import React from "react";
 import { render } from "react-dom";
 import axios from 'axios'
 import Cookies from 'js-cookie'
+import {getFileFromIpfs} from "../../helpers.js"
 
 
 
@@ -13,25 +14,9 @@ const ProjectCard = (props) => {
 
 
     const getFile = async () => {
-        const apiInstance = axios.create({
-          baseURL: "https://localhost:5001",
-          responseType: "blob",
-        })
-        apiInstance.defaults.headers.common["Authorization"] = `Bearer ${Cookies.get('token')}`
-        let response2 = new Promise((resolve, reject) => {
-          apiInstance
-            .get("/Project/GetPDF/" + props.projectID)
-            .then((res) => {
-              downloadFile(res.data)
-              resolve(res)
-            })
-            .catch((e) => {
-              const err = "Unable to add the project"
-              reject(err)
-              console.log(e)
-            })
-        })
-      }
+      
+
+      getFileFromIpfs(props.fileHex).then(res => downloadFile(res.data))
     
       const downloadFile = async (file) => {
         const reader = new FileReader()
@@ -46,6 +31,7 @@ const ProjectCard = (props) => {
           tempLink.click();
         }
       }
+    }
     
   return (
     <Wrapper>

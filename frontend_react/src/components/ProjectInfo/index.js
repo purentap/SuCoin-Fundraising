@@ -28,6 +28,8 @@ import Row from 'react-bootstrap/Row'
 import Col from 'react-bootstrap/Col'
 import Container from 'react-bootstrap/Col'
 
+import {getFileFromIpfs} from "../../helpers.js"
+
 const ProjectInfo = ({ project, status, isWhitelisted, isOwner, projectId, setProject }) => {
 
   const [approveVotes, setApprove] = useState()
@@ -46,7 +48,10 @@ const ProjectInfo = ({ project, status, isWhitelisted, isOwner, projectId, setPr
   useEffect(async () => {
     const CryptoJS = require('crypto-js');
 
-    const hash = "0x" + await CryptoJS.SHA256(project.fileHex).toString()
+    if (project.fileHex == undefined)
+      return
+    const hash = "0x" + project.fileHex
+
 
     setHash(hash)
 
@@ -81,24 +86,10 @@ const ProjectInfo = ({ project, status, isWhitelisted, isOwner, projectId, setPr
   }
 
   const getFile = async () => {
-    const apiInstance = axios.create({
-      baseURL: "https://localhost:5001",
-      responseType: "blob",
-    })
-    apiInstance.defaults.headers.common["Authorization"] = `Bearer ${Cookies.get('token')}`
-    let response2 = new Promise((resolve, reject) => {
-      apiInstance
-        .get("/Project/GetPDF/" + projectId)
-        .then((res) => {
-          downloadFile(res.data)
-          resolve(res)
-        })
-        .catch((e) => {
-          const err = "Unable to add the project"
-          reject(err)
-          console.log(e)
-        })
-    })
+    let deneme = await getFileFromIpfs(project.fileHex)
+    
+    getFileFromIpfs(project.fileHex).then(res => downloadFile(res.data,projectId))
+
   }
 
   const changeProjectStatus = async () => {
@@ -143,7 +134,7 @@ const ProjectInfo = ({ project, status, isWhitelisted, isOwner, projectId, setPr
 
 
       const CryptoJS = require('crypto-js');
-      const hash = "0x" + await CryptoJS.SHA256(project.fileHex).toString()
+      const hash = "0x" + project.fileHex
 
       const provider = await new ethers.providers.Web3Provider(window.ethereum)
       const signer = await provider.getSigner()

@@ -258,6 +258,7 @@ useEffect( async () => {
 
     })
   };
+
   return (
     <Grid
       height="90%"
@@ -299,6 +300,7 @@ useEffect( async () => {
             imageUrl={project.imageUrl}
             rating = {project.rating}
             projectID = {project.projectID}
+            fileHex = {project.fileHex}
             deleteFunction = {onDelete}
             invitationFunction = {onInvitation}
             editFunction = {onEdit}

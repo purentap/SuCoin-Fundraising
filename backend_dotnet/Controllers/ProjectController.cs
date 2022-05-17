@@ -158,29 +158,6 @@ namespace SU_COIN_BACK_END.Controllers
             return Ok(response);
         }
 
-        [HttpGet]
-        [Route("GetPDF/{id}")]
-        public async Task<IActionResult> GetPdfById(int id)
-        {
-            ServiceResponse<byte[]> response = await _projectService.GetProjectPdfById(id);
-            if (!response.Success)
-            {
-                if (response.Message == MessageConstants.INVALID_INPUT)
-                {
-                    return BadRequest();
-                }
-                if (response.Message == MessageConstants.NOT_AUTHORIZED_TO_ACCESS)
-                {
-                    return Forbid();
-                }
-                if (response.Message == MessageConstants.PROJECT_NOT_FOUND || response.Message == MessageConstants.PROPOSAL_FILE_NOT_FOUND)
-                {
-                    return NotFound(response);
-                }
-                return BadRequest(response);
-            }
-            return File(response.Data, "application/pdf", "MyProjectReport.pdf");
-        }
         
         [HttpGet]
         [Route("GetByStatus/{status}")]

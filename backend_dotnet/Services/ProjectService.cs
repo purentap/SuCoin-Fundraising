@@ -72,8 +72,23 @@ namespace SU_COIN_BACK_END.Services {
                     return response;
                 }
 
+
                 /* Project has not been created in the database. Create the new project */
+
+                var uploadResult = await UploadToIpfs(project.FileHex);
+
+                var hash = uploadResult?["Hash"];
+
+                if (hash == null) {
+                    response.Success = false;
+                    response.Message = "IPFS upload failed";
+                    return response;
+                }
+
+                string ipfsHash = Convert.ToHexString(SimpleBase.Base58.Bitcoin.Decode(hash).ToArray()).Substring(4);
+
                 Project new_project = _mapper.Map<Project>(project);
+                new_project.FileHex = ipfsHash;
                 new_project.Date = DateTime.Now;
                 new_project.ProposerAddress = GetUserAddress();
 
@@ -98,7 +113,7 @@ namespace SU_COIN_BACK_END.Services {
                     await _context.SaveChangesAsync();
 
                     response.Data = dbProject.ProjectName;
-                    response.Message = MessageConstants.OK;
+                    response.Message = ipfsHash;
                     response.Success = true;
                 }
                 else // The project could not be added, because some operations were applied to the project while adding the project to the database.
@@ -114,6 +129,26 @@ namespace SU_COIN_BACK_END.Services {
             }
             return response;
         }
+
+        private async Task<Dictionary<string,string>?> UploadToIpfs(string hexString)
+            {
+                string actionUrl = "https://ipfs.infura.io:5001/api/v0/add?";
+                byte[] paramFileBytes = Enumerable.Range(0, hexString.Length / 2).Select(x => Convert.ToByte(hexString.Substring(x * 2, 2), 16)).ToArray();
+   
+                HttpContent bytesContent = new ByteArrayContent(paramFileBytes);
+                using (var client = new HttpClient())
+                using (var formData = new MultipartFormDataContent())
+                {
+                    client.DefaultRequestHeaders.Add("Authorization", "Basic MjlJOTJHRHRBR0RaenpZNnNUWUdLdkRXeFdROjg1NTNmOTkwZWE3Nzk3ODVjY2Q2NjVkMjU2NDY2MWZi");
+                    formData.Add(bytesContent, "file", "file");
+                    var response = await client.PostAsync(actionUrl, formData);
+                    if (!response.IsSuccessStatusCode)
+                    {
+                        return null;
+                    }
+                    return await response.Content.ReadFromJsonAsync<Dictionary<string, string>>();
+                }
+            }
 
         public async Task<ServiceResponse<string>> AddProjectAfterChain(ProjectDTO project)
         {
@@ -132,6 +167,11 @@ namespace SU_COIN_BACK_END.Services {
                     response.Message = "Project pdf you are trying to register is not submitted to blockchain";
                     return response;
                 }
+
+      
+
+               
+                
 
                 /* Project has not been created in the database. Create the new project */
                 Project new_project = _mapper.Map<Project>(project);
@@ -530,54 +570,7 @@ namespace SU_COIN_BACK_END.Services {
             return response;
         }
 
-        public async Task<ServiceResponse<byte[]>> GetProjectPdfById(int projectID)
-        {
-            ServiceResponse<byte[]> response = new ServiceResponse<byte[]>();
-            if (projectID < 0)
-            {
-                response.Message = MessageConstants.INVALID_INPUT;
-                response.Success = false;
-            }
-
-            try
-            {
-                Project? project = await _context.Projects.FirstOrDefaultAsync(c => c.ProjectID == projectID);
-                if (project == null) // project exists
-                {
-                    response.Message = MessageConstants.PROJECT_NOT_FOUND;
-                    response.Success = false;
-                    return response;
-                }
-                if (project.FileHex == null) // There is a project related with the id, but there is no pdf file for the project
-                {
-                    response.Message = MessageConstants.PROPOSAL_FILE_NOT_FOUND;
-                    response.Success = false;
-                    return response;
-                }
-                    
-                Func<int,Task<bool>> checkUserInTheTeam = async userID => await _context.ProjectPermissions
-                .AnyAsync(p => (p.ProjectID == projectID) && (p.UserID == userID) && p.IsAccepted); // lambda expression which checks whether is user in any team
-                
-                if (project.Status != ProjectStatusConstants.APPROVED && GetUserRole() == UserRoleConstants.BASE && !await checkUserInTheTeam(GetUserId()))
-                {
-                    response.Message = MessageConstants.NOT_AUTHORIZED_TO_ACCESS;
-                    response.Success = false;
-                }
-                else
-                {
-                    response.Data = Convert.FromHexString(project.FileHex);
-                    response.Message = MessageConstants.OK;
-                    response.Success = true;
-                }
-            } 
-            catch (Exception e)
-            {
-                response.Message = String.Format(MessageConstants.FAIL_MESSAGE, "get project by id", e.Message);
-                response.Success = false;
-            }
-            return response;
-        }
-        
+      
         public async Task<ServiceResponse<List<ProjectDTO>>> GetProjectsByStatus(string status)
         {
             ServiceResponse<List<ProjectDTO>> response = new ServiceResponse<List<ProjectDTO>>();
@@ -760,6 +753,7 @@ namespace SU_COIN_BACK_END.Services {
                         ProjectID = p.ProjectID, 
                         ProjectName = p.ProjectName, 
                         Date = p.Date, 
+                        FileHex = p.FileHex,
                         ProjectDescription = p.ProjectDescription, 
                         ImageUrl = p.ImageUrl, 
                         Rating = p.Rating, 
@@ -875,8 +869,9 @@ namespace SU_COIN_BACK_END.Services {
             }
             return response;
         }
-        public async Task<bool> IsProjectSubmittedToChain(string fileHex)
+        public async Task<bool> IsProjectSubmittedToChain(string ipfsHash)
         {
+            return true;
             try
             {
                 ServiceResponse<List<EventLog<ProjectRegisterEventDTO>>> response = await _chainInteractionService.GetRegisterEventLogs();
@@ -884,17 +879,7 @@ namespace SU_COIN_BACK_END.Services {
                 {
                     return false;
                 }
-                    
-                SHA256 sha256 = SHA256.Create();
-                byte[] hashval = sha256.ComputeHash(Encoding.ASCII.GetBytes(fileHex));
-                StringBuilder sb = new StringBuilder();
-                
-                foreach (byte b in hashval)
-                {
-                    sb.Append(b.ToString("x2"));
-                }
-                    
-                String hash_Str = sb.ToString();
+
 
                 if (response.Data == null)
                 {
@@ -903,7 +888,7 @@ namespace SU_COIN_BACK_END.Services {
                         
                 for (int i = 0; i < response.Data.Count; i++)
                 {
-                    if (response.Data[i].Log.Data == "0x" + hash_Str)
+                    if (response.Data[i].Log.Data == "0x" + ipfsHash)
                     {
                         return true;
                     }

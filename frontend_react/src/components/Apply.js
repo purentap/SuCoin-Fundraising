@@ -56,7 +56,6 @@ const Apply = () => {
 		setToastheader("Signing the Transaction")
 		setToasttext("Please sign the transaction from your wallet.")
 
-		var hash = String(hashToSubmit)
 		try {
 			// We connect to the Contract using a Provider, so we will only
 			// have read-only access to the Contract
@@ -64,7 +63,7 @@ const Apply = () => {
 			const signer = await provider.getSigner()
 
 			var registerContract = await new ethers.Contract(abi.address, ethersAbi.abi, signer)
-			var registerTx = await registerContract.registerProject("0x" + hash)
+			var registerTx = await registerContract.registerProject("0x" + hashToSubmit)
 
 			setToastshow(false)
 			setToastshow(true)
@@ -128,6 +127,7 @@ const Apply = () => {
 			let result = await response2
 			console.log(result)
 			setLoading(false)
+			setHash(result.data.message)
 		} catch (error) {
 			setLoading(false)
 			setToastshow(true)
@@ -202,11 +202,11 @@ const Apply = () => {
 					</Row>
 					<br></br>
 					<Row >
-						<MyDropzone setHash={setHash} setFile={setFile} setFilename={setFilename}></MyDropzone>
+						<MyDropzone setFile={setFile} setFilename={setFilename}></MyDropzone>
 					</Row>
 					<br></br>
 					<Row style={{ paddingLeft: "10%" }}>
-						{!txConfirmed ?
+						{hashToSubmit != null ?
 							<Col style={{ justifyContent: "center", alignItems: "center" }}>
 								<LoadingButton show={isLoading} text={"Submit to Chain"} variant="dark" func={connectToContract}> </LoadingButton>
 							</Col>
@@ -226,7 +226,7 @@ const Apply = () => {
 	);
 };
 
-function MyDropzone({ setHash, setFile, setFilename }) {
+function MyDropzone({ setFile, setFilename }) {
 
 	function buf2hex(buffer) { // buffer is an ArrayBuffer
 		return [...new Uint8Array(buffer)]
@@ -251,12 +251,13 @@ function MyDropzone({ setHash, setFile, setFilename }) {
 				//handleContract(await buf2hex(reader.result ).toString(), CryptoJS.SHA256(await buf2hex(reader.result)).toString())
 				console.log("ress", reader.result)
 				setFile(await buf2hex(reader.result).toString())
-				setHash(await CryptoJS.SHA256(await buf2hex(reader.result)).toString())
+
+			
+	
 			}
 		})
 	}, [])
 	const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop })
-
 	return (
 		<div {...getRootProps()} style={{
 			width: "100%", height: "100px", backgroundColor: "#ffffff",
