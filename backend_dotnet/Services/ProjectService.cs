@@ -150,6 +150,23 @@ namespace SU_COIN_BACK_END.Services {
                 }
             }
 
+            private async Task<bool> RemoveFromIpfs(string encodedHash)
+            {
+                string actionUrl = "https://ipfs.infura.io:5001/api/v0/pin/rm?arg=" + encodedHash;
+                   Console.WriteLine(actionUrl);
+
+                using (var client = new HttpClient())
+                using (var formData = new MultipartFormDataContent())
+                {
+                    client.DefaultRequestHeaders.Add("Authorization", "Basic MjlJOTJHRHRBR0RaenpZNnNUWUdLdkRXeFdROjg1NTNmOTkwZWE3Nzk3ODVjY2Q2NjVkMjU2NDY2MWZi");
+                    var response = await client.PostAsync(actionUrl, formData);
+                    return response.IsSuccessStatusCode;
+                }
+                
+            }
+            
+
+
         public async Task<ServiceResponse<string>> AddProjectAfterChain(ProjectDTO project)
         {
             ServiceResponse<string> response = new ServiceResponse<string>();
@@ -249,6 +266,10 @@ namespace SU_COIN_BACK_END.Services {
                     response.Success = false;
                     return response;
                 }
+
+
+                /* Remove the file (unpin) from ipfs if it still exists*/
+                await RemoveFromIpfs(SimpleBase.Base58.Bitcoin.Encode(Convert.FromHexString("1220" + project.FileHex)).ToString());
                 
                 /* Remove both the current project and the related project permissions */
                 _context.ProjectPermissions.RemoveRange(_context.ProjectPermissions.Where(c => c.ProjectID == id));
