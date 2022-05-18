@@ -665,21 +665,12 @@ namespace SU_COIN_BACK_END.Services {
                     return response;
                 }
 
-                SHA256 sha256 = SHA256.Create();
-                byte[] hashval = sha256.ComputeHash(Encoding.ASCII.GetBytes(project.FileHex));
-                StringBuilder sb = new StringBuilder();
-
-                foreach (byte b in hashval)
-                {
-                    sb.Append(b.ToString("x2"));
-                }
-
-                String hash_Str = sb.ToString();
+            
                 string status = ProjectStatusConstants.PENDING;
 
                 for (int i = 0; i < response_chain.Data.Count; i++)
                 {   
-                    bool isValidHash = ((response_chain.Data[i].Log.Topics[1]).ToString() == ("0x"+ hash_Str).ToString());
+                    bool isValidHash = ((response_chain.Data[i].Log.Topics[1]).ToString() == ("0x"+ project.FileHex).ToLower());
                     bool isProjectApproved = response_chain.Data[i].Event.isApproved;
 
                     if (isValidHash)
