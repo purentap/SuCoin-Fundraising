@@ -12,7 +12,6 @@ namespace SU_COIN_BACK_END.Models
         public bool IsAuctionStarted { get; set; } = false;
         public string? FileHex { get; set; } = "";
         public string? ProjectDescription { get; set; }
-        public string? ImageUrl { get; set; }
         public double Rating { get; set; }
         public string? Status { get; set; }
         public string? MarkDown { get; set; }

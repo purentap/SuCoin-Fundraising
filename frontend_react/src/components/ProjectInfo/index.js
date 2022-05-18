@@ -193,7 +193,6 @@ const ProjectInfo = ({ project, status, isWhitelisted, isOwner, projectId, setPr
             projectID: projectId,
             projectName: projectName,
             projectDescription: projectDescription,
-            imageUrl: imageURL,
             rating: project.rating,
             status: project.status,
             markDown: project.markDown,

@@ -41,6 +41,7 @@ import Cookies from "js-cookie";
 
 import {getFileFromIpfs} from "../../helpers.js"
 import { useEffect } from "react";
+import { image } from "@uiw/react-md-editor";
 //id,imageUrl,desc,title,status,approvals
 
 function ProjectsCard(props) {
@@ -55,9 +56,11 @@ function ProjectsCard(props) {
   const [projectName, setProjectName] = useState("");
   const [projectDescription, setProjectDescription] = useState("");
   const [projectImg, setProjectImg] = useState("");
+  const [imageURL,setImageURL] = useState("");
 
   useEffect(async () => {
-    setProjectImg(await getFileFromIpfs(props.fileHex,"image"))
+    const imageResult = await getFileFromIpfs(props.fileHex,"image")
+    setImageURL(URL.createObjectURL(imageResult.data))
   
 }, [])
   const {
@@ -115,7 +118,6 @@ function ProjectsCard(props) {
     else if (name == "role") setRole(value);
     else if (name == "projectName") setProjectName(value);
     else if (name == "projectDescription") setProjectDescription(value);
-    else if (name == "projectImg") setProjectImg(value);
   };
 
   const downloadFile = async (file, projectId) => {
@@ -201,9 +203,8 @@ function ProjectsCard(props) {
         <Image
           borderRadius="20px"
           src={
-            projectImg == ""
-              ? NoImage
-              : URL.createObjectURL(projectImg.data)
+            imageURL 
+              ?? NoImage
           }
           boxSize="100%"
           objectFit="fill"
@@ -301,14 +302,7 @@ function ProjectsCard(props) {
                         onChange={handleInput}
                         placeholder="Project Description"
                       />
-                      <FormLabel>
-                        Please enter the project image link:
-                      </FormLabel>
-                      <Input
-                        name="projectImg"
-                        onChange={handleInput}
-                        placeholder="Project Image"
-                      />
+                    
                     </FormControl>
                   </ModalBody>
                   <ModalFooter>

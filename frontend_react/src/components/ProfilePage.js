@@ -237,14 +237,24 @@ useEffect( async () => {
   };
 
   const onEdit = async (editRequest) => {
+    editRequest.imageUrl = ""
     const apiInstance = axios.create({
       baseURL: "https://localhost:5001",
     })
+
+    
+    console.log(editRequest)
     apiInstance.defaults.headers.common["Authorization"] = `Bearer ${Cookies.get('token')}`
     let response2 = new Promise((resolve, reject) => {
-      apiInstance
-        .put("/Project/Update/", editRequest
-      )
+      console.log(editRequest)
+      apiInstance.put("/Project/Update/",
+      {
+        ProjectID: editRequest.projectID,
+        ProjectName: editRequest.projectName,
+        ProjectDescription: editRequest.projectDescription,
+
+      })
+    
         .then((res) => {
           console.log("Edit is done")
           console.log(res.data)
@@ -297,7 +307,6 @@ useEffect( async () => {
             projectName={project.projectName}
             status={project.status}
             projectDescription={project.projectDescription}
-            imageUrl={project.imageUrl}
             rating = {project.rating}
             projectID = {project.projectID}
             fileHex = {project.fileHex}

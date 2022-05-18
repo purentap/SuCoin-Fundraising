@@ -418,7 +418,6 @@ namespace SU_COIN_BACK_END.Services {
                         Date = projects.Date,
                         IsAuctionStarted = projects.IsAuctionStarted,
                         ProjectDescription = projects.ProjectDescription,
-                        ImageUrl = projects.ImageUrl,
                         Rating = projects.Rating,
                         Status = projects.Status,
                         FileHex = hash.FileHex // hash value is combined to project with FileHex property
@@ -545,15 +544,18 @@ namespace SU_COIN_BACK_END.Services {
                     response.Message = MessageConstants.PROJECT_PERMISSION_MANAGE_DENIED;
                     return response;
                 }
-
                 var sameNameProjectId = await IdFromProjectName(project.ProjectName);
+
 
                 if (sameNameProjectId > 0 && sameNameProjectId != project.ProjectID)
                 {
+     
                     response.Success = false;
                     response.Message = MessageConstants.PROJECT_NAME_EXISTS;
                     return response;
                 }
+
+
 
                 Project? dbProject = await _context.Projects.FirstOrDefaultAsync(c => c.ProjectID == project.ProjectID);
 
@@ -566,7 +568,6 @@ namespace SU_COIN_BACK_END.Services {
                 
                 dbProject.ProjectName = project.ProjectName;
                 dbProject.ProjectDescription = project.ProjectDescription;
-                dbProject.ImageUrl = project.ImageUrl;
                 _context.Projects.Update(dbProject);
                 await _context.SaveChangesAsync();
                 response.Data = _mapper.Map<ProjectDTO>(dbProject);
@@ -767,7 +768,6 @@ namespace SU_COIN_BACK_END.Services {
                         Date = p.Date, 
                         FileHex = p.FileHex,
                         ProjectDescription = p.ProjectDescription, 
-                        ImageUrl = p.ImageUrl, 
                         Rating = p.Rating, 
                         Status = p.Status
                     })
@@ -978,7 +978,6 @@ namespace SU_COIN_BACK_END.Services {
                         ProjectName = p.ProjectName, 
                         Date = p.Date, 
                         ProjectDescription = p.ProjectDescription, 
-                        ImageUrl = p.ImageUrl, 
                         Rating = p.Rating, 
                         Status = p.Status
                     })
