@@ -838,6 +838,12 @@ namespace SU_COIN_BACK_END.Services {
                     response.Success = false;
                     return response;
                 }
+                if (!project.IsAuctionCreated)
+                {
+                    response.Message = "Auction of this project has not been created yet";
+                    response.Success = false;
+                    return response;
+                }
                     
                 int userID = GetUserId();
                 ProjectPermission? permission = await _context.ProjectPermissions
