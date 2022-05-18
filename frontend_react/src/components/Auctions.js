@@ -52,7 +52,7 @@ export const getAuctionByStatus = async(status,count) => {
     apiInstance.defaults.headers.common["Authorization"] = `Bearer ${Cookies.get('token')}`
     let response2 = new Promise((resolve, reject) => {
         apiInstance
-            .get("/Project/Get/All/False")
+            .get("/Project/Get/All")
             .then((res) => {
                 console.log("response: ", res.data) 
                 resolve(res)
@@ -65,13 +65,14 @@ export const getAuctionByStatus = async(status,count) => {
     })
     let result = await response2
 
-    const hashToProject = Object.fromEntries(result.data.data.map(project => ["0x" + project.fileHex,project]))
+    const hashToProject = Object.fromEntries(result.data.data.map(project => [("0x" + project.fileHex).toLowerCase(),project]))
 
 
     const auctionData = await MAESTRO.getProjectSurfaceByStatus(Object.keys(hashToProject),0,10)
     const auctionDataCombined = auctionData.filter(auction => auction.auctionType != "").map(auction => {
+       
         let newAuction = Object.assign([],auction)
-        Object.assign(newAuction,(({ projectName, projectDescription,imageUrl,projectID }) => ({ projectName, projectDescription,imageUrl,projectID }))(hashToProject[auction.projectHash]))
+        Object.assign(newAuction,(({ projectName, projectDescription,imageUrl,projectID,fileHex }) => ({ projectName, projectDescription,imageUrl,projectID,fileHex }))(hashToProject[auction.projectHash.toLowerCase()]))
         return newAuction
     })
 
@@ -115,7 +116,7 @@ const Auctions = () => {
             catch (error) {
                 setToastshow(true)
                 setToastheader("Catched an error")
-                setToasttext(error.data.message)
+                setToasttext(error.message)
                 return false;
            
 
@@ -152,6 +153,7 @@ const Auctions = () => {
                         <div>
                             <AuctionCard
                             project={project}
+                            fileHex={project.fileHex}
                             imageUrl={project.imageUrl}
                             projectName={project.projectName}
                             projectDescription={project.projectDescription}

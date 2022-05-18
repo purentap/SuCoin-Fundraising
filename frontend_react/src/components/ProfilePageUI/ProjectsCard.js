@@ -40,6 +40,7 @@ import axios from "axios";
 import Cookies from "js-cookie";
 
 import {getFileFromIpfs} from "../../helpers.js"
+import { useEffect } from "react";
 //id,imageUrl,desc,title,status,approvals
 
 function ProjectsCard(props) {
@@ -55,6 +56,10 @@ function ProjectsCard(props) {
   const [projectDescription, setProjectDescription] = useState("");
   const [projectImg, setProjectImg] = useState("");
 
+  useEffect(async () => {
+    setProjectImg(await getFileFromIpfs(props.fileHex,"image"))
+  
+}, [])
   const {
     isOpen: isEditOpen,
     onOpen: onEditOpen,
@@ -129,7 +134,7 @@ function ProjectsCard(props) {
   const onDownloadPDF = async () => {
     try {
       console.log(props)
-      getFileFromIpfs(props.fileHex).then(res => downloadFile(res.data,props.projectID))
+      getFileFromIpfs(props.fileHex,"whitepaper").then(res => downloadFile(res.data,props.projectID))
     }
     catch (error) {
       console.log(error);
@@ -196,9 +201,9 @@ function ProjectsCard(props) {
         <Image
           borderRadius="20px"
           src={
-            props.imageUrl == "" || props.imageUrl == "emptyImg"
+            projectImg == ""
               ? NoImage
-              : props.imageUrl
+              : URL.createObjectURL(projectImg.data)
           }
           boxSize="100%"
           objectFit="fill"

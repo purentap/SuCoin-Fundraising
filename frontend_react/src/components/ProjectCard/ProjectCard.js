@@ -6,20 +6,32 @@ import { render } from "react-dom";
 import axios from 'axios'
 import Cookies from 'js-cookie'
 import {getFileFromIpfs} from "../../helpers.js"
+import { useState } from "react";
+import { useEffect } from "react";
 
 
 
 
 const ProjectCard = (props) => {
 
+    const [image,setImage] = useState("");
+
+
+    useEffect(async () => {
+            setImage(await getFileFromIpfs(props.fileHex,"image"))
+          
+      }, [])
+    console.log(image.data)
 
     const getFile = async () => {
       
+        console.log(props.fileHex)
+      getFileFromIpfs(props.fileHex,"whitepaper").then(res => downloadFile(res.data))
 
-      getFileFromIpfs(props.fileHex).then(res => downloadFile(res.data))
     
       const downloadFile = async (file) => {
         const reader = new FileReader()
+
       
     
         reader.readAsText(file);
@@ -36,7 +48,7 @@ const ProjectCard = (props) => {
   return (
     <Wrapper>
         <div className="project-image">
-            <img src={props.imageUrl == "emptyImg" ? dummyimg : props.imageUrl} alt=""/>
+            <img src={image == "" ? dummyimg : URL.createObjectURL(image.data)} alt=""/>
         </div>
         <h1>{props.projectName}</h1>
         <div>

@@ -1,15 +1,26 @@
 import { Wrapper } from "./AuctionCard.styles";
 import dummyimg from  '../../images/dummyimg.png';
 import { useNavigate } from 'react-router-dom';
+import { getFileFromIpfs } from "../../helpers";
+import { useEffect } from "react";
+import { useState } from "react";
 
 const AuctionCard = (props) => {
 
     const navigate = useNavigate();
+    const [imageURL,setImageURL] = useState("")
+
+    useEffect(async () =>  {
+        const resultImage = await getFileFromIpfs(props.fileHex,"image")
+        setImageURL(URL.createObjectURL(resultImage.data))
+    },[props])
+
+    console.log(props.fileHex)
     
   return (
     <Wrapper>
         <div className="project-image">
-            <img src={props.imageUrl == "emptyImg" ? dummyimg : props.imageUrl} alt=""/>
+            <img src={imageURL ?? dummyimg} alt=""/>
         </div>
         <h1>{props.projectName}</h1>
         <div>

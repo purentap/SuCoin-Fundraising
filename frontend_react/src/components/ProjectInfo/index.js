@@ -29,6 +29,7 @@ import Col from 'react-bootstrap/Col'
 import Container from 'react-bootstrap/Col'
 
 import {getFileFromIpfs} from "../../helpers.js"
+import { UrlJsonRpcProvider } from '@ethersproject/providers';
 
 const ProjectInfo = ({ project, status, isWhitelisted, isOwner, projectId, setProject }) => {
 
@@ -40,10 +41,15 @@ const ProjectInfo = ({ project, status, isWhitelisted, isOwner, projectId, setPr
 
   const [projectName, setName] = useState('');
   const [projectDescription, setDescription] = useState('');
-  const [projectImg, setImg] = useState('');
+  const [imageURL,setImageURL] = useState('');
 
 
-
+  useEffect(async () => {
+    if (project.fileHex == undefined)
+      return
+    const imageResult = await getFileFromIpfs(project.fileHex,"image")
+    setImageURL(URL.createObjectURL(imageResult.data))
+  },[project])
 
   useEffect(async () => {
     const CryptoJS = require('crypto-js');
@@ -53,7 +59,6 @@ const ProjectInfo = ({ project, status, isWhitelisted, isOwner, projectId, setPr
     const hash = "0x" + project.fileHex
 
 
-    setHash(hash)
 
     const provider = await new ethers.providers.Web3Provider(window.ethereum)
 
@@ -86,9 +91,9 @@ const ProjectInfo = ({ project, status, isWhitelisted, isOwner, projectId, setPr
   }
 
   const getFile = async () => {
-    let deneme = await getFileFromIpfs(project.fileHex)
+    let deneme = await getFileFromIpfs(project.fileHex,"whitepaper")
     
-    getFileFromIpfs(project.fileHex).then(res => downloadFile(res.data,projectId))
+    getFileFromIpfs(project.fileHex,"whitepaper").then(res => downloadFile(res.data,projectId))
 
   }
 
@@ -188,7 +193,7 @@ const ProjectInfo = ({ project, status, isWhitelisted, isOwner, projectId, setPr
             projectID: projectId,
             projectName: projectName,
             projectDescription: projectDescription,
-            imageUrl: projectImg,
+            imageUrl: imageURL,
             rating: project.rating,
             status: project.status,
             markDown: project.markDown,
@@ -237,16 +242,16 @@ const ProjectInfo = ({ project, status, isWhitelisted, isOwner, projectId, setPr
 
     if (name === 'name') setName(value);
     if (name === 'description') setDescription(value);
-    if (name === 'imgUrl') setImg(value);
 
   };
 
+  
   return (
     <Wrapper backdrop={"#ccc"}>
       <Content>
         <Thumb style={{ alignItems: "center" }}
           image={
-            project.imageUrl == "" ? NoImage : project.imageUrl
+            imageURL ?? NoImage
 
           }
           clickable={false}
@@ -279,12 +284,7 @@ const ProjectInfo = ({ project, status, isWhitelisted, isOwner, projectId, setPr
                   </Form.Group>
                 </Form>
 
-                <Form>
-                  <Form.Group className="mb-3" controlId="formBasicEmail">
-                    <Form.Label>Enter Project Image URL</Form.Label>
-                    <Form.Control onChange={handleInput} name="imgUrl" type="email" placeholder={project.imageUrl} />
-                  </Form.Group>
-                </Form>
+          
                 <Button variant="dark" onClick={() => submitChanges()}>Submit Changes</Button>
               </div>
               :

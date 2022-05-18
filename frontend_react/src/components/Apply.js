@@ -45,7 +45,11 @@ const Apply = () => {
 	const [isLoading, setLoading] = useState(false)
 
 	const [fileToSubmit, setFile] = useState();
+	const [imageToSubmit, setImage] = useState();
+
 	const [fileName, setFilename] = useState();
+	const [imageName, setImagename] = useState();
+
 	const [hashToSubmit, setHash] = useState();
 
 	const [txConfirmed, setTxconfirmed] = useState(false);
@@ -107,7 +111,7 @@ const Apply = () => {
 						fileHex: fileToSubmit,
 						projectName: projectName,
 						projectDescription: projectDescription,
-						imageUrl: "emptyImg"
+						imageUrl: imageToSubmit,
 					})
 					.then((res) => {
 						setToastshow(false)
@@ -202,7 +206,8 @@ const Apply = () => {
 					</Row>
 					<br></br>
 					<Row >
-						<MyDropzone setFile={setFile} setFilename={setFilename}></MyDropzone>
+						<MyDropzone setFile={setFile} setFilename={setFilename} fileType="Whitepaper"></MyDropzone>
+						<MyDropzone setFile={setImage} setFilename={setImagename} fileType="Image"></MyDropzone>
 					</Row>
 					<br></br>
 					<Row style={{ paddingLeft: "10%" }}>
@@ -226,7 +231,9 @@ const Apply = () => {
 	);
 };
 
-function MyDropzone({ setFile, setFilename }) {
+function MyDropzone({ setFile, setFilename,fileType }) {
+
+	console.log(fileType)
 
 	function buf2hex(buffer) { // buffer is an ArrayBuffer
 		return [...new Uint8Array(buffer)]
@@ -249,7 +256,6 @@ function MyDropzone({ setFile, setFilename }) {
 
 			reader.onloadend = async () => {
 				//handleContract(await buf2hex(reader.result ).toString(), CryptoJS.SHA256(await buf2hex(reader.result)).toString())
-				console.log("ress", reader.result)
 				setFile(await buf2hex(reader.result).toString())
 
 			
@@ -275,7 +281,7 @@ function MyDropzone({ setFile, setFilename }) {
 						textAlign: "center",
 						verticalAlign: "middle",
 						lineHeight: "90px"
-					}} >Drop your files here, or click to select.</p>
+					}} >Drop your file {fileType} here, or click to select.</p>
 			}
 		</div >
 	)

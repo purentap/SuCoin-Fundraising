@@ -33,7 +33,7 @@ export const getAllPublicVariables = async (abi,auctionContract) => {
 
 } 
 
-export const getFileFromIpfs = async (ipfsHash) => {
+export const getFileFromIpfs = async (ipfsHash,filename) => {
   
   let encodedHash = ethers.utils.base58.encode("0x" + "1220" + ipfsHash)
 
@@ -44,7 +44,7 @@ export const getFileFromIpfs = async (ipfsHash) => {
     })
 
     let response = apiInstance
-                    .get(encodedHash)
+                    .get(encodedHash + "/" + filename)
                     .catch((e) => {
                       const err = "Unable to add the project"
                       console.log(e)

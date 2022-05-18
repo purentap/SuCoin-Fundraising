@@ -83,7 +83,7 @@ const ProjectList = () => {
       apiInstance.defaults.headers.common["Authorization"] = `Bearer ${Cookies.get('token')}`
       let response2 = new Promise((resolve, reject) => {
         apiInstance
-          .get("/Project/Get/All/false")
+          .get("/Project/Get/All")
           .then((res) => {
             console.log("response: ", res.data)
             resolve(res)
@@ -133,6 +133,7 @@ const ProjectList = () => {
               projectDescription={project.projectDescription}
               projectStatus={project.status}
               projectRating={project.rating}
+              fileHex={project.fileHex}
               projectID={project.projectID}
               />
             </div>

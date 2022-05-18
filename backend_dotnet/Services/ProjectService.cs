@@ -26,6 +26,7 @@ using Nethereum.Contracts;
 using Nethereum.Contracts.Extensions;
 using System.Numerics;
 using System.Security.Cryptography;
+using Newtonsoft.Json;
 
 namespace SU_COIN_BACK_END.Services {
 
@@ -75,10 +76,12 @@ namespace SU_COIN_BACK_END.Services {
 
                 /* Project has not been created in the database. Create the new project */
 
-                var uploadResult = await UploadToIpfs(project.FileHex);
+                var uploadResult = await UploadToIpfs(project.FileHex, project.ImageUrl);
+                Console.WriteLine("aaaaaaa",uploadResult);
+
 
                 var hash = uploadResult?["Hash"];
-
+                Console.WriteLine(hash);
                 if (hash == null) {
                     response.Success = false;
                     response.Message = "IPFS upload failed";
@@ -130,23 +133,33 @@ namespace SU_COIN_BACK_END.Services {
             return response;
         }
 
-        private async Task<Dictionary<string,string>?> UploadToIpfs(string hexString)
+        private async Task<Dictionary<string,string>?> UploadToIpfs(string hexString,string? imageHex)
             {
-                string actionUrl = "https://ipfs.infura.io:5001/api/v0/add?";
-                byte[] paramFileBytes = Enumerable.Range(0, hexString.Length / 2).Select(x => Convert.ToByte(hexString.Substring(x * 2, 2), 16)).ToArray();
+                string actionUrl = "https://ipfs.infura.io:5001/api/v0/add?wrap-with-directory";
+                byte[] paramFileBytes = Convert.FromHexString(hexString);
+                byte[] paramImageBytes = Convert.FromHexString(imageHex);
+
    
                 HttpContent bytesContent = new ByteArrayContent(paramFileBytes);
+                HttpContent imageContent = new ByteArrayContent(paramImageBytes);
+
                 using (var client = new HttpClient())
                 using (var formData = new MultipartFormDataContent())
                 {
                     client.DefaultRequestHeaders.Add("Authorization", "Basic MjlJOTJHRHRBR0RaenpZNnNUWUdLdkRXeFdROjg1NTNmOTkwZWE3Nzk3ODVjY2Q2NjVkMjU2NDY2MWZi");
-                    formData.Add(bytesContent, "file", "file");
+                    formData.Add(bytesContent, "file", "whitepaper");
+
+                    if (imageHex != null)
+                        formData.Add(imageContent,"file","image");
+                    
                     var response = await client.PostAsync(actionUrl, formData);
                     if (!response.IsSuccessStatusCode)
                     {
                         return null;
                     }
-                    return await response.Content.ReadFromJsonAsync<Dictionary<string, string>>();
+
+                    string stringResponse = (await response.Content.ReadAsStringAsync()).Split('\n').SkipLast(1).Last();
+                    return JsonConvert.DeserializeObject<Dictionary<string, string>>(stringResponse);
                 }
             }
 
@@ -288,7 +301,7 @@ namespace SU_COIN_BACK_END.Services {
         }
 
 
-        public async Task<ServiceResponse<List<ProjectDTO>>> GetProjects(bool withHex = false, int count = Int32.MaxValue)
+        public async Task<ServiceResponse<List<ProjectDTO>>> GetProjects(int count = Int32.MaxValue)
         {
             ServiceResponse<List<ProjectDTO>> response = new ServiceResponse<List<ProjectDTO>>();
             try
@@ -299,31 +312,9 @@ namespace SU_COIN_BACK_END.Services {
 
                 /* First fetch all the projects. Then check if the user is neither admin nor whitelist, just filter the approved projects */
 
-                var hashResult = _context.Projects.FromSqlRaw("Select projectID,SHA2(FileHex,256) as FileHex From Projects Where ViewerAccepted = 1"); // ProjectId&Hash Records
+               
 
-                var hashedVersion =  hashResult.Join( // Newly constructed query project list which includes hash of the fileHexs
-                    _context.Projects,
-                    hash => hash.ProjectID,
-                    project => project.ProjectID,
-                    (hash,projects) => new Project
-                    {
-                        ProjectID = projects.ProjectID,
-                        ProjectName = projects.ProjectName,
-                        Date = projects.Date,
-                        ViewerAccepted = projects.ViewerAccepted,
-                        IsAuctionCreated = projects.IsAuctionCreated, 
-                        IsAuctionStarted = projects.IsAuctionStarted,
-                        ProjectDescription = projects.ProjectDescription,
-                        ImageUrl = projects.ImageUrl,
-                        Rating = projects.Rating,
-                        Status = projects.Status,
-                        FileHex =  hash.FileHex,
-                        MarkDown = projects.MarkDown,
-                        ProposerAddress = projects.ProposerAddress
-                    }
-                );
-
-                projects =  (withHex ? await _context.Projects.ToListAsync() : await hashedVersion.ToListAsync()); 
+                projects =  await _context.Projects.ToListAsync(); 
        
                 if (userRole != UserRoleConstants.ADMIN && userRole != UserRoleConstants.WHITELIST)
                 {
