@@ -304,6 +304,14 @@ namespace SU_COIN_BACK_END.Services {
         public async Task<ServiceResponse<List<ProjectDTO>>> GetProjects(int count = Int32.MaxValue)
         {
             ServiceResponse<List<ProjectDTO>> response = new ServiceResponse<List<ProjectDTO>>();
+            
+            if (count < 0) // Invalid parameter
+            {                      
+                response.Message = MessageConstants.INVALID_INPUT;
+                response.Success = false;
+                return response;
+            }
+
             try
             {
                 string userRole = GetUserRole();
@@ -311,9 +319,6 @@ namespace SU_COIN_BACK_END.Services {
                 List<Project> projects = new List<Project>();
 
                 /* First fetch all the projects. Then check if the user is neither admin nor whitelist, just filter the approved projects */
-
-               
-
                 projects =  await _context.Projects.ToListAsync(); 
        
                 if (userRole != UserRoleConstants.ADMIN && userRole != UserRoleConstants.WHITELIST)
@@ -321,19 +326,11 @@ namespace SU_COIN_BACK_END.Services {
                     projects = projects.Where(c => c.Status == ProjectStatusConstants.APPROVED).ToList();
                 }
                         
-                /* If there is any project, send the project data to the mapper */
-                
+                /* If there is any project, send the project data to the mapper */                
                 if (projects == null)
                 {
                     response.Message = MessageConstants.PROJECT_NOT_FOUND;
                     response.Success = true;
-                    return response;
-                }
-                
-                if (count < 0) // Invalid parameter
-                {                      
-                    response.Message = MessageConstants.INVALID_INPUT;
-                    response.Success = false;
                     return response;
                 }
 
@@ -405,63 +402,34 @@ namespace SU_COIN_BACK_END.Services {
             try 
             {
                 List<string> hashes = new List<string>();
-                var hashResult = _context.Projects.FromSqlRaw("Select projectID,SHA2(FileHex,256) as FileHex From Projects Where ViewerAccepted = 1"); // ProjectId&Hash Records
-
-                var hashedVersion = hashResult.Join(  // Newly constructed query project list which includes hash of the fileHexs
-                    _context.Projects,
-                    hash => hash.ProjectID,
-                    project => project.ProjectID,
-                    (hash, projects) => new Project
-                    {
-                        ProjectID = projects.ProjectID,
-                        ProjectName = projects.ProjectName,
-                        Date = projects.Date,
-                        IsAuctionStarted = projects.IsAuctionStarted,
-                        ProjectDescription = projects.ProjectDescription,
-                        Rating = projects.Rating,
-                        Status = projects.Status,
-                        FileHex = hash.FileHex // hash value is combined to project with FileHex property
-                    }
-                );
 
                 if (areOnlyAuctionsStarted)
                 {
-                    hashes =  await hashedVersion.Where(p => p.IsAuctionStarted).Select(p => p.FileHex).ToListAsync();
-                    if (hashes == null)
-                    {
-                        response.Message = MessageConstants.PROJECT_NOT_FOUND;
-                        response.Success = false;
-                        return response;
-                    }
-
-                    response.Data = hashes;
-                    response.Message = MessageConstants.OK;
-                    response.Success = true;
+                    hashes = await _context.Projects.Where(project => project.IsAuctionStarted).Select(project => project.FileHex).ToListAsync();
                 }
                 else // all projects
                 {
                     string userRole = GetUserRole();
                     Console.WriteLine(String.Format(MessageConstants.USER_ROLE, userRole)); // Debuging
-                    if (userRole == UserRoleConstants.ADMIN)
+                    if (userRole != UserRoleConstants.ADMIN)
                     {
-                        hashes = await hashResult.Select(p => p.FileHex).ToListAsync();
-                        if (hashes == null) 
-                        {
-                            response.Message = MessageConstants.PROJECT_NOT_FOUND;
-                            response.Success = true;
-                            return response;
-                        }
-                            
-                        response.Data = hashes;
-                        response.Message = MessageConstants.OK;
-                        response.Success = true;
-                    }
-                    else 
-                    {
-                        response.Success = false;
                         response.Message = MessageConstants.NOT_AUTHORIZED_TO_ACCESS;
+                        response.Success = false;
+                        return response;
                     }
+                    hashes = await _context.Projects.Select(project => project.FileHex).ToListAsync();
                 }
+                        
+                if (hashes == null) 
+                {
+                    response.Message = MessageConstants.PROJECT_NOT_FOUND;
+                    response.Success = true;
+                    return response;
+                }
+                            
+                response.Data = hashes;
+                response.Message = MessageConstants.OK;
+                response.Success = true;
             }
             catch (Exception e) 
             {
