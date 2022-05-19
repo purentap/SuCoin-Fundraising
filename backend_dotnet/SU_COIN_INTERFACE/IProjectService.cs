@@ -10,7 +10,6 @@ namespace SU_COIN_BACK_END.SU_COIN_INTERFACE
     {
         Task<ServiceResponse<ProjectDTO>> GetProjectById(int ID);
         Task<ServiceResponse<string>> AddProject(ProjectDTO project);
-        Task<ServiceResponse<string>> AddProjectAfterChain(ProjectDTO project);
         Task<ServiceResponse<string>> DeleteProject(int ID);
         Task<ServiceResponse<ProjectDTO>> UpdateProject(ProjectDTO project);
         Task<ServiceResponse<ProjectDTO>> RateProject(int id, double rating);
@@ -22,6 +21,7 @@ namespace SU_COIN_BACK_END.SU_COIN_INTERFACE
         Task<ServiceResponse<List<ProjectDTO>>> GetProjects(int numberOfProjects = Int32.MaxValue);
         Task<ServiceResponse<List<string>>> GetAllFileHashes(bool areOnlyAuctionsStarted = true);
         Task<ServiceResponse<string>> ReplyProjectPreview(int id, bool reply);
-        Task<ServiceResponse<bool>> StartAuction(int id);
+        Task<ServiceResponse<string>> CreateAuction(int id);
+        Task<ServiceResponse<string>> StartAuction(int id);
     }
 }

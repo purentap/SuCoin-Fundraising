@@ -163,104 +163,23 @@ namespace SU_COIN_BACK_END.Services {
                 }
             }
 
-            private async Task<bool> RemoveFromIpfs(string encodedHash)
-            {
-                string actionUrl = "https://ipfs.infura.io:5001/api/v0/pin/rm?arg=" + encodedHash;
-                   Console.WriteLine(actionUrl);
-
-                using (var client = new HttpClient())
-                using (var formData = new MultipartFormDataContent())
-                {
-                    client.DefaultRequestHeaders.Add("Authorization", "Basic MjlJOTJHRHRBR0RaenpZNnNUWUdLdkRXeFdROjg1NTNmOTkwZWE3Nzk3ODVjY2Q2NjVkMjU2NDY2MWZi");
-                    var response = await client.PostAsync(actionUrl, formData);
-                    return response.IsSuccessStatusCode;
-                }
-                
-            }
-            
-
-
-        public async Task<ServiceResponse<string>> AddProjectAfterChain(ProjectDTO project)
+        private async Task<bool> RemoveFromIpfs(string encodedHash)
         {
-            ServiceResponse<string> response = new ServiceResponse<string>();
-            try
+            string actionUrl = "https://ipfs.infura.io:5001/api/v0/pin/rm?arg=" + encodedHash;
+            Console.WriteLine(actionUrl);
+
+            using (var client = new HttpClient())
+            using (var formData = new MultipartFormDataContent())
             {
-                if (await ProjectNameExists(project.ProjectName))
-                {
-                    response.Success = false;
-                    response.Message = MessageConstants.PROJECT_NAME_EXISTS;
-                    return response;
-                }
-                else if (!await IsProjectSubmittedToChain(project.FileHex))
-                {
-                    response.Success = false;
-                    response.Message = "Project pdf you are trying to register is not submitted to blockchain";
-                    return response;
-                }
-
-      
-
-               
-                
-
-                /* Project has not been created in the database. Create the new project */
-                Project new_project = _mapper.Map<Project>(project);
-                new_project.FileHex = project.FileHex;
-                new_project.Date = DateTime.Now;
-                new_project.IsAuctionStarted = false;
-                new_project.Status = ProjectStatusConstants.PENDING;
-                new_project.MarkDown = "";
-                new_project.Rating = 0;
-                new_project.ProposerAddress = GetUserAddress();
-
-                await _context.Projects.AddAsync(new_project);
-                await _context.SaveChangesAsync();
-
-                /* For security reasons, we need to recheck the database and then assign the permission */
-                Project? dbProject = await _context.Projects.FirstOrDefaultAsync(c => c.ProjectName == project.ProjectName);
-
-                if (dbProject != null) // The project was added to the database successfully
-                {
-                    /* Since project was added successfully, add an owner to the project */
-                    ProjectPermission permission = new ProjectPermission
-                    {
-                        ProjectID = dbProject.ProjectID, 
-                        UserID = GetUserId(), 
-                        Role = UserPermissionRoleConstants.OWNER,
-                        IsAccepted = true 
-                    };
-                    await _context.ProjectPermissions.AddAsync(permission);
-                    await _context.SaveChangesAsync();
-
-                    response.Data = dbProject.ProjectName;
-                    response.Message = MessageConstants.OK;
-                    response.Success = true;
-                }
-                else // The project could not be added, because some operations were applied to the project while adding the project to the database.
-                {
-                    response.Message = MessageConstants.PROJECT_ADD_FAIL;
-                    response.Success = true;
-                }
-            }
-            catch (Exception e)
-            {
-                response.Success = false;
-                response.Message = String.Format(MessageConstants.FAIL_MESSAGE, "add project after chain", e.Message);
-                return response;
-            }
-            return response;
+                client.DefaultRequestHeaders.Add("Authorization", "Basic MjlJOTJHRHRBR0RaenpZNnNUWUdLdkRXeFdROjg1NTNmOTkwZWE3Nzk3ODVjY2Q2NjVkMjU2NDY2MWZi");
+                var response = await client.PostAsync(actionUrl, formData);
+                return response.IsSuccessStatusCode;
+            }        
         }
 
         public async Task<ServiceResponse<string>> DeleteProject(int id) //If auction started aviod deleting
         {
             ServiceResponse<string> response = new ServiceResponse<string>();
-            if (id < 0)
-            {
-                response.Success = false;
-                response.Message = MessageConstants.INVALID_INPUT;
-                return response;
-            }
-
             try
             {
                 if (!await HasOwnerPermission(id)) // owner does not allow you to delete the project
@@ -304,18 +223,9 @@ namespace SU_COIN_BACK_END.Services {
         public async Task<ServiceResponse<List<ProjectDTO>>> GetProjects(int count = Int32.MaxValue)
         {
             ServiceResponse<List<ProjectDTO>> response = new ServiceResponse<List<ProjectDTO>>();
-            
-            if (count < 0) // Invalid parameter
-            {                      
-                response.Message = MessageConstants.INVALID_INPUT;
-                response.Success = false;
-                return response;
-            }
-
             try
             {
                 string userRole = GetUserRole();
-                Console.WriteLine(String.Format(MessageConstants.USER_ROLE, userRole)); // Debuging
                 List<Project> projects = new List<Project>();
 
                 /* First fetch all the projects. Then check if the user is neither admin nor whitelist, just filter the approved projects */
@@ -350,13 +260,6 @@ namespace SU_COIN_BACK_END.Services {
         public async Task<ServiceResponse<ProjectDTO>> GetProjectById(int id)
         {
             ServiceResponse<ProjectDTO> response = new ServiceResponse<ProjectDTO>();
-            if (id < 0)
-            {
-                response.Success = false;
-                response.Message = MessageConstants.INVALID_INPUT;
-                return response;
-            }
-
             try
             {
                 Project? project = await _context.Projects.FirstOrDefaultAsync(c => c.ProjectID == id);
@@ -409,9 +312,7 @@ namespace SU_COIN_BACK_END.Services {
                 }
                 else // all projects
                 {
-                    string userRole = GetUserRole();
-                    Console.WriteLine(String.Format(MessageConstants.USER_ROLE, userRole)); // Debuging
-                    if (userRole != UserRoleConstants.ADMIN)
+                    if (GetUserRole() != UserRoleConstants.ADMIN)
                     {
                         response.Message = MessageConstants.NOT_AUTHORIZED_TO_ACCESS;
                         response.Success = false;
@@ -448,6 +349,7 @@ namespace SU_COIN_BACK_END.Services {
                 {
                     response.Success = false;
                     response.Message = MessageConstants.INVALID_INPUT;
+                    return response;
                 }
 
                 Project? project = await _context.Projects.FirstOrDefaultAsync(c => c.ProjectID == projectID);
@@ -591,13 +493,6 @@ namespace SU_COIN_BACK_END.Services {
         public async Task<ServiceResponse<ProjectDTO>> ChangeStatus(int id) 
         {
             ServiceResponse<ProjectDTO> response = new ServiceResponse<ProjectDTO>();
-            if (id < 0)
-            {
-                response.Success = false;
-                response.Message = MessageConstants.INVALID_INPUT;
-                return response;
-            }
-
             try
             {
                 Project? project = await _context.Projects.FirstOrDefaultAsync(c => c.ProjectID == id);
@@ -633,7 +528,6 @@ namespace SU_COIN_BACK_END.Services {
                     return response;
                 }
 
-            
                 string status = ProjectStatusConstants.PENDING;
 
                 for (int i = 0; i < response_chain.Data.Count; i++)
@@ -782,9 +676,9 @@ namespace SU_COIN_BACK_END.Services {
             return response;
         }
        
-        public async Task<ServiceResponse<bool>> StartAuction(int projectID)
+        public async Task<ServiceResponse<string>> StartAuction(int projectID)
         {
-            ServiceResponse<bool> response = new ServiceResponse<bool>();
+            ServiceResponse<string> response = new ServiceResponse<string>();
             try
             {
                 Project? project = await _context.Projects.FirstOrDefaultAsync(project => project.ProjectID == projectID);
@@ -794,28 +688,15 @@ namespace SU_COIN_BACK_END.Services {
                     response.Success = false;
                     return response;
                 }
-                if (!project.ViewerAccepted)
-                {
-                    response.Message = MessageConstants.PROJECT_NOT_ACCEPTED_BY_VIEWER;
-                    response.Success = false;
-                    return response;
-                }
-                if (project.Status != ProjectStatusConstants.APPROVED)
-                {
-                    response.Message = "Project is not approved. Therefore, not ready to be auctioned";
-                    response.Success = false;
-                    return response;
-                }
                 if (!project.IsAuctionCreated)
                 {
                     response.Message = "Auction of this project has not been created yet";
                     response.Success = false;
                     return response;
                 }
-                    
-                int userID = GetUserId();
+                
                 ProjectPermission? permission = await _context.ProjectPermissions
-                .FirstOrDefaultAsync(permission => permission.ProjectID == projectID && permission.UserID == userID);
+                .FirstOrDefaultAsync(permission => permission.ProjectID == projectID && permission.UserID == GetUserId());
 
                 if (permission == null)
                 {
@@ -836,7 +717,7 @@ namespace SU_COIN_BACK_END.Services {
                 await _context.SaveChangesAsync();
 
                 response.Message = MessageConstants.OK;
-                response.Data = true;
+                response.Data = $"Auction of project {projectID} has been started";
                 response.Success = true;
             }
             catch (Exception e)
@@ -846,38 +727,62 @@ namespace SU_COIN_BACK_END.Services {
             }
             return response;
         }
-        public async Task<bool> IsProjectSubmittedToChain(string ipfsHash)
+
+        public async Task<ServiceResponse<string>> CreateAuction(int projectID)
         {
-            return true;
+            ServiceResponse<string> response = new ServiceResponse<string>();
             try
             {
-                ServiceResponse<List<EventLog<ProjectRegisterEventDTO>>> response = await _chainInteractionService.GetRegisterEventLogs();
-                if (!response.Success)
+                Project? project = await _context.Projects.FirstOrDefaultAsync(project => project.ProjectID == projectID);
+                if (project == null)
                 {
-                    return false;
+                    response.Success = false;
+                    response.Message = MessageConstants.PROJECT_NOT_FOUND;
+                    return response;
+                }
+                if (!project.ViewerAccepted)
+                {
+                    response.Success = false;
+                    response.Message = MessageConstants.PROJECT_NOT_ACCEPTED_BY_VIEWER;
+                    return response;
+                }
+                if (project.Status != ProjectStatusConstants.APPROVED)
+                {
+                    response.Success = false;
+                    response.Message = "Project is not approved. Therefore, not ready to be auctioned";
+                    return response;
                 }
 
+                ProjectPermission? permission = await _context.ProjectPermissions
+                .FirstOrDefaultAsync(permission => permission.ProjectID == projectID && permission.UserID == GetUserId());
 
-                if (response.Data == null)
+                if (permission == null)
                 {
-                    return false;
+                    response.Success = false;
+                    response.Message = MessageConstants.PROJECT_PERMISSION_MANAGE_DENIED;
+                    return response;
                 }
-                        
-                for (int i = 0; i < response.Data.Count; i++)
+                if (permission.Role != UserPermissionRoleConstants.OWNER)
                 {
-                    if (response.Data[i].Log.Data == "0x" + ipfsHash)
-                    {
-                        return true;
-                    }
+                    response.Success = false;
+                    response.Message = MessageConstants.NOT_AUTHORIZED_TO_ACCESS;
+                    return response;
                 }
-                return false;
+
+                project.IsAuctionCreated = true;
+                _context.Projects.Update(project);
+                await _context.SaveChangesAsync();
+
+                response.Success = true;
+                response.Message = MessageConstants.OK;
+                response.Data = $"Auction of project {projectID} has been created";
             }
             catch (Exception e)
             {
-                string message = e.Message;
-                Console.WriteLine($"Error message: {message}");
-                return false;
+                response.Success = false;
+                response.Message = String.Format(MessageConstants.FAIL_MESSAGE, "create auction", e.Message);
             }
+            return response;
         }
 
         public async Task<bool> HasPermission(int projectId)

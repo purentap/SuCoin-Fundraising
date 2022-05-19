@@ -185,8 +185,7 @@ namespace SU_COIN_BACK_END.Services
                             chainRole = UserRoleConstants.BASE;
                             break;
                     }
-                        
-                    response.Message = String.Format(MessageConstants.USER_ROLE, chainRole);
+                    response.Message = $"User Role: {chainRole}";
                     response.Data = chainRole;
                     response.Success = true;
                 }

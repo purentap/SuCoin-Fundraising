@@ -42,7 +42,7 @@ namespace SU_COIN_BACK_END.Controllers
         }
 
         [HttpGet]
-        [Route("Get/{id}")]
+        [Route("Get/{id:int}")]
         public async Task<IActionResult> GetProjectByID(int Id)
         {
             ServiceResponse<ProjectDTO> response = await _projectService.GetProjectById(Id);
@@ -82,7 +82,7 @@ namespace SU_COIN_BACK_END.Controllers
         }
 
         [HttpDelete]
-        [Route("Delete/{id}")]
+        [Route("Delete/{id:int}")]
         public async Task<IActionResult> DeleteProject(int Id)
         {
             ServiceResponse<string> response = await _projectService.DeleteProject(Id);
@@ -121,25 +121,8 @@ namespace SU_COIN_BACK_END.Controllers
             return Created($"projects/{response.Data}", response);
         }
 
-        [HttpPost]
-        [Route("AddAfterChain")]
-        public async Task<IActionResult> AddProjectAfterChain(ProjectDTO project)
-        {
-            ServiceResponse<string> response = await _projectService.AddProjectAfterChain(project);
-            Console.WriteLine(response.Message);
-            if (!response.Success)
-            {
-                if (response.Message == MessageConstants.PROJECT_NOT_FOUND)
-                {
-                    return NotFound();
-                }
-                return BadRequest(response);
-            }
-            return Created($"projects/{project.ProjectID}", project);
-        }
-
         [HttpPut]
-        [Route("Rate/{id}/{rating}")]
+        [Route("Rate/{id:int}/{rating}")]
         public async Task<IActionResult> RateProject(int id, double rating)
         {
             ServiceResponse<ProjectDTO> response = await _projectService.RateProject(id, rating);
@@ -173,7 +156,7 @@ namespace SU_COIN_BACK_END.Controllers
         }
 
         [HttpPut]
-        [Route("[action]/{id}")]
+        [Route("[action]/{id:int}")]
         public async Task<IActionResult> ChangeStatus(int id) //Only admin or whitelisted can do it or it can be updated directly from blockchain
         {
             ServiceResponse<ProjectDTO> response = await _projectService.ChangeStatus(id);
@@ -189,7 +172,7 @@ namespace SU_COIN_BACK_END.Controllers
         }
 
         [HttpPut]
-        [Route("[action]/{id}/{markddown}")]
+        [Route("[action]/{id:int}/{markddown}")]
         public async Task<IActionResult> UpdateMarkDown(int id, string markdown)
         {
             ServiceResponse<ProjectDTO> response = await _projectService.UpdateMarkDown(id, markdown);
@@ -233,17 +216,18 @@ namespace SU_COIN_BACK_END.Controllers
         }
 
         [HttpGet]
-        [Route("[action]/{numberOfProjects}")]
+        [Route("[action]/{numberOfProjects:int}")]
         [AllowAnonymous]
         public async Task<IActionResult> GetProjects(int numberOfProjects) 
         {
             ServiceResponse<List<ProjectDTO>> response = await _projectService.GetProjects(numberOfProjects: numberOfProjects);
             if (!response.Success)
             {
-                if (response.Message == MessageConstants.INVALID_INPUT) 
+                if (response.Message == MessageConstants.PROJECT_NOT_FOUND)
                 {
-                    return BadRequest("Project amount must be non-negative");
+                    return NotFound();
                 }
+                return BadRequest(response);
             }
             return Ok(response);
         }
@@ -265,7 +249,7 @@ namespace SU_COIN_BACK_END.Controllers
         }
 
         [HttpPut]
-        [Route("ViewerReply/{id}/{reply}")]
+        [Route("ViewerReply/{id:int}/{reply}")]
         public async Task<IActionResult> ReplyProjectPreview(int id, bool reply)
         {            
             ServiceResponse<string> response = await _projectService.ReplyProjectPreview(id, reply);
@@ -281,10 +265,10 @@ namespace SU_COIN_BACK_END.Controllers
         }
 
         [HttpPut]
-        [Route("[action]/{id}")]
-        public async Task<IActionResult> StartAuction(int id)
-        {            
-            ServiceResponse<bool> response = await _projectService.StartAuction(id);
+        [Route("[action]/{id:int}")]
+        public async Task<IActionResult> CreateAuction(int id)
+        {
+            ServiceResponse<string> response = await _projectService.CreateAuction(id);
             if (!response.Success)
             {
                 if (response.Message == MessageConstants.PROJECT_NOT_FOUND)
@@ -292,6 +276,26 @@ namespace SU_COIN_BACK_END.Controllers
                     return NotFound();
                 }
                 if (response.Message == MessageConstants.PROJECT_NOT_ACCEPTED_BY_VIEWER || response.Message == MessageConstants.PROJECT_PERMISSION_MANAGE_DENIED)
+                {
+                    return Forbid();
+                }
+                return BadRequest(response);
+            }
+            return Ok(response);
+        }
+
+        [HttpPut]
+        [Route("[action]/{id:int}")]
+        public async Task<IActionResult> StartAuction(int id)
+        {            
+            ServiceResponse<string> response = await _projectService.StartAuction(id);
+            if (!response.Success)
+            {
+                if (response.Message == MessageConstants.PROJECT_NOT_FOUND)
+                {
+                    return NotFound();
+                }
+                if (response.Message == MessageConstants.PROJECT_PERMISSION_MANAGE_DENIED)
                 {
                     return Forbid();
                 }
