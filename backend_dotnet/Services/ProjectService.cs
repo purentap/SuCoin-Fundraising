@@ -47,6 +47,9 @@ namespace SU_COIN_BACK_END.Services {
         private string GetUsername() => _httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.Name);
         private string GetUserRole() => _httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.Role);
         private string GetUserAddress() => (_httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.Surname));
+
+        private const int MAXIMUM_ALLOWED_PENDING_PROJECTS = 100;
+        private const int MAXIMUM_FILE_SIZE = 10000000; // 10 MB
        
         public async Task<ServiceResponse<string>> AddProject(ProjectDTO project)
         {
@@ -58,31 +61,42 @@ namespace SU_COIN_BACK_END.Services {
                 response.Message = MessageConstants.USER_IS_BLACKLISTED;
                 return response;
             }
+            if (Encoding.ASCII.GetBytes(project.FileHex).Count() > MAXIMUM_FILE_SIZE)
+            {
+                response.Success = false;
+                response.Message = $"Maximum file size is exceeded. Please upload a file which has size smaller than {MAXIMUM_FILE_SIZE}";
+                return response;
+            }
+            if (project.ProjectName == null)
+            {
+                response.Success = false;
+                response.Message = "Project name is not added";
+                return response;
+            }
+            if (await ProjectNameExists(project.ProjectName))
+            {
+                response.Success = false;
+                response.Message = MessageConstants.PROJECT_NAME_EXISTS;
+                return response;
+            }
+            if (await _context.Projects.Where(project => project.Status == ProjectStatusConstants.PENDING).CountAsync() > MAXIMUM_ALLOWED_PENDING_PROJECTS)
+            {
+                response.Success = false;
+                response.Message = "Viewer is busy. Please try again later";
+                return response;
+            }
+
             try
             {
-                if (project.ProjectName == null)
-                {
-                    response.Success = false;
-                    response.Message = "Project name is not added";
-                    return response;
-                }
-                else if (await ProjectNameExists(project.ProjectName))
-                {
-                    response.Success = false;
-                    response.Message = MessageConstants.PROJECT_NAME_EXISTS;
-                    return response;
-                }
-
-
                 /* Project has not been created in the database. Create the new project */
 
                 var uploadResult = await UploadToIpfs(project.FileHex, project.ImageUrl);
-                Console.WriteLine("aaaaaaa",uploadResult);
-
+                Console.WriteLine($"Upload Result: {uploadResult}"); // Debuging
 
                 var hash = uploadResult?["Hash"];
                 Console.WriteLine(hash);
-                if (hash == null) {
+                if (hash == null) 
+                {
                     response.Success = false;
                     response.Message = "IPFS upload failed";
                     return response;
