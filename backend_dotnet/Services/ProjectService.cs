@@ -109,7 +109,7 @@ namespace SU_COIN_BACK_END.Services {
                     ProjectName = request.ProjectName,
                     Date = DateTime.Now,
                     ProposerAddress = GetUserAddress(),
-                    FileHex = ipfsHash,
+                    FileHash = ipfsHash,
                     ProjectDescription = request.ProjectDescription,
                     MarkDown = request.MarkDown                    
                 };
@@ -219,7 +219,7 @@ namespace SU_COIN_BACK_END.Services {
 
 
                 /* Remove the file (unpin) from ipfs if it still exists*/
-                await RemoveFromIpfs(SimpleBase.Base58.Bitcoin.Encode(Convert.FromHexString("1220" + project.FileHex)).ToString());
+                await RemoveFromIpfs(SimpleBase.Base58.Bitcoin.Encode(Convert.FromHexString("1220" + project.FileHash)).ToString());
                 
                 /* Remove both the current project and the related project permissions */
                 _context.ProjectPermissions.RemoveRange(_context.ProjectPermissions.Where(c => c.ProjectID == id));
@@ -326,7 +326,7 @@ namespace SU_COIN_BACK_END.Services {
 
                 if (areOnlyAuctionsStarted)
                 {
-                    hashes = await _context.Projects.Where(project => project.IsAuctionStarted).Select(project => project.FileHex).ToListAsync();
+                    hashes = await _context.Projects.Where(project => project.IsAuctionStarted).Select(project => project.FileHash).ToListAsync();
                 }
                 else // all projects
                 {
@@ -336,7 +336,7 @@ namespace SU_COIN_BACK_END.Services {
                         response.Success = false;
                         return response;
                     }
-                    hashes = await _context.Projects.Select(project => project.FileHex).ToListAsync();
+                    hashes = await _context.Projects.Select(project => project.FileHash).ToListAsync();
                 }
                         
                 if (hashes == null) 
@@ -539,7 +539,7 @@ namespace SU_COIN_BACK_END.Services {
                 {
                     throw new Exception(MessageConstants.CHAIN_INTERACTION_FAIL);
                 }
-                if (project.FileHex == null)
+                if (project.FileHash == null)
                 {
                     response.Success = false;
                     response.Message = MessageConstants.PROPOSAL_FILE_NOT_FOUND;
@@ -550,7 +550,7 @@ namespace SU_COIN_BACK_END.Services {
 
                 for (int i = 0; i < response_chain.Data.Count; i++)
                 {   
-                    bool isValidHash = ((response_chain.Data[i].Log.Topics[1]).ToString() == ("0x"+ project.FileHex).ToLower());
+                    bool isValidHash = ((response_chain.Data[i].Log.Topics[1]).ToString() == ("0x"+ project.FileHash).ToLower());
                     bool isProjectApproved = response_chain.Data[i].Event.isApproved;
 
                     if (isValidHash)
@@ -637,7 +637,7 @@ namespace SU_COIN_BACK_END.Services {
                         ProjectID = p.ProjectID, 
                         ProjectName = p.ProjectName, 
                         Date = p.Date, 
-                        FileHex = p.FileHex,
+                        FileHash = p.FileHash,
                         ProjectDescription = p.ProjectDescription, 
                         Rating = p.Rating, 
                         Status = p.Status

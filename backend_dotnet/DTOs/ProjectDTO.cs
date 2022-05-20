@@ -13,6 +13,6 @@ namespace SU_COIN_BACK_END.DTOs
         public double Rating { get; set; } = 0;
         public string Status { get; set; } = ProjectStatusConstants.PENDING;
         public string MarkDown { get; set; } = "";
-        public string FileHex { get; set; } = "";
+        public string FileHash { get; set; } = "";
     }
 }
