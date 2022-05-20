@@ -12,6 +12,7 @@ using SU_COIN_BACK_END.SU_COIN_INTERFACE;
 using SU_COIN_BACK_END.Models;
 using SU_COIN_BACK_END.DTOs;
 using SU_COIN_BACK_END.Response;
+using SU_COIN_BACK_END.Request;
 using SU_COIN_BACK_END.Constants.MessageConstants;
 
 namespace SU_COIN_BACK_END.Controllers
@@ -103,9 +104,9 @@ namespace SU_COIN_BACK_END.Controllers
 
         [HttpPost]
         [Route("Add")]
-        public async Task<IActionResult> AddProject(ProjectDTO project)
+        public async Task<IActionResult> AddProject(ProjectRequest project)
         {
-            ServiceResponse<string> response = await _projectService.AddProject(project);
+            ServiceResponse<ProjectDTO> response = await _projectService.AddProject(project);
             if (!response.Success)
             {
                 if (response.Message == MessageConstants.PROJECT_NOT_FOUND)
@@ -122,7 +123,7 @@ namespace SU_COIN_BACK_END.Controllers
                 }
                 return BadRequest(response);
             }
-            return Created($"projects/{response.Data}", response);
+            return Created($"projects/{response.Data.ProjectID}", response);
         }
 
         [HttpPut]

@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using SU_COIN_BACK_END.Models;
 using SU_COIN_BACK_END.SU_COIN_INTERFACE;
 using SU_COIN_BACK_END.Response;
+using SU_COIN_BACK_END.Request;
 using SU_COIN_BACK_END.DTOs;
 using SU_COIN_BACK_END.Data;
 using SU_COIN_BACK_END.Constants.MessageConstants;
@@ -51,9 +52,9 @@ namespace SU_COIN_BACK_END.Services {
         private const int MAXIMUM_ALLOWED_PENDING_PROJECTS = 100;
         private const int MAXIMUM_FILE_SIZE = 10000000; // 10 MB
        
-        public async Task<ServiceResponse<string>> AddProject(ProjectDTO project)
+        public async Task<ServiceResponse<ProjectDTO>> AddProject(ProjectRequest request)
         {
-            ServiceResponse<string> response = new ServiceResponse<string>();
+            ServiceResponse<ProjectDTO> response = new ServiceResponse<ProjectDTO>();
 
             if (GetUserRole() == UserRoleConstants.BLACKLIST) 
             {
@@ -61,19 +62,19 @@ namespace SU_COIN_BACK_END.Services {
                 response.Message = MessageConstants.USER_IS_BLACKLISTED;
                 return response;
             }
-            if (Encoding.ASCII.GetBytes(project.FileHex).Count() > MAXIMUM_FILE_SIZE)
+            if (Encoding.ASCII.GetBytes(request.FileHex).Count() > MAXIMUM_FILE_SIZE)
             {
                 response.Success = false;
                 response.Message = $"Maximum file size is exceeded. Please upload a file which has size smaller than {MAXIMUM_FILE_SIZE}";
                 return response;
             }
-            if (project.ProjectName == null)
+            if (request.ProjectName == null)
             {
                 response.Success = false;
                 response.Message = "Project name is not added";
                 return response;
             }
-            if (await ProjectNameExists(project.ProjectName))
+            if (await ProjectNameExists(request.ProjectName))
             {
                 response.Success = false;
                 response.Message = MessageConstants.PROJECT_NAME_EXISTS;
@@ -89,7 +90,7 @@ namespace SU_COIN_BACK_END.Services {
             try
             {
                 /* Project has not been created in the database. Create the new project */
-                var uploadResult = await UploadToIpfs(project.FileHex, project.ImageUrl);
+                var uploadResult = await UploadToIpfs(request.FileHex, request.ImageUrl);
                 Console.WriteLine($"Upload Result: {uploadResult}"); // Debuging
 
                 var hash = uploadResult?["Hash"];
@@ -103,40 +104,44 @@ namespace SU_COIN_BACK_END.Services {
 
                 string ipfsHash = Convert.ToHexString(SimpleBase.Base58.Bitcoin.Decode(hash).ToArray()).Substring(4);
 
-                Project new_project = _mapper.Map<Project>(project);
-                new_project.FileHex = ipfsHash;
-                new_project.Date = DateTime.Now;
-                new_project.ProposerAddress = GetUserAddress();
+                Project new_project = new Project 
+                {
+                    ProjectName = request.ProjectName,
+                    Date = DateTime.Now,
+                    ProposerAddress = GetUserAddress(),
+                    FileHex = ipfsHash,
+                    ProjectDescription = request.ProjectDescription,
+                    MarkDown = request.MarkDown                    
+                };
 
                 await _context.Projects.AddAsync(new_project);
                 await _context.SaveChangesAsync();
 
                 /* For security reasons, we need to recheck the database and then assign the permission */
-                Project? dbProject = await _context.Projects.FirstOrDefaultAsync(c => c.ProjectName == project.ProjectName);
+                Project? dbProject = await _context.Projects.FirstOrDefaultAsync(c => c.ProjectName == new_project.ProjectName);
 
-                if (dbProject != null) // The project was added to the database successfully
-                {
-                    /* Since project was added successfully, add an owner to the project */
-                    ProjectPermission permission = new ProjectPermission
-                    {
-                        ProjectID = dbProject.ProjectID, 
-                        UserID = GetUserId(), 
-                        Role = UserPermissionRoleConstants.OWNER,
-                        IsAccepted = true 
-                    };
-
-                    await _context.ProjectPermissions.AddAsync(permission);
-                    await _context.SaveChangesAsync();
-
-                    response.Data = dbProject.ProjectName;
-                    response.Message = ipfsHash;
-                    response.Success = true;
-                }
-                else // The project could not be added, because some operations were applied to the project while adding the project to the database.
+                if (dbProject == null)  // The project was not added, because some operations were applied to the project while adding the project to the database.
                 {
                     response.Message = MessageConstants.PROJECT_ADD_FAIL;
                     response.Success = true;
+                    return response;
                 }
+                    
+                /* Since project was added successfully, add an owner to the project */
+                ProjectPermission permission = new ProjectPermission
+                {
+                    ProjectID = dbProject.ProjectID, 
+                    UserID = GetUserId(), 
+                    Role = UserPermissionRoleConstants.OWNER,
+                    IsAccepted = true 
+                };
+
+                await _context.ProjectPermissions.AddAsync(permission);
+                await _context.SaveChangesAsync();
+
+                response.Data = _mapper.Map<ProjectDTO>(dbProject);
+                response.Message = MessageConstants.OK;
+                response.Success = true;
             }
             catch (Exception e)
             {
