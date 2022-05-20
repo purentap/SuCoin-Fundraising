@@ -79,7 +79,7 @@ namespace SU_COIN_BACK_END.Services {
                 response.Message = MessageConstants.PROJECT_NAME_EXISTS;
                 return response;
             }
-            if (await _context.Projects.Where(project => project.Status == ProjectStatusConstants.PENDING).CountAsync() > MAXIMUM_ALLOWED_PENDING_PROJECTS)
+            if (await _context.Projects.Where(project => project.Status == ProjectStatusConstants.PENDING).CountAsync() == MAXIMUM_ALLOWED_PENDING_PROJECTS)
             {
                 response.Success = false;
                 response.Message = "Viewer is busy. Please try again later";
@@ -89,7 +89,6 @@ namespace SU_COIN_BACK_END.Services {
             try
             {
                 /* Project has not been created in the database. Create the new project */
-
                 var uploadResult = await UploadToIpfs(project.FileHex, project.ImageUrl);
                 Console.WriteLine($"Upload Result: {uploadResult}"); // Debuging
 

@@ -98,7 +98,7 @@ namespace SU_COIN_BACK_END.Controllers
                 }
                 return BadRequest(response);
             }
-            return Ok(response);
+            return StatusCode(StatusCodes.Status204NoContent);
         }
 
         [HttpPost]
@@ -115,6 +115,10 @@ namespace SU_COIN_BACK_END.Controllers
                 if (response.Message == MessageConstants.USER_IS_BLACKLISTED)
                 {
                     return Forbid();
+                }
+                if (response.Message == "Viewer is busy. Please try again later")
+                {
+                    return StatusCode(StatusCodes.Status503ServiceUnavailable, response);
                 }
                 return BadRequest(response);
             }
