@@ -133,7 +133,7 @@ const ProjectList = () => {
               projectDescription={project.projectDescription}
               projectStatus={project.status}
               projectRating={project.rating}
-              fileHex={project.fileHex}
+              fileHash={project.fileHash}
               projectID={project.projectID}
               />
             </div>

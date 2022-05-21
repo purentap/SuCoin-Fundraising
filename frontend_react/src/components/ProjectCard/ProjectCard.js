@@ -18,15 +18,15 @@ const ProjectCard = (props) => {
 
 
     useEffect(async () => {
-            setImage(await getFileFromIpfs(props.fileHex,"image"))
+            setImage(await getFileFromIpfs(props.fileHash,"image"))
           
       }, [])
     console.log(image.data)
 
     const getFile = async () => {
       
-        console.log(props.fileHex)
-      getFileFromIpfs(props.fileHex,"whitepaper").then(res => downloadFile(res.data))
+        console.log(props.fileHash)
+      getFileFromIpfs(props.fileHash,"whitepaper").then(res => downloadFile(res.data))
 
     
       const downloadFile = async (file) => {

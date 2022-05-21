@@ -95,9 +95,9 @@ const Project = ({navigation}) => {
     const signer = await provider.getSigner()
     const registerContract = await new ethers.Contract(abi.address, ethersAbi.abi, signer)
 
-    const hashResult = "0x" + project.fileHex
+    const hashResult = "0x" + project.fileHash
 
-    if (project.fileHex != undefined) {
+    if (project.fileHash != undefined) {
     
 
     const projInfo = await registerContract.projectsRegistered(hashResult)

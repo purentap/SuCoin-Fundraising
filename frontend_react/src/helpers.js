@@ -54,7 +54,7 @@ export const getFileFromIpfs = async (ipfsHash,filename) => {
   }
 
 
-export const hexToHash = (fileHex) => ("0x" + CryptoJS.SHA256(fileHex)).toString()
+export const hexToHash = (fileHash) => ("0x" + CryptoJS.SHA256(fileHash)).toString()
 
 
 export const shuffleArray = array => {

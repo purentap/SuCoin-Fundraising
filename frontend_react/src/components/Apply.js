@@ -108,7 +108,7 @@ const Apply = () => {
 			let response2 = new Promise((resolve, reject) => {
 				apiInstance
 					.post("/Project/Add", {
-						fileHex: fileToSubmit,
+						fileHash: fileToSubmit,
 						projectName: projectName,
 						projectDescription: projectDescription,
 						imageUrl: imageToSubmit,

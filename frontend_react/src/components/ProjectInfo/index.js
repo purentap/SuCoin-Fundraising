@@ -45,18 +45,18 @@ const ProjectInfo = ({ project, status, isWhitelisted, isOwner, projectId, setPr
 
 
   useEffect(async () => {
-    if (project.fileHex == undefined)
+    if (project.fileHash == undefined)
       return
-    const imageResult = await getFileFromIpfs(project.fileHex,"image")
+    const imageResult = await getFileFromIpfs(project.fileHash,"image")
     setImageURL(URL.createObjectURL(imageResult.data))
   },[project])
 
   useEffect(async () => {
     const CryptoJS = require('crypto-js');
 
-    if (project.fileHex == undefined)
+    if (project.fileHash == undefined)
       return
-    const hash = "0x" + project.fileHex
+    const hash = "0x" + project.fileHash
 
 
 
@@ -91,9 +91,9 @@ const ProjectInfo = ({ project, status, isWhitelisted, isOwner, projectId, setPr
   }
 
   const getFile = async () => {
-    let deneme = await getFileFromIpfs(project.fileHex,"whitepaper")
+    let deneme = await getFileFromIpfs(project.fileHash,"whitepaper")
     
-    getFileFromIpfs(project.fileHex,"whitepaper").then(res => downloadFile(res.data,projectId))
+    getFileFromIpfs(project.fileHash,"whitepaper").then(res => downloadFile(res.data,projectId))
 
   }
 
@@ -139,7 +139,7 @@ const ProjectInfo = ({ project, status, isWhitelisted, isOwner, projectId, setPr
 
 
       const CryptoJS = require('crypto-js');
-      const hash = "0x" + project.fileHex
+      const hash = "0x" + project.fileHash
 
       const provider = await new ethers.providers.Web3Provider(window.ethereum)
       const signer = await provider.getSigner()
@@ -161,7 +161,7 @@ const ProjectInfo = ({ project, status, isWhitelisted, isOwner, projectId, setPr
   const rejectProject = async () => {
     try {
       const CryptoJS = require('crypto-js');
-      const hash = "0x" + await CryptoJS.SHA256(project.fileHex).toString()
+      const hash = "0x" + await CryptoJS.SHA256(project.fileHash).toString()
       const provider = await new ethers.providers.Web3Provider(window.ethereum)
       const signer = await provider.getSigner()
 
@@ -196,7 +196,7 @@ const ProjectInfo = ({ project, status, isWhitelisted, isOwner, projectId, setPr
             rating: project.rating,
             status: project.status,
             markDown: project.markDown,
-            fileHex: project.fileHex
+            fileHash: project.fileHash
           })
         .then((res) => {
           console.log(res.data)

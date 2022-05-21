@@ -301,6 +301,7 @@ useEffect( async () => {
               
           </ProjectInvitationCard>
         ))}
+
         
         {projects.map((project) => (
           <ProjectsCard
@@ -309,7 +310,7 @@ useEffect( async () => {
             projectDescription={project.projectDescription}
             rating = {project.rating}
             projectID = {project.projectID}
-            fileHex = {project.fileHex}
+            fileHash = {project.fileHash}
             deleteFunction = {onDelete}
             invitationFunction = {onInvitation}
             editFunction = {onEdit}

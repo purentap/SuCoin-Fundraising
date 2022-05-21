@@ -11,11 +11,11 @@ const AuctionCard = (props) => {
     const [imageURL,setImageURL] = useState("")
 
     useEffect(async () =>  {
-        const resultImage = await getFileFromIpfs(props.fileHex,"image")
+        const resultImage = await getFileFromIpfs(props.fileHash,"image")
         setImageURL(URL.createObjectURL(resultImage.data))
     },[props])
 
-    console.log(props.fileHex)
+    console.log(props.fileHash)
     
   return (
     <Wrapper>

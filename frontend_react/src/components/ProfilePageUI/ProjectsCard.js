@@ -59,7 +59,7 @@ function ProjectsCard(props) {
   const [imageURL,setImageURL] = useState("");
 
   useEffect(async () => {
-    const imageResult = await getFileFromIpfs(props.fileHex,"image")
+    const imageResult = await getFileFromIpfs(props.fileHash,"image")
     setImageURL(URL.createObjectURL(imageResult.data))
   
 }, [])
@@ -136,7 +136,7 @@ function ProjectsCard(props) {
   const onDownloadPDF = async () => {
     try {
       console.log(props)
-      getFileFromIpfs(props.fileHex,"whitepaper").then(res => downloadFile(res.data,props.projectID))
+      getFileFromIpfs(props.fileHash,"whitepaper").then(res => downloadFile(res.data,props.projectID))
     }
     catch (error) {
       console.log(error);
