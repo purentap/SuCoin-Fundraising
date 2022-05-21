@@ -140,7 +140,7 @@ namespace SU_COIN_BACK_END.Services {
                 await _context.SaveChangesAsync();
 
                 response.Data = _mapper.Map<ProjectDTO>(dbProject);
-                response.Message = MessageConstants.OK;
+                response.Message = ipfsHash;
                 response.Success = true;
             }
             catch (Exception e)
