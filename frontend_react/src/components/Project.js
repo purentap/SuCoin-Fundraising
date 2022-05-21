@@ -4,10 +4,11 @@ import API from '../API';
 import { useNavigate } from 'react-router-dom';
 // Components
 import BreadCrumb from './BreadCrumb';
-import Grid from './Grid';
+//import Grid from './Grid';
 import Spinner from './Spinner';
 import ProjectInfo from './ProjectInfo/index';
 import ProjectInfoBar from './ProjectInfoBar';
+
 import Actor from './ProjectMember';
 import MDEditor from '@uiw/react-md-editor';
 // Hook
@@ -29,6 +30,9 @@ import { ethers } from 'ethers';
 import ethersAbi from '../contracts_hardhat/artifacts/contracts/ProjectRegister.sol/ProjectRegister.json'
 import abi from '../abi/project.json'
 
+import { Grid } from "@material-ui/core/";
+import dummyimg from '../images/dummyimg.png';
+import {getFileFromIpfs} from "../helpers.js"
 
 const mkdStr = `# {Freelance Finder Version 2}
 ## Project Abstact
@@ -44,7 +48,7 @@ details part 2
 
 `;
 
-const Project = ({navigation}) => {
+const Project = ({ navigation }) => {
   const { projectId } = useParams();
   const [state, setState] = useState({ status: "default" })
   const [markdown, setMarkdown] = useState(mkdStr);
@@ -54,7 +58,8 @@ const Project = ({navigation}) => {
   const [isOwner, setIsowner] = useState(false);
   const [owner, setOwner] = useState();
   const [signer, setSigner] = useState()
-  const [hash,setHash] = useState("")
+  const [hash, setHash] = useState("")
+  const [imageURL,setImageURL] = useState('');
 
   const [project, setProject] = useState({
     rating: 0,
@@ -65,7 +70,7 @@ const Project = ({navigation}) => {
     status: "",
   });
 
- 
+
 
   useEffect(async () => {
     const apiInstance = axios.create({
@@ -95,12 +100,9 @@ const Project = ({navigation}) => {
     const signer = await provider.getSigner()
     const registerContract = await new ethers.Contract(abi.address, ethersAbi.abi, signer)
 
-    const hashResult = "0x" + project.fileHash
-
-    if (project.fileHash != undefined) {
-    
-
+    const hashResult = "0x" + await CryptoJS.SHA256(project.fileHex).toString()
     const projInfo = await registerContract.projectsRegistered(hashResult)
+
 
     if (await registerContract.statusList(await signer.getAddress()) == 1) {
       setIswhitelisted(true)
@@ -112,8 +114,7 @@ const Project = ({navigation}) => {
     setOwner(await projInfo.proposer)
     setSigner(await signer.getAddress())
     setHash(hashResult)
-  }
-  
+
   }, [project])
 
 
@@ -162,41 +163,92 @@ const Project = ({navigation}) => {
 
     }
   }
-  const navigate = useNavigate();
 
+  const getFile = async () => {
+      
+    console.log(project.fileHash)
+  getFileFromIpfs(project.fileHash,"whitepaper").then(res => downloadFile(res.data))
+
+
+  const downloadFile = async (file) => {
+    const reader = new FileReader()
+
+  
+
+    reader.readAsText(file);
+    reader.onloadend = async () => {
+      const data = window.URL.createObjectURL(file);
+      const tempLink = await document.createElement('a');
+      tempLink.href = data;
+      tempLink.download = "Project_#" + project.projectID + ".pdf"; // some props receive from the component.
+      tempLink.click();
+    }
+  }
+}
+
+  
+
+  useEffect(async () => {
+    if (project.fileHash == undefined)
+      return
+    const imageResult = await getFileFromIpfs(project.fileHash,"image")
+    setImageURL(URL.createObjectURL(imageResult.data))
+  },[project])
+
+  const navigate = useNavigate();
   return (
     <div>
-      <BreadCrumb projectTitle={project.projectName} />
-      <ProjectInfo setProject={setProject} projectId={projectId} project={project} status={state.status} isOwner={isOwner} isWhitelisted={isWhitelisted} />
-      {
-        isOwner ?
 
-          <Container style={{ width: "70%", paddingLeft: "35%" }}>
-            <Row >
-              <Col style={{ justifyContent: "center", alignItems: "center" }}>
-                <Button variant="dark" onClick={() => navigate("/createTokens",{state:{hash: hash}})}> Create Tokens</Button>
-              </Col>
+      <div className="sectionName" style={{ paddingLeft: "200px", paddingTop: "25px", paddingBottom: "25px" }}>Project Details</div>
 
-              <Col style={{ justifyContent: "center", alignItems: "center" }}>
-                <Button variant="dark" onClick={() => navigate("/createAuction",
-                  {
-                    state:{
-                    hash: hash
-                    }
-                  })}> Create Auction</Button>
-              </Col>
+      <Grid container spacing={0}>
+        <Grid item xs style={{ display: "flex", flexDirection: "column", justifyContent: 'space-between' }}>
+          <div className="project-image" style={{ display: "flex", flexDirection: "row", justifyContent: "center" }}>
+            <img src={imageURL ?? dummyimg} alt="" style={{ borderRadius: '20px' }} />
+          </div>
+          <br></br>
+          <div className="sectionName" style={{ textAlign: 'center' }}>{project.projectName}</div>
+          <br></br>
+          <div className="simpletext" style={{ textAlign: 'center', fontSize: '800', fontWeight: '500' }}>{project.projectDescription}</div>
+          <br></br>
+          <div style={{ display: "flex", flexDirection: "row", justifyContent: "center" }}>
+            <button className="button" onClick={getFile}>
+              <a>
+                Download Project PDF
+              </a>
+            </button>
+          </div>
+        </Grid>
 
-            </Row>
-          </Container > :
-          <></>}
+        <Grid item xs>
+          <ProjectInfo
+            setProject={setProject}
+            projectId={projectId}
+            project={project}
+            status={state.status}
+            isOwner={isOwner}
+            isWhitelisted={isWhitelisted}
+            imageUrl={project.imageURL}
+            projectName={project.projectName}
+            projectDescription={project.projectDescription}
+            proposalDate={project.date}
+            projectStatus={project.status}
+            approvalRatio={"b"}
+            approvedVotes={"d"}
+            fileHash={project.fileHash}
+            rejectedVotes={"e"}
+            tokenCount={"N/A"}
+            tokenName={"N/A"}
+            tokenPrice={"N/A"}
+            isAuctionCreated={project.isAuctionCreated}
+            onClickCreateToken={() => navigate("/createTokens", { state: { hash: hash } })}
+            onClickCreateAuction={() => navigate("/createAuction", { state: { hash: hash } })}
+          />
+        </Grid>
+      </Grid>
 
-      <br></br>
-      <br></br>
-      <ProjectInfoBar
-        time={"movie.id"}
-        budget={"movie.id"}
-        revenue={"movie.id"}
-      />
+
+
       <br></br>
       {isOwner ?
         <div className="container">

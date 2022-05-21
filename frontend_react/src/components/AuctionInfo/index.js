@@ -23,14 +23,16 @@ import FCFSAuction from "../../contracts_hardhat/artifacts/contracts/Upgradeable
 
 import WrapperToken from "../../contracts_hardhat/artifacts/contracts/WrapperToken.sol/WrapperToken.json"
 
-import {numberToFixedNumber  } from '../../helpers'; 
+import { numberToFixedNumber } from '../../helpers';
+
+import { Divider, Grid, TextField } from "@material-ui/core/";
 
 const BiLiraAddress = "0x8f5736aF17F2F071B476Fd9cFD27a1Bd8D7E7F15";
 
 const maestro = { address: "0x83193Cdb4Eb270C294E7547C23EA1f55A2f78d91" }
 const SUCoin = { address: "0xb6e466F4F0ab1e2dA2E8237F38B2eCf6278894Ce" }
 
-const AuctionInfo = ({ auction, projectId, price, tokenDist, deposit }) => {
+const AuctionInfo = ({ auction, projectId, price, tokenDist, deposit, totalRaise, startingDate, duration, endingDate, remainingTime, auctionType ,tokenName}) => {
 
   const [tokens, setTokens] = useState(["SUCoin", "BiLira"])
   const [amount, setAmount] = useState();
@@ -43,7 +45,7 @@ const AuctionInfo = ({ auction, projectId, price, tokenDist, deposit }) => {
       const provider = await new ethers.providers.Web3Provider(window.ethereum);
       const signer = await provider.getSigner();
 
-      
+
       const value = numberToFixedNumber(amount)
 
 
@@ -81,70 +83,65 @@ const AuctionInfo = ({ auction, projectId, price, tokenDist, deposit }) => {
 
   };
 
-  
+
 
   return (
-    <Wrapper backdrop={"#ccc"}>
-      <Content>
-        <Text>
-
-
+    <Wrapper>
+      <Grid container spacing={0}>
+        <Grid item xs style={{ display: "flex", flexDirection: "column", alignItems: "stretch", justifyContent: 'space-between' }}>
+          <h5 style={{ display: "flex", flexDirection: "row", justifyContent: "center" }}>
+            1 SUCoin = 1 BiLira
+          </h5>
+          <br></br>
+          <h5>
+            Total Raise: <p>{deposit} SUCoin</p>{" "}
+          </h5>
+          <h5>
+            Total Supply: <p>{tokenDist} {tokenName}</p>{" "}
+          </h5>
+          <h5>
+            Tokens Sold: <p>{deposit} {tokenName} </p>{" "}
+          </h5>
           <div>
-            <div>
-              <h1>{"Auction"}</h1>
-            </div>
-
-            <div className='rating-directors'>
-              <div className='rating-directors'>
-                <h3>Total Supply</h3>
-                <div className='score'>{Number(tokenDist).toFixed(2)}</div>
-              </div>
-              <div className='rating-directors'>
-                <h3>Token Price</h3>
-                <div className='score'>{Number(price).toFixed(5)}</div>
-              </div>
-
-              <div className='rating-directors'>
-                <h3>Tokens Sold</h3>
-                <div className='score'>{Number(deposit).toFixed(3)}</div>
-              </div>
-            </div>
-
-
-            <Container style={{ width: "70%", paddingLeft: "35%" }}>
-              <Row className="g-2">
-                <Col md>
-                  <FloatingLabel controlId="floatingInputGrid" label={tokens[0]}>
-                    <Form.Control onChange={handleInput} name="amount" type="text" value={amount} />
-                  </FloatingLabel>
-                </Col>
-              </Row >
-              <Row className="g-2">
-                <Col md>
-                  <FloatingLabel controlId="floatingInputGrid" label={"Project Token"}>
-                    <Form.Control onChange={handleInput} name="amount2" type="text" value={((amount / price) || 0)} />
-                  </FloatingLabel>
-                </Col>
-              </Row >
-              <Row >
-                <Col style={{ justifyContent: "center", alignItems: "center" }}>
-                  <Button variant="dark" onClick={() => buyTokens()}> Buy Tokens</Button>
-                </Col>
-
-                <Col style={{ justifyContent: "center", alignItems: "center" }}>
-
-                </Col>
-
-              </Row>
-            </Container >
-
+            <h5>
+              Token Price:
+            </h5>
+            <p style={{ display: "flex", flexDirection: "row", justifyContent: "center" }}>{price} SUCoin</p>
           </div>
-
-
-        </Text>
-
-      </Content>
-    </Wrapper >
+          <div style={{ display: "flex", flexDirection: "row", justifyContent: "space-around" }}>
+            <FloatingLabel controlId="floatingInputGrid" label={"Enter " + tokens[0]}>
+              <Form.Control onChange={handleInput} name="amount" type="text" value={amount} />
+            </FloatingLabel>
+            <FloatingLabel controlId="floatingInputGrid" label={"Project Token"}>
+              <Form.Control onChange={handleInput} name="amount2" type="text" value={((amount / price) || 0)} />
+            </FloatingLabel>
+          </div>
+          <br></br>
+          <div style={{ display: "flex", flexDirection: "row", justifyContent: "center" }}>
+            <button className="button" onClick={() => buyTokens()}>
+              <a>
+                Buy Token(s)
+              </a>
+            </button>
+          </div>
+        </Grid>
+        <Divider orientation="vertical" component="line" variant="middle" light={false} flexItem />
+        <Grid item xs style={{ display: "flex", flexDirection: "column", alignItems: "stretch", justifyContent: 'space-between' }}>
+          <h5>
+            Auction Type: <p>{auctionType}</p>{" "}
+          </h5>
+          <h5>
+            Starting Date: <p>{new Date(startingDate * 1000).toString()}</p>{" "}
+          </h5>
+          <h5>
+            Ending Date: <p>{new Date(endingDate * 1000).toString()}</p>{" "}
+          </h5>
+          <h5>
+            Remaining Time: <p>{new Date((new Date(endingDate * 1000) - Date.now())).getSeconds()}</p>{" "}
+          </h5>
+        </Grid>
+      </Grid>
+    </Wrapper>
   );
 
 }

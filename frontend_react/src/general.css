@@ -2,10 +2,13 @@
 
 *{
     font-family: 'Montserrat', sans-serif;
+    
 }
 
 .home-page{
     font-family: 'Montserrat', sans-serif;
+    width: 90%;
+    margin: auto;
 }
 
 .projects-page{
@@ -13,9 +16,13 @@
 }
 
 
+
+
 .app{
     background-color: #D9D8E1;
     font-family: 'Montserrat', sans-serif;
+    margin: auto;
+    min-height: 100vh;
 }
 .courasel{
     display: flex;
@@ -82,5 +89,37 @@
 
 .grid-container{
     display: grid;
-    grid-template-columns: auto auto auto;
+    grid-template-columns: auto auto auto auto;
+    margin: auto;
+}
+
+.grid-container >div{
+    margin: auto;
+}
+.rating-stars{
+    margin: 10px auto;
+}
+.button{
+    margin:1rem;
+    margin-top: 0;
+    color: #2f2d2e;
+    font:bold;
+    background-color: white;
+    border: 2px solid #8e00b9;
+    padding: 0.6rem;
+    border-radius: 6px;
+    text-align: center;
+    transition-duration: 0.5s;
+    animation: ease-in-out; 
+}
+
+.button:hover{
+    background: linear-gradient(to left, #2d00f7, #ff0291);
+    transform: scale(1.2);
+    border:none;
+    color:white;
+}
+
+.auction-info > div{
+    margin: auto;
 }

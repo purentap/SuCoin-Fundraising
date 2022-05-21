@@ -11,6 +11,7 @@ import NoImage from '../../images/no_image.jpg';
 import { Wrapper, Content, Text } from './ProjectInfo.styles';
 import Web3 from 'web3';
 
+
 import ProjectRegister from '../../abi/project.json'
 import Button from 'react-bootstrap/Button'
 
@@ -23,15 +24,32 @@ import ethersAbi from '../../contracts_hardhat/artifacts/contracts/ProjectRegist
 import abi from '../../abi/project.json'
 import { useEffect } from 'react';
 
+import { Divider, Grid } from "@material-ui/core/";
+import { useNavigate } from 'react-router-dom';
+
 import Form from 'react-bootstrap/Form'
 import Row from 'react-bootstrap/Row'
 import Col from 'react-bootstrap/Col'
 import Container from 'react-bootstrap/Col'
 
-import {getFileFromIpfs} from "../../helpers.js"
-import { UrlJsonRpcProvider } from '@ethersproject/providers';
-
-const ProjectInfo = ({ project, status, isWhitelisted, isOwner, projectId, setProject }) => {
+const ProjectInfo = ({ setProject,
+  projectId,
+  project,
+  status,
+  isOwner,
+  isWhitelisted,
+  fileHash,
+  proposalDate,
+  projectStatus,
+  approvalRatio,
+  approvedVotes,
+  rejectedVotes,
+  tokenCount,
+  tokenName,
+  tokenPrice,
+  isAuctionCreated,
+  onClickCreateToken,
+  onClickCreateAuction }) => {
 
   const [approveVotes, setApprove] = useState()
   const [rejectVotes, setReject] = useState()
@@ -41,24 +59,23 @@ const ProjectInfo = ({ project, status, isWhitelisted, isOwner, projectId, setPr
 
   const [projectName, setName] = useState('');
   const [projectDescription, setDescription] = useState('');
-  const [imageURL,setImageURL] = useState('');
+  const [projectImg, setImg] = useState('');
 
-
-  useEffect(async () => {
-    if (project.fileHash == undefined)
-      return
-    const imageResult = await getFileFromIpfs(project.fileHash,"image")
-    setImageURL(URL.createObjectURL(imageResult.data))
-  },[project])
+  const navigate = useNavigate();
 
   useEffect(async () => {
     const CryptoJS = require('crypto-js');
 
-    if (project.fileHash == undefined)
+    if (fileHash == undefined)
       return
-    const hash = "0x" + project.fileHash
 
+    console.log(fileHash)
 
+    const tempHash = "0x" + fileHash
+
+    setHash(tempHash)
+
+    
 
     const provider = await new ethers.providers.Web3Provider(window.ethereum)
 
@@ -67,7 +84,8 @@ const ProjectInfo = ({ project, status, isWhitelisted, isOwner, projectId, setPr
     var registerContract = await new ethers.Contract(abi.address, ethersAbi.abi, signer)
     var threshold = await registerContract.threshold()
     var wlCount = await registerContract.whitelistedCount()
-    const votes = await registerContract.projectsRegistered(hash)
+    console.log(tempHash)
+    const votes = await registerContract.projectsRegistered(tempHash)
 
     setApprove(await votes.approved.toString())
     setReject(await votes.rejected.toString())
@@ -90,12 +108,7 @@ const ProjectInfo = ({ project, status, isWhitelisted, isOwner, projectId, setPr
     var carContract = await new web3.eth.Contract(carAbi, carContractAddress);
   }
 
-  const getFile = async () => {
-    let deneme = await getFileFromIpfs(project.fileHash,"whitepaper")
-    
-    getFileFromIpfs(project.fileHash,"whitepaper").then(res => downloadFile(res.data,projectId))
 
-  }
 
   const changeProjectStatus = async () => {
     const apiInstance = axios.create({
@@ -120,26 +133,18 @@ const ProjectInfo = ({ project, status, isWhitelisted, isOwner, projectId, setPr
 
 
 
-  const downloadFile = async (file) => {
-    const reader = new FileReader()
+
+
+
+
   
 
-    reader.readAsText(file);
-    reader.onloadend = async () => {
-      const data = window.URL.createObjectURL(file);
-      const tempLink = await document.createElement('a');
-      tempLink.href = data;
-      tempLink.download = "Project_#" + projectId + ".pdf"; // some props receive from the component.
-      tempLink.click();
-    }
-  }
 
   const approveProject = async () => {
     try {
 
 
       const CryptoJS = require('crypto-js');
-      const hash = "0x" + project.fileHash
 
       const provider = await new ethers.providers.Web3Provider(window.ethereum)
       const signer = await provider.getSigner()
@@ -161,7 +166,6 @@ const ProjectInfo = ({ project, status, isWhitelisted, isOwner, projectId, setPr
   const rejectProject = async () => {
     try {
       const CryptoJS = require('crypto-js');
-      const hash = "0x" + await CryptoJS.SHA256(project.fileHash).toString()
       const provider = await new ethers.providers.Web3Provider(window.ethereum)
       const signer = await provider.getSigner()
 
@@ -193,6 +197,7 @@ const ProjectInfo = ({ project, status, isWhitelisted, isOwner, projectId, setPr
             projectID: projectId,
             projectName: projectName,
             projectDescription: projectDescription,
+            imageUrl: projectImg,
             rating: project.rating,
             status: project.status,
             markDown: project.markDown,
@@ -241,114 +246,82 @@ const ProjectInfo = ({ project, status, isWhitelisted, isOwner, projectId, setPr
 
     if (name === 'name') setName(value);
     if (name === 'description') setDescription(value);
+    if (name === 'imgUrl') setImg(value);
 
   };
 
-  
+  const whitelistesButtonGroup = (isWhiteListed) => {
+
+    return (isWhiteListed ?
+        <div style={{ display: "flex", flexDirection: "row", justifyContent: "center" }}>
+            <button className="accept-button" onClick={approveProject}>
+                <a>
+                    Approve
+                </a>
+            </button>
+            <button className="reject-button" onClick={rejectProject}>
+                <a>
+                    Reject
+                </a>
+            </button>
+        </div> : null
+    )
+}
+
+const ownerButtonGroup = (isOwner, isAuctionCreated , project) => {
+
+    return (isOwner ?
+        <div style={{ display: "flex", flexDirection: "row", justifyContent: "center" }}>
+            <button className="button" onClick={onClickCreateToken}>
+                <a>
+                    Create Tokens
+                </a>
+            </button>
+            <button className="button" onClick={!isAuctionCreated ? onClickCreateToken : navigate('/auction/' + projectId, {state:project})}>
+                <a href={!isAuctionCreated ? '/projects/' + projectId : null}>
+                    {isAuctionCreated ? "Start Auction" : "Create Auction"}
+                </a>
+            </button>
+        </div> : null
+    )
+}
+
   return (
-    <Wrapper backdrop={"#ccc"}>
-      <Content>
-        <Thumb style={{ alignItems: "center" }}
-          image={
-            imageURL ?? NoImage
-
-          }
-          clickable={false}
-          alt='movie-thumb'
-        />
-
-        <Text>
-          {
-            isEditing ?
-
-              <div>
-
-
-                <Form>
-                  <Form.Group className="mb-3" controlId="formBasicEmail">
-                    <Form.Label>Enter Project Name</Form.Label>
-                    <Form.Control name="name" onChange={handleInput} type="email" placeholder={project.projectName} />
-                  </Form.Group>
-                </Form>
-
-
-                <Form>
-                  <Form.Group className="mb-3" controlId="floatingTextarea2">
-                    <Form.Label>Enter Project Description</Form.Label>
-                    <Form.Control onChange={handleInput} type="email" placeholder={project.projectDescription}
-                      name="description"
-                      as="textarea"
-                      placeholder="Enter Project Desription Here"
-                      style={{ height: '150px' }} />
-                  </Form.Group>
-                </Form>
-
-          
-                <Button variant="dark" onClick={() => submitChanges()}>Submit Changes</Button>
-              </div>
-              :
-              <div>
-                <div>
-                  <h1>{project.projectName}</h1>
-                  <h3>About the Project</h3>
-
-                  <p>{project.projectDescription}</p>
-                </div>
-
-
-                <Button variant="dark" onClick={() => getFile()}>Download PDF</Button>
-
-                <div className='rating-directors'>
-                  <div className='rating-directors'>
-                    <h3>Approve Votes</h3>
-                    <div className='score'>{approveVotes}/{votesNeeded}</div>
-                  </div>
-
-                  <div className='rating-directors'>
-                    <h3>Reject Votes</h3>
-                    <div className='score'>{rejectVotes}/{votesNeeded}</div>
-                  </div>
-                </div>
-
-                {isWhitelisted ?
-                  <div >
-                    <h3>    Vote </h3>
-                    <Button variant="success" onClick={() => approveProject()}>Approve</Button>
-
-                    <Button variant="danger" onClick={() => rejectProject()}>Reject</Button>
-
-                  </div>
-                  : <div></div>
-                }
-                <div style={{ padding: "60px 0px", marginLeft: "" }}>
-                  {status == "authority" ?
-                    <form onSubmit={addWhitelist}>
-                      <label>
-                        Whitelist to Add:
-                        <input type="text" name="name" />
-                      </label>
-                      <input type="submit" value="Submit" />
-                    </form>
-                    : <div></div>
-                  }
-                  {isOwner ?
-                    <div >
-                      <Button variant="dark" onClick={() => showEdit()}>Edit Project</Button>
-                    </div>
-                    : <div></div>
-                  }
-
-                </div>
-
-
-              </div>
-
-          }
-
-        </Text>
-
-      </Content>
-    </Wrapper>
+    <Wrapper>
+            <Grid container spacing={0}>
+                <Grid item xs style={{ justifyContent: 'space-between' }}>
+                    <h5>
+                        Proposal Date: <p>{proposalDate ? proposalDate.substring(0, proposalDate.indexOf("T")) : null}</p>{" "}
+                    </h5>
+                    <h5>
+                        Project Status: <p>{projectStatus}</p>{" "}
+                    </h5>
+                    <h5>
+                        Approval Ratio: <p>{(parseInt(approveVotes) / (parseInt(approveVotes) + parseInt(rejectVotes)))* 100}% approval from professors</p>{" "}
+                    </h5>
+                    <h5>
+                        Approved Votes Count: <p>{approveVotes} vote{approveVotes>1 ? "s" : null} out of {parseInt(approveVotes) + parseInt(rejectVotes)} votes</p>{" "}
+                    </h5>
+                    <h5>
+                        Rejected Votes Count: <p>{rejectVotes} vote{approveVotes>1 ? "s" : null} out of {parseInt(approveVotes) + parseInt(rejectVotes)} votes</p>{" "}
+                    </h5>
+                    {whitelistesButtonGroup(isWhitelisted)}
+                </Grid>
+                <Divider orientation="vertical" component="line" variant="middle" light={false} flexItem />
+                <Grid item xs style={{ display: "flex", flexDirection: "column", alignItems: "stretch", justifyContent: 'space-between' }}>
+                    <h5>
+                        Tokens to be Distributed: <p>{tokenCount}</p>{" "}
+                    </h5>
+                    <h5>
+                        Token Name: <p>{tokenName}</p>{" "}
+                    </h5>
+                    <h5>
+                        Latest Token Price: <p>{tokenPrice}</p>{" "}
+                    </h5>
+                    {ownerButtonGroup(isOwner, isAuctionCreated)}
+                </Grid>
+            </Grid>
+        </Wrapper>
   );
 
 }
