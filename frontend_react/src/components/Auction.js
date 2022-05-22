@@ -11,59 +11,82 @@ import { ethers } from 'ethers';
 
 import { Grid } from "@material-ui/core/";
 import dummyimg from '../images/dummyimg.png';
-import {getFileFromIpfs} from "../helpers.js"
+import { getFileFromIpfs } from "../helpers.js"
 
+import { CircularProgressbar, CircularProgressbarWithChildren, buildStyles } from "react-circular-progressbar";
+import "react-circular-progressbar/dist/styles.css"
+
+import {
+    Chart as ChartJS,
+    CategoryScale,
+    LinearScale,
+    PointElement,
+    LineElement,
+    Title,
+    Tooltip,
+    Legend,
+} from 'chart.js';
+import { Line } from 'react-chartjs-2';
+
+
+import PriceChart from './PriceChart';
 
 const Auction = (props) => {
     const { state } = useLocation();
     const { auctionType, auction, projectId } = state
-    const [imageURL,setImageURL] = useState('');
+    const [imageURL, setImageURL] = useState('');
 
     console.log(state)
 
 
 
-    const [price, setPrice] = useState();
+    const [startingPrice, setStartingPrice] = useState();
     const [tokenDist, setTokenDist] = useState();
     const [soldToken, setSoldTokens] = useState();
-    const [startTime,setStartTime] = useState();
-    const [endTime,setEndTime] = useState();
+    const [startTime, setStartTime] = useState();
+    const [endTime, setEndTime] = useState();
+    const [totalDeposit, setTotalDeposit] = useState();
+    const [currentPrice, setCurrentPrice] = useState();
+    const [finalRate, setFinalRate] = useState();
+    const [minimumPrice, setMinimumPrice] = useState();
 
 
     const provider = new ethers.providers.Web3Provider(window.ethereum);
 
-
+    const auctionTypesForChart = ["DutchAuction", "OBFCFSAuction", "PseudoCappedAuction", "StrictDutchAuction", "UncappedAuction"];
 
 
     const refreshInfo = async (abi, auctionContract) => {
-        const { rate, currentRate, soldProjectTokens, numberOfTokensToBeDistributed, minPrice,startTime,latestEndTime } = await getAllPublicVariables(abi, auctionContract)
-        console.log(await getAllPublicVariables(abi,auctionContract))
+        const { rate, soldProjectTokens, numberOfTokensToBeDistributed, minPrice, startTime, latestEndTime, totalDepositedSucoins, getCurrentRate, finalRate} = await getAllPublicVariables(abi, auctionContract)
+        console.log(await getAllPublicVariables(abi, auctionContract))
 
+
+        console.log((Date.now() / 1000 - startTime))
         switch (auctionType) {
             case "StrictDutchAuction":
             case "DutchAuction":
                 setSoldTokens(fixedNumberToNumber(soldProjectTokens[0]))
-                setPrice(fixedNumberToNumber(currentRate[0]))
+                setStartingPrice(fixedNumberToNumber(rate[0]))
                 setTokenDist(fixedNumberToNumber(numberOfTokensToBeDistributed[0]))
+                setFinalRate(fixedNumberToNumber(finalRate[0]))
                 break;
             case "UncappedAuction":
                 setSoldTokens(fixedNumberToNumber(soldProjectTokens[0]))
-                setPrice(fixedNumberToNumber(rate[0]))
+                setStartingPrice(fixedNumberToNumber(rate[0]))
                 break;
             case "PseudoCappedAuction":
                 setTokenDist(fixedNumberToNumber(numberOfTokensToBeDistributed[0]))
-                setPrice(fixedNumberToNumber(currentRate[0]))
+                setCurrentPrice(fixedNumberToNumber(getCurrentRate[0]))
                 break
             case "OBDutchAuction":
                 setTokenDist(fixedNumberToNumber(numberOfTokensToBeDistributed[0]))
                 setSoldTokens(fixedNumberToNumber(soldProjectTokens[0]))
-                setPrice(fixedNumberToNumber(minPrice[0]))
+                setMinimumPrice(fixedNumberToNumber(minPrice[0]))
                 break;
         }
         setStartTime(startTime.toString())
         setEndTime(latestEndTime.toString())
-
-
+        setTotalDeposit(fixedNumberToNumber(totalDepositedSucoins[0]))
     }
 
 
@@ -78,10 +101,12 @@ const Auction = (props) => {
     useEffect(async () => {
         const { abi } = await import(`../contracts_hardhat/artifacts/contracts/UpgradeableAuctions/${auctionType}.sol/${auctionType}.json`)
         const auctionContract = new ethers.Contract(auction, abi, provider)
-        
- 
-        const imageResult = await getFileFromIpfs(state.fileHash,"image")
+
+
+        const imageResult = await getFileFromIpfs(state.fileHash, "image")
         setImageURL(URL.createObjectURL(imageResult.data))
+
+        console.log("before refresh info")
 
         refreshInfo(abi, auctionContract) //todo it would be better if backend did this
 
@@ -89,34 +114,34 @@ const Auction = (props) => {
     }, [])
 
     const getFile = async () => {
-      
-      getFileFromIpfs(state.fileHash,"whitepaper").then(res => downloadFile(res.data))
-    
-    
-      const downloadFile = async (file) => {
-        const reader = new FileReader()
-    
-      
-    
-        reader.readAsText(file);
-        reader.onloadend = async () => {
-          const data = window.URL.createObjectURL(file);
-          const tempLink = await document.createElement('a');
-          tempLink.href = data;
-          tempLink.download = "Project_#" + state.projectID + ".pdf"; // some props receive from the component.
-          tempLink.click();
+
+        getFileFromIpfs(state.fileHash, "whitepaper").then(res => downloadFile(res.data))
+
+
+        const downloadFile = async (file) => {
+            const reader = new FileReader()
+
+
+
+            reader.readAsText(file);
+            reader.onloadend = async () => {
+                const data = window.URL.createObjectURL(file);
+                const tempLink = await document.createElement('a');
+                tempLink.href = data;
+                tempLink.download = "Project_#" + state.projectID + ".pdf"; // some props receive from the component.
+                tempLink.click();
+            }
         }
-      }
     }
 
     return (
-        <div>
+        <div style={{ width: '85%', margin: "auto" }}>
             <div className="sectionName" style={{ paddingLeft: "200px", paddingTop: "25px", paddingBottom: "25px" }}>Auction Details</div>
 
             <Grid container spacing={0}>
-                <Grid item xs style={{ display: "flex", flexDirection: "column", justifyContent: 'space-between' }}>
+                <Grid item xs style={{ display: "flex", flexDirection: "column", justifyContent: 'space-between'}}>
                     <div className="project-image" style={{ display: "flex", flexDirection: "row", justifyContent: "center" }}>
-                        <img src={imageURL ?? dummyimg} alt="" style={{ borderRadius: '20px' }} />
+                        <img src={imageURL ?? dummyimg} alt="" style={{ borderRadius: '20px', width: '500px' }} />
                     </div>
                     <br></br>
                     <div className="sectionName" style={{ textAlign: 'center' }}>{state.projectName}</div>
@@ -131,26 +156,85 @@ const Auction = (props) => {
                         </button>
                     </div>
                 </Grid>
-            
 
-
-                <Grid item xs>
-                    <div className='auction-info'>
-                        <AuctionInfo
-                            projectId={projectId}
-                            auction={auction}
-                            tokenName={state.tokenName}
-                            price={price}
-                            tokenDist={tokenDist}
-                            deposit={soldToken}
-                            totalRaise={125}
-                            startingDate={startTime}
-                            endingDate={endTime}
-                            auctionType={auctionType}
-                        />
-                    </div>
+                <Grid item xs style={{ display: "flex", flexDirection: "column", justifyContent: 'space-between' }}>
+                    <Grid item xs>
+                        <div className='auction-info'>
+                            <AuctionInfo
+                                projectId={projectId}
+                                auction={auction}
+                                tokenName={state.tokenName}
+                                price={finalRate}
+                                tokenDist={tokenDist}
+                                deposit={soldToken}
+                                totalRaise={totalDeposit}
+                                startingDate={startTime}
+                                endingDate={endTime}
+                                auctionType={auctionType}
+                            />
+                        </div>
+                    </Grid>
                 </Grid>
             </Grid>
+
+            <br></br>
+            <div style={{width:"70%", margin:"auto"}}>
+                <Grid item xs style={{ display: "flex", flexDirection: "row", justifyContent: 'space-between' }}>
+                    <Grid item xs style={{ display: "flex", flexDirection: "column", justifyContent: 'space-between' }}>
+                        <div className="sectionName" style={{ textAlign: 'center' }}>{"Auction Progress"}</div>
+                        <br></br>
+                        <Grid item xs>
+                            <div style={{ width: "50%", margin: "auto" }}>
+                                <CircularProgressbar
+                                    value={(Date.now() / 1000 - startTime) / (endTime - startTime) * 100}
+                                    text={Math.round(Math.min(100, (Date.now() / 1000 - startTime) / (endTime - startTime) * 100)) + '% time elapsed'}
+                                    background={true}
+                                    backgroundPadding={6}
+                                    styles={buildStyles({
+                                        backgroundColor: "#173A6A",
+                                        textColor: "#fff",
+                                        pathColor: "#fff",
+                                        trailColor: "transparent",
+                                        textSize: 8
+                                    })}
+                                />
+                            </div>
+                        </Grid>
+                    </Grid>
+                    <Grid item xs style={{ display: "flex", flexDirection: "column", justifyContent: 'space-between' }}>
+                        <div className="sectionName" style={{ textAlign: 'center' }}>{"Sold Token Progress"}</div>
+                        <br></br>
+                        <Grid item xs>
+                            <div style={{ width: "50%", margin: "auto" }}>
+                                <CircularProgressbar
+                                    value={soldToken / tokenDist * 100}
+                                    text={parseFloat(soldToken / tokenDist * 100).toFixed(4) + '%'}
+                                    circleRatio={0.75}
+                                    styles={buildStyles({
+                                        rotation: 1 / 2 + 1 / 8,
+                                        strokeLinecap: "butt",
+                                        trailColor: "#fff",
+                                        textSize: 12,
+                                        textColor: "#173A6A",
+                                        pathColor: "#173A6A",
+                                    })}
+                                />
+                            </div>
+                        </Grid>
+                    </Grid>
+                </Grid>
+            </div>
+            <br></br>
+            <br></br>
+            {auctionTypesForChart.includes(auctionType) ?
+                <PriceChart
+                    auctionType={auctionType}
+                    startTime={startTime}
+                    latestEndTime={endTime}
+                    initialRate={startingPrice}
+                    finalRate={finalRate}
+                    initialSupply={tokenDist}
+                /> : null}
         </div>
     );
 };

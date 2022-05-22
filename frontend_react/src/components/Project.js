@@ -208,7 +208,7 @@ const Project = ({ navigation }) => {
       <Grid container spacing={0}>
         <Grid item xs style={{ display: "flex", flexDirection: "column", justifyContent: 'space-between' }}>
           <div className="project-image" style={{ display: "flex", flexDirection: "row", justifyContent: "center" }}>
-            <img src={imageURL ?? dummyimg} alt="" style={{ borderRadius: '20px' }} />
+            <img src={imageURL ?? dummyimg} alt="" style={{ borderRadius: '20px', width:'500px' }} />
           </div>
           <br></br>
           <div className="sectionName" style={{ textAlign: 'center' }}>{project.projectName}</div>

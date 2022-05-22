@@ -150,9 +150,8 @@ const Header = () => {
               <Nav.Link onClick={() => { navigate('/'); }}>Home</Nav.Link>
               <Nav.Link onClick={() => { navigate('/projects'); }}>Projects</Nav.Link>
               <Nav.Link onClick={() => { navigate('/auctions'); }}>Auctions</Nav.Link>
-              <Nav.Link onClick={() => { navigate('/tokenSwap'); }}>Swap</Nav.Link>
-              <Nav.Link onClick={() => { navigate('/apply'); }}>Apply</Nav.Link>
-              <Nav.Link onClick={() => { navigate('/tt'); }}>Test Templates</Nav.Link>
+              {logged ? <Nav.Link onClick={() => { navigate('/tokenSwap'); }}>Swap</Nav.Link> : null}
+              {logged ? <Nav.Link onClick={() => { navigate('/apply'); }}>Apply</Nav.Link> : null}
             </Nav>
             <Nav>
               {logged
@@ -231,7 +230,7 @@ const RegisterModal = (props) => {
       console.log("mail", password)
       console.log("sign", sign)
 
-      let req = await axios.put('https://localhost:5001/Authentication/Register', {
+      let req = await axios.post('https://localhost:5001/Authentication/Register', {
         name: fname,
         surname: surname,
         username: username,

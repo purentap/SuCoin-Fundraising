@@ -68,7 +68,7 @@ export const getAuctionByStatus = async(status,count) => {
     const hashToProject = Object.fromEntries(result.data.data.map(project => [("0x" + project.fileHash).toLowerCase(),project]))
 
 
-    const auctionData = await MAESTRO.getProjectSurfaceByStatus(Object.keys(hashToProject),0,10)
+    const auctionData = await MAESTRO.getProjectSurfaceByStatus(Object.keys(hashToProject),status,count)
     const auctionDataCombined = auctionData.filter(auction => auction.auctionType != "").map(auction => {
        
         let newAuction = Object.assign([],auction)
@@ -98,20 +98,7 @@ const Auctions = () => {
 
     useEffect(async () => {
         try {
-            
-            
-     
- 
-
-            setAuctions(await getAuctionByStatus(0,10))
-          
-
-            
-
-
-     
-
-
+            setAuctions(await getAuctionByStatus(1,10))
             }
             catch (error) {
                 setToastshow(true)

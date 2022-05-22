@@ -153,6 +153,7 @@ namespace SU_COIN_BACK_END.Services
                 {
                     response.Success = false;
                     response.Message = MessageConstants.INVALID_INPUT;
+                    Console.WriteLine(response.Message);
                     return response;
                 }
 
@@ -162,12 +163,14 @@ namespace SU_COIN_BACK_END.Services
                 {
                     response.Success = false;
                     response.Message = "User Already Exists";
+                    Console.WriteLine(response.Message);
                     return response;
                 }
                 if (await UserNameExists(request.Username))
                 {
                     response.Success = false;
                     response.Message = MessageConstants.USER_NAME_EXIST;
+                    Console.WriteLine(response.Message);
                     return response;
                 }
 

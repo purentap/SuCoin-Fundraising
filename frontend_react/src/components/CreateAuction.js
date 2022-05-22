@@ -125,13 +125,13 @@ const CreateAuction = () => {
         const tokenDistributedDecimal = numberToFixedNumber(TokensToBeDesitributed,sucoinDecimals)
         const priceDecimal = numberToFixedNumber(tokenPrice,sucoinDecimals);
 
+        const finalRate = numberToFixedNumber(finalPrice,sucoinDecimals);
+
         const maestroContract = new ethers.Contract(maestro.address,Maestro.abi,signer)
 
         const auctionType = ["UncappedAuction","PseudoCappedAuction","OBFCFSAuction","FCFSLimitAuction","FCFSAuction","DutchAuction","OBDutchAuction","StrictDutchAuction"][id]
         console.log(auctionType)
-        maestroContract.createAuction(hash,auctionType,[tokenDistributedDecimal,priceDecimal,finalPrice,limit])
-
-        
+        maestroContract.createAuction(hash,auctionType,[tokenDistributedDecimal,priceDecimal,finalRate,limit])        
     }
 
 
