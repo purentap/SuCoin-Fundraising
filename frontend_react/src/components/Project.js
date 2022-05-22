@@ -58,7 +58,7 @@ const Project = ({ navigation }) => {
   const [isOwner, setIsowner] = useState(false);
   const [owner, setOwner] = useState();
   const [signer, setSigner] = useState()
-  const [hash, setHash] = useState("")
+  const [hash, setHash] = useState()
   const [imageURL,setImageURL] = useState('');
 
   const [project, setProject] = useState({
@@ -69,7 +69,6 @@ const Project = ({ navigation }) => {
     projectName: "",
     status: "",
   });
-
 
 
   useEffect(async () => {
@@ -94,13 +93,18 @@ const Project = ({ navigation }) => {
 
 
   useEffect(async () => {
+
+    if (project.fileHash == undefined)
+      return
+
     const CryptoJS = require('crypto-js');
 
     const provider = await new ethers.providers.Web3Provider(window.ethereum)
     const signer = await provider.getSigner()
     const registerContract = await new ethers.Contract(abi.address, ethersAbi.abi, signer)
 
-    const hashResult = "0x" + await CryptoJS.SHA256(project.fileHex).toString()
+    const hashResult = "0x" + project.fileHash
+    
     const projInfo = await registerContract.projectsRegistered(hashResult)
 
 
@@ -235,15 +239,16 @@ const Project = ({ navigation }) => {
             projectStatus={project.status}
             approvalRatio={"b"}
             approvedVotes={"d"}
-            fileHash={project.fileHash}
+            fileHash={hash}
             rejectedVotes={"e"}
             tokenCount={"N/A"}
             tokenName={"N/A"}
             tokenPrice={"N/A"}
-            isAuctionCreated={project.isAuctionCreated}
+            isAuctionCreated={false}
             onClickCreateToken={() => navigate("/createTokens", { state: { hash: hash } })}
             onClickCreateAuction={() => navigate("/createAuction", { state: { hash: hash } })}
           />
+          
         </Grid>
       </Grid>
 

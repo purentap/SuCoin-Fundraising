@@ -108,7 +108,7 @@ const Apply = () => {
 			let response2 = new Promise((resolve, reject) => {
 				apiInstance
 					.post("/Project/Add", {
-						fileHash: fileToSubmit,
+						fileHex: fileToSubmit,
 						projectName: projectName,
 						projectDescription: projectDescription,
 						imageUrl: imageToSubmit,
@@ -131,7 +131,7 @@ const Apply = () => {
 			let result = await response2
 			console.log(result)
 			setLoading(false)
-			setHash(result.data.message)
+			setHash(result?.data?.data?.fileHash)
 		} catch (error) {
 			setLoading(false)
 			setToastshow(true)

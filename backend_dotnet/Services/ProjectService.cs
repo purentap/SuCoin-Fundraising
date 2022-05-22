@@ -141,7 +141,7 @@ namespace SU_COIN_BACK_END.Services
                 await _context.SaveChangesAsync();
 
                 response.Data = _mapper.Map<ProjectDTO>(dbProject);
-                response.Message = ipfsHash; //Degistirme Ercan Bunu
+                response.Message = MessageConstants.OK;
                 response.Success = true;
             }
             catch (Exception e)
@@ -607,7 +607,7 @@ namespace SU_COIN_BACK_END.Services
                     .FirstOrDefaultAsync(c => c.ProjectID == projectPermissions[i].ProjectID);
                     allProjects.Add(project);
                 }
-
+                
                 response.Data = (allProjects.Select(c => _mapper.Map<ProjectDTO>(c))).ToList();
                 response.Success = true;
                 response.Message = MessageConstants.OK;

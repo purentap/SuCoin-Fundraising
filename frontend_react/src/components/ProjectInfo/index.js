@@ -41,9 +41,6 @@ const ProjectInfo = ({ setProject,
   fileHash,
   proposalDate,
   projectStatus,
-  approvalRatio,
-  approvedVotes,
-  rejectedVotes,
   tokenCount,
   tokenName,
   tokenPrice,
@@ -57,41 +54,36 @@ const ProjectInfo = ({ setProject,
   const [votesNeeded, setVotesneeded] = useState()
   const [isEditing, setEditing] = useState(false)
 
+  
   const [projectName, setName] = useState('');
   const [projectDescription, setDescription] = useState('');
   const [projectImg, setImg] = useState('');
 
   const navigate = useNavigate();
 
+    
   useEffect(async () => {
     const CryptoJS = require('crypto-js');
 
-    if (fileHash == undefined)
+    if (fileHash == hash)
       return
 
-    console.log(fileHash)
 
-    const tempHash = "0x" + fileHash
-
-    setHash(tempHash)
-
-    
+    setHash(fileHash)
 
     const provider = await new ethers.providers.Web3Provider(window.ethereum)
 
     const signer = await provider.getSigner()
 
-    var registerContract = await new ethers.Contract(abi.address, ethersAbi.abi, signer)
+    var registerContract = new ethers.Contract(abi.address, ethersAbi.abi, signer)
+    var maestroContract = new ethers.Contract(abi.address, ethersAbi.abi, provider)
+
     var threshold = await registerContract.threshold()
     var wlCount = await registerContract.whitelistedCount()
-    console.log(tempHash)
-    const votes = await registerContract.projectsRegistered(tempHash)
+    const votes = await registerContract.projectsRegistered(fileHash)
 
     setApprove(await votes.approved.toString())
     setReject(await votes.rejected.toString())
-    console.log("YOOO", votes.finalized, votes.decision)
-    console.log("YOOO", votes.approved.toString(), votes.rejected.toString())
-    console.log("YOOO", Math.ceil(wlCount.toString() * threshold.toString() / 100))
     setVotesneeded(Math.ceil(wlCount.toString() * threshold.toString() / 100))
     //changeProjectStatus()
   })
@@ -142,8 +134,6 @@ const ProjectInfo = ({ setProject,
 
   const approveProject = async () => {
     try {
-
-
       const CryptoJS = require('crypto-js');
 
       const provider = await new ethers.providers.Web3Provider(window.ethereum)
@@ -153,6 +143,7 @@ const ProjectInfo = ({ setProject,
       var registerTx = await registerContract.voteProposal(hash, true)
       var receipt = await registerTx.wait(1);
       const votes = await registerContract.projectsRegistered(hash)
+      
       setApprove(approveVotes + 1)
       if (votes.finalized) {
         changeProjectStatus()
@@ -269,7 +260,6 @@ const ProjectInfo = ({ setProject,
 }
 
 const ownerButtonGroup = (isOwner, isAuctionCreated , project) => {
-
     return (isOwner ?
         <div style={{ display: "flex", flexDirection: "row", justifyContent: "center" }}>
             <button className="button" onClick={onClickCreateToken}>
@@ -277,7 +267,7 @@ const ownerButtonGroup = (isOwner, isAuctionCreated , project) => {
                     Create Tokens
                 </a>
             </button>
-            <button className="button" onClick={!isAuctionCreated ? onClickCreateToken : navigate('/auction/' + projectId, {state:project})}>
+            <button className="button" onClick={!isAuctionCreated ? onClickCreateAuction : navigate('/auction/' + projectId, {state:project})}>
                 <a href={!isAuctionCreated ? '/projects/' + projectId : null}>
                     {isAuctionCreated ? "Start Auction" : "Create Auction"}
                 </a>

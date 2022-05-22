@@ -62,8 +62,7 @@ const Home = () => {
   //Count should be fixed later
 
   useEffect(async () => {
-    setAuctions(await getAuctionByStatus(1, 5))
-    console.log("Random Auctions:", auctions)
+ 
 
     try {
       const apiInstance = axios.create({
@@ -84,8 +83,15 @@ const Home = () => {
           })
       })
       let result = await response2
-      console.log("ehee", result)
-      await setProjects(result.data.data)
+
+      const tempAuctions = await getAuctionByStatus(1, 5)
+      const getImagePromise = (selected) => getFileFromIpfs(selected.fileHash,"image").then(imageInfo => selected.imageURL =  URL.createObjectURL(imageInfo.data))
+      const tempProjects = result.data.data
+      await Promise.all(tempProjects.concat(tempAuctions).map(getImagePromise))
+
+
+      setProjects(tempProjects)
+      setAuctions(tempAuctions)
 
 
 
@@ -103,11 +109,11 @@ const Home = () => {
 
   const navigate = useNavigate();
 
-  const increaseProjectIndex = () => {setProjectIndex((projectIndex +1) % 5)}
+  const increaseProjectIndex = () => {setProjectIndex((projectIndex +1) % projects.length)}
   const increaseAuctionIndex = () => {setAuctionIndex((auctionIndex +1) % auctions.length)}
 
-  const decreaseProjectIndex = () => {setProjectIndex((projectIndex -1 + 5) % 5)}
-  const decreaseAuctionIndex = () => {setAuctionIndex((auctionIndex -1) % auctions.length)}
+  const decreaseProjectIndex = () => {setProjectIndex((projectIndex -1 + projects.length) % projects.length)}
+  const decreaseAuctionIndex = () => {setAuctionIndex((auctionIndex -1 + auctions.length) % auctions.length)}
 
   const navigateProjectDetail = (projectId) => {navigate('projects/' + projectId)}
   const navigateAuctionDetail = (projectId) => {navigate('auction/' + projectId, {state:auctions[auctionIndex]})}
@@ -115,48 +121,69 @@ const Home = () => {
 
 
   const courasel = (type) => {
-    //todo get values according to request
-    console.log("Random Auctions:", auctions)
-    console.log("Random projects:", projects)
-    console.log("Carousel Index", auctionIndex, projectIndex)
+      
 
 
-    console.log(projects[projectIndex],"asddassdsada")
+    if (type == "Projects") {
+      var selectedList = projects
+      var selectedIndex = projectIndex
+      var indexIncrease = increaseProjectIndex
+      var indexDecrease = decreaseProjectIndex
+      var navigateTarget = navigateProjectDetail
+      var buttonText = "More Project Details"
+    }
+    else {
+      var selectedList = auctions
+      var selectedIndex = auctionIndex
+      var indexIncrease = increaseAuctionIndex
+      var indexDecrease = decreaseAuctionIndex
+      var navigateTarget = navigateAuctionDetail
+      var buttonText = "Go To Auction"
+    }
 
+    if (selectedList.length > 0) {
+
+    //Get pictures
+
+
+    const selected = selectedList[selectedIndex]
+    console.log(`Random ${type}: ${selectedList}`)
+
+    console.log(selected.imageURL)
 
     return (
 
-      projects.length != 0 && auctions.length != 0 ?
       <>
         <div className="sectionName" style={{ textAlign: 'center' }}>{type}</div>
         <div className="courasel" id={type}>
 
           <div className='arrow' id="before">
             <img src={arrow} alt=""
-              onClick={type == "Projects" ? decreaseProjectIndex : decreaseAuctionIndex}
+              onClick={indexDecrease}
             />
           </div>
           <div className="img-courasel"><img src={
-            type == "Projects" ? (projects[projectIndex].imageURL ?? dummyimg) : (auctions[auctionIndex].imageURL ??  dummyimg)
+            selected.imageURL ?? dummyimg
             
           } style={{ borderRadius: '20px' }} alt="" /> </div>
           <div className="info">
             <div className="mini-info">
-              <div className="name"> {type== "Projects" ? projects[projectIndex].projectName : auctions[auctionIndex].projectName} </div>
+              <div className="name"> {selected.projectName} </div>
               <div className="button">
-                <button onClick={() =>  type == "Projects" ? navigateProjectDetail(projects[projectIndex].projectID) : navigateAuctionDetail(auctions[auctionIndex].projectID)}>
-                  {type == "Projects" ? "More Project Details" : "Go to Auction"}
+                <button onClick={() => navigateTarget(selected.projectID)}>
+                  {buttonText}
                 </button>
               </div>
             </div>
-            <div className="detail"> {type== "Projects" ? projects[projectIndex].projectDescription : auctions[auctionIndex].projectDescription}</div>
+            <div className="detail"> {selected.projectDescription}</div>
           </div>
           <div className='arrow' id="next">
-            <img style={{ transform: 'rotate(180deg)' }} src={arrow} alt="" onClick={type == "Projects" ? increaseProjectIndex : increaseAuctionIndex}
+            <img style={{ transform: 'rotate(180deg)' }} src={arrow} alt="" onClick={indexIncrease}
             />
           </div>
-        </div></> : null
+        </div></> 
     )
+        }
   }
 
   if (error) return <div>Something went wrong ...</div>;
