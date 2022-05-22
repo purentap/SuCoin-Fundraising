@@ -56,7 +56,7 @@ const PriceChart = ({auctionType, startTime, latestEndTime, initialRate, finalRa
         "DutchAuction":[
             {
                 label: 'Token Price',
-                data: timestamps.map((realTime) => (initialRate - ((initialRate  - finalRate ) * (realTime / 1000 - startTime))  /  (latestEndTime - startTime))),
+                data: timestamps.map((realTime) => (Math.max(finalRate,initialRate - ((initialRate  - finalRate ) * (realTime / 1000 - startTime))  /  (latestEndTime - startTime)))),
                 function: function(realTime) {return (initialRate - ((initialRate  - finalRate ) * (realTime / 1000 - startTime))  /  (latestEndTime - startTime))},
                 borderColor: 'rgb(255, 99, 132)',
                 backgroundColor: 'rgba(255, 99, 132, 0.5)',
@@ -93,14 +93,14 @@ const PriceChart = ({auctionType, startTime, latestEndTime, initialRate, finalRa
         "StrictDutchAuction":[
             {
                 label: 'Token Price',
-                data: timestamps.map((realTime) => (initialRate - ((initialRate  - finalRate ) * (realTime / 1000 - startTime))  /  (latestEndTime - startTime))),
+                data: timestamps.map((realTime) => Math.max(finalRate,(initialRate - ((initialRate  - finalRate ) * (realTime / 1000 - startTime))  /  (latestEndTime - startTime)))),
                 function: function(realTime) {return (initialRate - ((initialRate  - finalRate ) * (realTime / 1000 - startTime))  /  (latestEndTime - startTime))},
                 borderColor: 'rgb(255, 99, 132)',
                 backgroundColor: 'rgba(255, 99, 132, 0.5)',
             },
             {
                 label: 'Total Supply',
-                data: timestamps.map((realTime) => (initialSupply - (initialSupply) * (realTime / 1000 - startTime)  /  (latestEndTime - startTime))),
+                data: timestamps.map((realTime) => Math.max(0,(initialSupply - (initialSupply) * (realTime / 1000 - startTime)  /  (latestEndTime - startTime)))),
                 function: function(realTime) {return (initialSupply) * (realTime / 1000 - startTime)  /  (latestEndTime - startTime)},
                 borderColor: 'rgb(53, 162, 235)',
                 backgroundColor: 'rgba(53, 162, 235, 0.5)',

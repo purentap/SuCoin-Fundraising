@@ -69,6 +69,7 @@ const Auction = (props) => {
                 setStartingPrice(fixedNumberToNumber(rate[0]))
                 setTokenDist(fixedNumberToNumber(numberOfTokensToBeDistributed[0]))
                 setFinalRate(fixedNumberToNumber(finalRate[0]))
+                setCurrentPrice(fixedNumberToNumber(getCurrentRate[0]))
                 break;
             case "UncappedAuction":
                 setSoldTokens(fixedNumberToNumber(soldProjectTokens[0]))
@@ -164,7 +165,7 @@ const Auction = (props) => {
                                 projectId={projectId}
                                 auction={auction}
                                 tokenName={state.tokenName}
-                                price={finalRate}
+                                price={currentPrice}
                                 tokenDist={tokenDist}
                                 deposit={soldToken}
                                 totalRaise={totalDeposit}
