@@ -6,7 +6,7 @@ import "./DutchAuction.sol";
 //Strict Dutch Auction is just Dutch auction with constant decreasing auction token amount 
 contract StrictDutchAuction is DutchAuction {
 
-    uint initTokens;
+    uint public initTokens;
 
  
     function initialize(auctionParameters calldata params) public initializer override virtual {
@@ -26,14 +26,19 @@ contract StrictDutchAuction is DutchAuction {
 
      function setCurrentRate() internal virtual override {
          super.setCurrentRate();
-         uint timeTokens =  getTotalSupply();
-
-        //Number of tokens sold at least must be 1 higher than current sold or auction instnatly ends
-        numberOfTokensToBeDistributed = timeTokens < soldProjectTokens ?  soldProjectTokens + 1 : timeTokens;
+         numberOfTokensToBeDistributed =  getTotalSupply();
     }
 
     function getTotalSupply() public view virtual  returns(uint timeSupply) {
-        return  latestEndTime <= startTime ? initTokens : (initTokens - (initTokens) * (block.timestamp - startTime)  /  (latestEndTime - startTime));
+        if (startTime == 0)
+            return initTokens;
+        
+        else if (block.timestamp >= latestEndTime)
+            return soldProjectTokens;
+        
+        uint timeTokens =  (initTokens - (initTokens) * (block.timestamp - startTime)  /  (latestEndTime - startTime));
+        //Number of tokens sold at least must be 1 higher than current sold or auction instnatly ends
+        return timeTokens < soldProjectTokens ?  soldProjectTokens + 1 : timeTokens;
     }
 
     

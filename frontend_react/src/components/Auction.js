@@ -49,6 +49,7 @@ const Auction = (props) => {
     const [currentPrice, setCurrentPrice] = useState();
     const [finalRate, setFinalRate] = useState();
     const [minimumPrice, setMinimumPrice] = useState();
+    const [initDist,setInitDist] = useState();
 
 
     const provider = new ethers.providers.Web3Provider(window.ethereum);
@@ -57,17 +58,16 @@ const Auction = (props) => {
 
 
     const refreshInfo = async (abi, auctionContract) => {
-        const { rate, soldProjectTokens, numberOfTokensToBeDistributed, minPrice, startTime, latestEndTime, totalDepositedSucoins, getCurrentRate, finalRate} = await getAllPublicVariables(abi, auctionContract)
-        console.log(await getAllPublicVariables(abi, auctionContract))
+        const { rate, soldProjectTokens, numberOfTokensToBeDistributed, minPrice, startTime, latestEndTime, totalDepositedSucoins, getCurrentRate, finalRate,getTotalSupply,initTokens} = await getAllPublicVariables(abi, auctionContract)
+        const currentSupply = (getTotalSupply ?? numberOfTokensToBeDistributed)[0]
 
-
-        console.log((Date.now() / 1000 - startTime))
         switch (auctionType) {
             case "StrictDutchAuction":
+                setInitDist(fixedNumberToNumber(initTokens[0]))
             case "DutchAuction":
                 setSoldTokens(fixedNumberToNumber(soldProjectTokens[0]))
                 setStartingPrice(fixedNumberToNumber(rate[0]))
-                setTokenDist(fixedNumberToNumber(numberOfTokensToBeDistributed[0]))
+                setTokenDist(fixedNumberToNumber(currentSupply))
                 setFinalRate(fixedNumberToNumber(finalRate[0]))
                 setCurrentPrice(fixedNumberToNumber(getCurrentRate[0]))
                 break;
@@ -133,7 +133,10 @@ const Auction = (props) => {
                 tempLink.click();
             }
         }
+
+    
     }
+
 
     return (
         <div style={{ width: '85%', margin: "auto" }}>
@@ -234,7 +237,7 @@ const Auction = (props) => {
                     latestEndTime={endTime}
                     initialRate={startingPrice}
                     finalRate={finalRate}
-                    initialSupply={tokenDist}
+                    initialSupply={initDist}
                 /> : null}
         </div>
     );
