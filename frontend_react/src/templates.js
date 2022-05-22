@@ -10,4 +10,4 @@ class Templates extends Component {
     }
 }
 
-export default Templates;
+export default Templates;   

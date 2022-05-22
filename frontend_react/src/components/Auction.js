@@ -131,6 +131,8 @@ const Auction = (props) => {
                         </button>
                     </div>
                 </Grid>
+            
+
 
                 <Grid item xs>
                     <div className='auction-info'>

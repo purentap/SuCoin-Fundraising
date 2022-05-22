@@ -31,6 +31,7 @@ abstract contract Auction is AccessControlUpgradeable,Multicall  {              
     bytes32 public constant PROPOSER_ADMIN_ROLE = keccak256("PROPOSER_ADMIN_ROLE");
 
     address public projectWallet;
+    uint public totalDepositedSucoins;
 
                      
 
@@ -183,6 +184,8 @@ abstract contract Auction is AccessControlUpgradeable,Multicall  {              
         //Check and process if buyer have the coins to do the swap
 
        bidCoin.transferFrom(msg.sender, projectWallet, bidCoinBits);
+
+       totalDepositedSucoins += bidCoinBits;
 
         //Send project tokens to buyer
        //No need for approval from the contracts side

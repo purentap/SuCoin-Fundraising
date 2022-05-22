@@ -11,7 +11,6 @@ contract PseudoCappedAuction is CappedTokenAuction {
 
 
     uint public currentRate;
-    uint public totalDepositedSucoins;
 
 
     mapping (address => uint) public biddingBook;  //Orderbook
@@ -56,7 +55,6 @@ contract PseudoCappedAuction is CappedTokenAuction {
     
     function tokenBuyLogic(uint bidCoinBits) internal virtual override {
             biddingBook[msg.sender] += bidCoinBits;
-            totalDepositedSucoins += bidCoinBits;
             setCurrentRate();
 
 
@@ -64,7 +62,11 @@ contract PseudoCappedAuction is CappedTokenAuction {
 
 
     function setCurrentRate() internal virtual {
-        currentRate =   totalDepositedSucoins * (10 ** projectToken.decimals()) / numberOfTokensToBeDistributed;
+        currentRate =  getCurrentRate();
+    }
+
+    function getCurrentRate() public  virtual view returns(uint current) {
+        return totalDepositedSucoins * (10 ** projectToken.decimals()) / numberOfTokensToBeDistributed;
     }
 
 

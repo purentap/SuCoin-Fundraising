@@ -93,7 +93,7 @@ const Apply = () => {
 		catch (error) {
 			setToastshow(true)
 			setToastheader("Catched an error")
-			setToasttext(error.data.message)
+			setToasttext(error.data)
 			return false;
 		}
 	}
@@ -163,6 +163,8 @@ const Apply = () => {
 		if (name === 'description') setDescription(value);
 
 	};
+
+		console.log(hashToSubmit)
 
 	return (
 		<>

@@ -13,7 +13,7 @@ contract OBDutchAuction is PseudoCappedAuction {
     address public proposerWallet;
 
     uint public minPrice;
-    uint public minPriceTokenCount;
+    uint internal minPriceTokenCount;
 
    BokkyPooBahsRedBlackTreeLibrary.Tree private tree;
 
@@ -132,9 +132,12 @@ contract OBDutchAuction is PseudoCappedAuction {
 
      
 
-    function setCurrentRate() internal virtual override {   //Todo performance could be improved
-        currentRate = tree.last();
+    
+    function getCurrentRate() public virtual view override returns(uint current) {      //todo bad performance
+        return tree.last();
     }
+
+
 
     function withDraw()  external quietStateUpdate() isFinished() override {    //Users can withdraw their tokens if the auction is finished
 

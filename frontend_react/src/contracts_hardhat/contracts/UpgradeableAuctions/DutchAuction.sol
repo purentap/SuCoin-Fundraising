@@ -30,12 +30,10 @@ contract DutchAuction is FCFSAuction {
 
 
 
-     function setCurrentRate() internal virtual override {
-        //Rate is how much bid coin bits a token cost totalCost
-        //Current rate is decreased rate by time
-        //Total cost is cost of all available auction tokens
+    
 
-        currentRate = rate - ((rate  - finalRate ) * (block.timestamp - startTime))  /  (latestEndTime - startTime);
+      function getCurrentRate() public virtual view override returns(uint current) {
+        return rate - ((rate  - finalRate ) * (block.timestamp - startTime))  /  (latestEndTime - startTime);
     }
 
 }
