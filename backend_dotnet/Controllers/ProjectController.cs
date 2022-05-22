@@ -97,6 +97,10 @@ namespace SU_COIN_BACK_END.Controllers
                 {
                     return Forbid();
                 }
+                if (response.Message == MessageConstants.IPFS_INTERACTION_FAIL)
+                {
+                    return StatusCode(StatusCodes.Status408RequestTimeout, response);
+                }
                 return BadRequest(response);
             }
             return StatusCode(StatusCodes.Status204NoContent);
@@ -116,6 +120,10 @@ namespace SU_COIN_BACK_END.Controllers
                 if (response.Message == MessageConstants.USER_IS_BLACKLISTED)
                 {
                     return Forbid();
+                }
+                if (response.Message == MessageConstants.IPFS_INTERACTION_FAIL)
+                {
+                    return StatusCode(StatusCodes.Status408RequestTimeout, response);
                 }
                 if (response.Message == "Viewer is busy. Please try again later")
                 {
@@ -170,6 +178,10 @@ namespace SU_COIN_BACK_END.Controllers
                 if (response.Message == MessageConstants.PROJECT_NOT_ACCEPTED_BY_VIEWER || response.Message == MessageConstants.NOT_AUTHORIZED_TO_ACCESS)
                 {
                     return Forbid();
+                }
+                if (response.Message == MessageConstants.CHAIN_INTERACTION_FAIL)
+                {
+                    return StatusCode(StatusCodes.Status408RequestTimeout, response);
                 }
                 return BadRequest(response);
             }

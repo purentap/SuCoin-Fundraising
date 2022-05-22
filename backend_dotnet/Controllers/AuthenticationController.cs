@@ -38,6 +38,10 @@ namespace SU_COIN_BACK_END.Controllers
                 {
                     return NotFound();
                 }
+                if (response.Message == MessageConstants.CHAIN_INTERACTION_FAIL)
+                {
+                    return StatusCode(StatusCodes.Status408RequestTimeout, response);
+                }
                 if (response.Message == null)
                 {
                     return StatusCode(StatusCodes.Status500InternalServerError, "null Message");

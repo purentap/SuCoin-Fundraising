@@ -29,20 +29,24 @@ using System.Numerics;
 using System.Security.Cryptography;
 using Newtonsoft.Json;
 
-namespace SU_COIN_BACK_END.Services {
-
+namespace SU_COIN_BACK_END.Services 
+{
     public class ProjectService : IProjectService
     {
         private readonly IMapper _mapper;
         private readonly DataContext _context;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IChainInteractionService _chainInteractionService;
-        public ProjectService(IMapper mapper, DataContext context, IHttpContextAccessor httpContextAccessor, IChainInteractionService chainInteractionService)
+        private readonly IIpfsInteractionService _ipfsInteractionService;
+        public ProjectService(
+            IMapper mapper, DataContext context, IHttpContextAccessor httpContextAccessor, 
+            IChainInteractionService chainInteractionService, IIpfsInteractionService ipfsInteractionService)
         {
             _mapper = mapper;
             _context = context;
             _httpContextAccessor = httpContextAccessor;
             _chainInteractionService = chainInteractionService;
+            _ipfsInteractionService = ipfsInteractionService;
         }
         private int GetUserId() => int.Parse(_httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier));
         private string GetUsername() => _httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.Name);
@@ -90,19 +94,16 @@ namespace SU_COIN_BACK_END.Services {
             try
             {
                 /* Project has not been created in the database. Create the new project */
-                var uploadResult = await UploadToIpfs(request.FileHex, request.ImageUrl);
-                Console.WriteLine($"Upload Result: {uploadResult}"); // Debuging
+                ServiceResponse<string> ipfs_response = await _ipfsInteractionService.UploadToIpfs(request.FileHex, request.ImageUrl);
 
-                var hash = uploadResult?["Hash"];
-                Console.WriteLine(hash);
-                if (hash == null) 
+                if (!ipfs_response.Success) 
                 {
-                    response.Success = false;
-                    response.Message = "IPFS upload failed";
+                    response.Success = ipfs_response.Success;
+                    response.Message = ipfs_response.Message;
                     return response;
                 }
 
-                string ipfsHash = Convert.ToHexString(SimpleBase.Base58.Bitcoin.Decode(hash).ToArray()).Substring(4);
+                string ipfsHash = Convert.ToHexString(SimpleBase.Base58.Bitcoin.Decode(ipfs_response.Data).ToArray()).Substring(4);
 
                 Project new_project = new Project 
                 {
@@ -140,7 +141,7 @@ namespace SU_COIN_BACK_END.Services {
                 await _context.SaveChangesAsync();
 
                 response.Data = _mapper.Map<ProjectDTO>(dbProject);
-                response.Message = ipfsHash;
+                response.Message = MessageConstants.OK;
                 response.Success = true;
             }
             catch (Exception e)
@@ -149,50 +150,6 @@ namespace SU_COIN_BACK_END.Services {
                 response.Message = String.Format(MessageConstants.FAIL_MESSAGE, "add project", e.Message);
             }
             return response;
-        }
-
-        private async Task<Dictionary<string,string>?> UploadToIpfs(string hexString,string? imageHex)
-            {
-                string actionUrl = "https://ipfs.infura.io:5001/api/v0/add?wrap-with-directory";
-                byte[] paramFileBytes = Convert.FromHexString(hexString);
-                byte[] paramImageBytes = Convert.FromHexString(imageHex);
-
-   
-                HttpContent bytesContent = new ByteArrayContent(paramFileBytes);
-                HttpContent imageContent = new ByteArrayContent(paramImageBytes);
-
-                using (var client = new HttpClient())
-                using (var formData = new MultipartFormDataContent())
-                {
-                    client.DefaultRequestHeaders.Add("Authorization", "Basic MjlJOTJHRHRBR0RaenpZNnNUWUdLdkRXeFdROjg1NTNmOTkwZWE3Nzk3ODVjY2Q2NjVkMjU2NDY2MWZi");
-                    formData.Add(bytesContent, "file", "whitepaper");
-
-                    if (imageHex != null)
-                        formData.Add(imageContent,"file","image");
-                    
-                    var response = await client.PostAsync(actionUrl, formData);
-                    if (!response.IsSuccessStatusCode)
-                    {
-                        return null;
-                    }
-
-                    string stringResponse = (await response.Content.ReadAsStringAsync()).Split('\n').SkipLast(1).Last();
-                    return JsonConvert.DeserializeObject<Dictionary<string, string>>(stringResponse);
-                }
-            }
-
-        private async Task<bool> RemoveFromIpfs(string encodedHash)
-        {
-            string actionUrl = "https://ipfs.infura.io:5001/api/v0/pin/rm?arg=" + encodedHash;
-            Console.WriteLine(actionUrl);
-
-            using (var client = new HttpClient())
-            using (var formData = new MultipartFormDataContent())
-            {
-                client.DefaultRequestHeaders.Add("Authorization", "Basic MjlJOTJHRHRBR0RaenpZNnNUWUdLdkRXeFdROjg1NTNmOTkwZWE3Nzk3ODVjY2Q2NjVkMjU2NDY2MWZi");
-                var response = await client.PostAsync(actionUrl, formData);
-                return response.IsSuccessStatusCode;
-            }        
         }
 
         public async Task<ServiceResponse<string>> DeleteProject(int id) //If auction started aviod deleting
@@ -219,7 +176,13 @@ namespace SU_COIN_BACK_END.Services {
 
 
                 /* Remove the file (unpin) from ipfs if it still exists*/
-                await RemoveFromIpfs(SimpleBase.Base58.Bitcoin.Encode(Convert.FromHexString("1220" + project.FileHash)).ToString());
+                ServiceResponse<bool> ipfs_response = await _ipfsInteractionService.RemoveFromIpfs(SimpleBase.Base58.Bitcoin.Encode(Convert.FromHexString("1220" + project.FileHash)).ToString());
+                if (!ipfs_response.Success)
+                {
+                    response.Message = ipfs_response.Message;
+                    response.Success = ipfs_response.Success;
+                    return response;
+                }
                 
                 /* Remove both the current project and the related project permissions */
                 _context.ProjectPermissions.RemoveRange(_context.ProjectPermissions.Where(c => c.ProjectID == id));
@@ -236,7 +199,6 @@ namespace SU_COIN_BACK_END.Services {
             }
             return response;
         }
-
 
         public async Task<ServiceResponse<List<ProjectDTO>>> GetProjects(int count = Int32.MaxValue)
         {
