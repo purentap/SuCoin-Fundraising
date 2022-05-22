@@ -208,12 +208,18 @@ namespace SU_COIN_BACK_END.Services
                 string userRole = GetUserRole();
                 List<Project> projects = new List<Project>();
 
-                /* First fetch all the projects. Then check if the user is neither admin nor whitelist, just filter the approved projects */
-                projects =  await _context.Projects.ToListAsync(); 
-       
-                if (userRole != UserRoleConstants.ADMIN && userRole != UserRoleConstants.WHITELIST)
-                {
-                    projects = projects.Where(c => c.Status == ProjectStatusConstants.APPROVED).ToList();
+                /* Filter and fetch the projects according to role of the user who logged in */
+               if (userRole == UserRoleConstants.VIEWER)
+               {
+                    projects = await _context.Projects.ToListAsync();
+               }
+               else 
+               {
+                   projects = await _context.Projects.Where(project => project.ViewerAccepted).ToListAsync(); 
+                    if (userRole != UserRoleConstants.ADMIN && userRole != UserRoleConstants.WHITELIST)
+                    {
+                        projects = projects.Where(c => c.Status == ProjectStatusConstants.APPROVED).ToList();
+                    }
                 }
                         
                 /* If there is any project, send the project data to the mapper */                
