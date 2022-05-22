@@ -26,11 +26,17 @@ contract StrictDutchAuction is DutchAuction {
 
      function setCurrentRate() internal virtual override {
          super.setCurrentRate();
-         uint timeTokens =  initTokens - (initTokens) * (block.timestamp - startTime)  /  (latestEndTime - startTime);
+         uint timeTokens =  getTotalSupply();
 
         //Number of tokens sold at least must be 1 higher than current sold or auction instnatly ends
         numberOfTokensToBeDistributed = timeTokens < soldProjectTokens ?  soldProjectTokens + 1 : timeTokens;
     }
+
+    function getTotalSupply() public view virtual  returns(uint timeSupply) {
+        return  initTokens - (initTokens) * (block.timestamp - startTime)  /  (latestEndTime - startTime);
+    }
+
+    
 
       function finalize() internal override virtual{
         super.finalize();
