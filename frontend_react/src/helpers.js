@@ -22,10 +22,14 @@ export const fixedNumberToNumber = (amount) => {
 }
 
 export const getAllPublicVariables = async (abi,auctionContract) => {
-  console.log(auctionContract)
   const wantedVariables = abi.filter(element => element.inputs.length == 0 &&  element.stateMutability == "view")
   const inter = new ethers.utils.Interface(wantedVariables)
-  const signatures = wantedVariables.map(variableAbi => inter.encodeFunctionData(variableAbi.name))
+  let signatures = wantedVariables.map(variableAbi => inter.encodeFunctionData(variableAbi.name))
+
+
+
+console.log(wantedVariables)
+
   const result = await auctionContract.callStatic.multicall(signatures)
 
   return Object.fromEntries(wantedVariables.map((curVar, i) => [curVar.name, defaultAbiCoder.decode(curVar.outputs.map(output => output.type) , result[i])]))

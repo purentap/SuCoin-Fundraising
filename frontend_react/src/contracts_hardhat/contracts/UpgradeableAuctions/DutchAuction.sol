@@ -33,7 +33,7 @@ contract DutchAuction is FCFSAuction {
     
 
       function getCurrentRate() public virtual view override returns(uint current) {
-        return rate - ((rate  - finalRate ) * (block.timestamp - startTime))  /  (latestEndTime - startTime);
+        return latestEndTime <= startTime  ? (rate - ((rate  - finalRate ) * (block.timestamp - startTime))  /  (latestEndTime - startTime)) : rate;
     }
 
 }

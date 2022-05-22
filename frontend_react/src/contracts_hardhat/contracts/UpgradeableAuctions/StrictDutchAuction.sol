@@ -33,7 +33,7 @@ contract StrictDutchAuction is DutchAuction {
     }
 
     function getTotalSupply() public view virtual  returns(uint timeSupply) {
-        return  initTokens - (initTokens) * (block.timestamp - startTime)  /  (latestEndTime - startTime);
+        return  latestEndTime <= startTime ? initTokens : (initTokens - (initTokens) * (block.timestamp - startTime)  /  (latestEndTime - startTime));
     }
 
     
