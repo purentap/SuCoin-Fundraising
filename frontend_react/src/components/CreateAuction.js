@@ -124,6 +124,7 @@ const CreateAuction = () => {
         const signer = await provider.getSigner();
         const tokenDistributedDecimal = numberToFixedNumber(TokensToBeDesitributed,sucoinDecimals)
         const priceDecimal = numberToFixedNumber(tokenPrice,sucoinDecimals);
+        
 
         const finalRate = numberToFixedNumber(finalPrice,sucoinDecimals);
 
