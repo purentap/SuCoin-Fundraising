@@ -76,6 +76,7 @@ namespace SU_COIN_BACK_END
             services.AddScoped<IAuthencticationService, AuthenticationService>();
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IChainInteractionService, ChainInteractionService>();
+            services.AddScoped<IIpfsInteractionService, IpfsInteractionService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

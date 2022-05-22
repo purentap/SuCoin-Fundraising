@@ -38,9 +38,9 @@ namespace SU_COIN_BACK_END.Controllers
             {
                 if (response.Message == MessageConstants.EVENT_NOT_FOUND)
                 {
-                    return NotFound();
+                    return NotFound(response);
                 }
-                return NotFound(response);
+                return StatusCode(StatusCodes.Status408RequestTimeout, response);
             }
             return Ok(response);
         }
@@ -56,7 +56,11 @@ namespace SU_COIN_BACK_END.Controllers
                 {
                     return BadRequest(response);
                 }
-                return NotFound(response);
+                if (response.Message == MessageConstants.EVENT_NOT_FOUND)
+                {
+                    return NotFound(response);
+                }
+                return StatusCode(StatusCodes.Status408RequestTimeout, response);
             }
             return Ok(response);
         }
@@ -72,7 +76,11 @@ namespace SU_COIN_BACK_END.Controllers
                 {
                     return BadRequest(response);
                 }
-                return NotFound(response);
+                if (response.Message == MessageConstants.EVENT_NOT_FOUND)
+                {
+                    return NotFound(response);
+                }
+                return StatusCode(StatusCodes.Status408RequestTimeout, response);
             }
             return Ok(response);
         }
@@ -87,7 +95,7 @@ namespace SU_COIN_BACK_END.Controllers
             {
                 if (chainResponse.Message == MessageConstants.CHAIN_INTERACTION_FAIL)
                 {
-                    return NotFound();
+                    return StatusCode(StatusCodes.Status408RequestTimeout, chainResponse);
                 }
                 return BadRequest(chainResponse);
             }
