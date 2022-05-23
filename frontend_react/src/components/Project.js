@@ -32,7 +32,9 @@ import abi from '../abi/project.json'
 
 import { Grid } from "@material-ui/core/";
 import dummyimg from '../images/dummyimg.png';
-import {getFileFromIpfs} from "../helpers.js"
+import { getFileFromIpfs } from "../helpers.js"
+
+import LoadingIcon from './LoadingIcon';
 
 const mkdStr = `# {Freelance Finder Version 2}
 ## Project Abstact
@@ -59,7 +61,8 @@ const Project = ({ navigation }) => {
   const [owner, setOwner] = useState();
   const [signer, setSigner] = useState()
   const [hash, setHash] = useState()
-  const [imageURL,setImageURL] = useState('');
+  const [imageURL, setImageURL] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
 
   const [project, setProject] = useState({
     rating: 0,
@@ -104,7 +107,7 @@ const Project = ({ navigation }) => {
     const registerContract = await new ethers.Contract(abi.address, ethersAbi.abi, signer)
 
     const hashResult = "0x" + project.fileHash
-    
+
     const projInfo = await registerContract.projectsRegistered(hashResult)
 
 
@@ -118,7 +121,6 @@ const Project = ({ navigation }) => {
     setOwner(await projInfo.proposer)
     setSigner(await signer.getAddress())
     setHash(hashResult)
-
   }, [project])
 
 
@@ -169,115 +171,117 @@ const Project = ({ navigation }) => {
   }
 
   const getFile = async () => {
-      
+
     console.log(project.fileHash)
-  getFileFromIpfs(project.fileHash,"whitepaper").then(res => downloadFile(res.data))
+    getFileFromIpfs(project.fileHash, "whitepaper").then(res => downloadFile(res.data))
 
 
-  const downloadFile = async (file) => {
-    const reader = new FileReader()
+    const downloadFile = async (file) => {
+      const reader = new FileReader()
 
-  
 
-    reader.readAsText(file);
-    reader.onloadend = async () => {
-      const data = window.URL.createObjectURL(file);
-      const tempLink = await document.createElement('a');
-      tempLink.href = data;
-      tempLink.download = "Project_#" + project.projectID + ".pdf"; // some props receive from the component.
-      tempLink.click();
+
+      reader.readAsText(file);
+      reader.onloadend = async () => {
+        const data = window.URL.createObjectURL(file);
+        const tempLink = await document.createElement('a');
+        tempLink.href = data;
+        tempLink.download = "Project_#" + project.projectID + ".pdf"; // some props receive from the component.
+        tempLink.click();
+      }
     }
   }
-}
 
-  
+
 
   useEffect(async () => {
     if (project.fileHash == undefined)
       return
-    const imageResult = await getFileFromIpfs(project.fileHash,"image")
+    const imageResult = await getFileFromIpfs(project.fileHash, "image")
     setImageURL(URL.createObjectURL(imageResult.data))
-  },[project])
+    setIsLoading(false);
+  }, [project])
 
   const navigate = useNavigate();
   return (
-    <div>
+    isLoading ?
+      <div>
+        <div className="sectionName" style={{ paddingLeft: "200px", paddingTop: "25px", paddingBottom: "25px" }}>Project Details</div>
+        <LoadingIcon />
+      </div>
+      : <div>
+        <div className="sectionName" style={{ paddingLeft: "200px", paddingTop: "25px", paddingBottom: "25px" }}>Project Details</div>
 
-      <div className="sectionName" style={{ paddingLeft: "200px", paddingTop: "25px", paddingBottom: "25px" }}>Project Details</div>
-
-      <Grid container spacing={0}>
-        <Grid item xs style={{ display: "flex", flexDirection: "column", justifyContent: 'space-between' }}>
-          <div className="project-image" style={{ display: "flex", flexDirection: "row", justifyContent: "center" }}>
-            <img src={imageURL ?? dummyimg} alt="" style={{ borderRadius: '20px', width:'500px' }} />
-          </div>
-          <br></br>
-          <div className="sectionName" style={{ textAlign: 'center' }}>{project.projectName}</div>
-          <br></br>
-          <div className="simpletext" style={{ textAlign: 'center', fontSize: '800', fontWeight: '500' }}>{project.projectDescription}</div>
-          <br></br>
-          <div style={{ display: "flex", flexDirection: "row", justifyContent: "center" }}>
-            <button className="button" onClick={getFile}>
-              <a>
-                Download Project PDF
-              </a>
-            </button>
-          </div>
-        </Grid>
-
-        <Grid item xs>
-          <ProjectInfo
-            setProject={setProject}
-            projectId={projectId}
-            project={project}
-            status={state.status}
-            isOwner={isOwner}
-            isWhitelisted={isWhitelisted}
-            imageUrl={project.imageURL}
-            projectName={project.projectName}
-            projectDescription={project.projectDescription}
-            proposalDate={project.date}
-            projectStatus={project.status}
-            approvalRatio={"b"}
-            approvedVotes={"d"}
-            fileHash={hash}
-            rejectedVotes={"e"}
-            tokenCount={"N/A"}
-            tokenName={"N/A"}
-            tokenPrice={"N/A"}
-            isAuctionCreated={false}
-            onClickCreateToken={() => navigate("/createTokens", { state: { hash: hash } })}
-            onClickCreateAuction={() => navigate("/createAuction", { state: { hash: hash } })}
-          />
-          
-        </Grid>
-      </Grid>
-
-
-
-      <br></br>
-      {isOwner ?
-        <div className="container">
-          <Button style={{ margin: "10px" }} onClick={() => { handleEdit() }}> Edit Project Page</Button>
-          {isEditing ?
-            <div style={{ width: "100%", textAlign: "center", margin: "auto" }}>
-              <MDEditor width={window.innerWidth} height={500} value={markdown} onChange={setMarkdown} />
-              <div style={{ padding: "50px 0 0 0" }} />
-              <Button onClick={() => { handleEditSubmission() }}> Save Changes</Button>
+        <Grid container spacing={0}>
+          <Grid item xs style={{ display: "flex", flexDirection: "column", justifyContent: 'space-between' }}>
+            <div className="project-image" style={{ display: "flex", flexDirection: "row", justifyContent: "center" }}>
+              <img src={imageURL ?? dummyimg} alt="" style={{ borderRadius: '20px', width: '500px', height:'450px' }} />
             </div>
-            :
-            <MDEditor.Markdown
-              source={markdown}
-              linkTarget="_blank"
+            <br></br>
+            <div className="sectionName" style={{ textAlign: 'center' }}>{project.projectName}</div>
+            <br></br>
+            <div className="simpletext" style={{ textAlign: 'center', fontSize: '800', fontWeight: '500' }}>{project.projectDescription}</div>
+            <br></br>
+            <div style={{ display: "flex", flexDirection: "row", justifyContent: "center" }}>
+              <button className="button" onClick={getFile}>
+                <a>
+                  Download Project PDF
+                </a>
+              </button>
+            </div>
+          </Grid>
+
+          <Grid item xs>
+            <ProjectInfo
+              setProject={setProject}
+              projectId={projectId}
+              project={project}
+              status={state.status}
+              isOwner={isOwner}
+              isWhitelisted={isWhitelisted}
+              imageUrl={project.imageURL}
+              projectName={project.projectName}
+              projectDescription={project.projectDescription}
+              proposalDate={project.date}
+              projectStatus={project.status}
+              approvalRatio={"b"}
+              approvedVotes={"d"}
+              fileHash={hash}
+              rejectedVotes={"e"}
+              tokenCount={"N/A"}
+              tokenName={"N/A"}
+              tokenPrice={"N/A"}
+              isAuctionCreated={false}
+              onClickCreateToken={() => navigate("/createTokens", { state: { hash: hash } })}
+              onClickCreateAuction={() => navigate("/createAuction", { state: { hash: hash } })}
             />
-          }
-        </div>
-        :
-        <MDEditor.Markdown style={{ margin: "5%" }}
-          source={markdown}
-          linkTarget="_blank"
-        />
-      }
-    </div>
+          </Grid>
+        </Grid>
+
+        <br></br>
+        {isOwner ?
+          <div className="container">
+            <Button style={{ margin: "10px" }} onClick={() => { handleEdit() }}> Edit Project Page</Button>
+            {isEditing ?
+              <div style={{ width: "100%", textAlign: "center", margin: "auto" }}>
+                <MDEditor width={window.innerWidth} height={500} value={markdown} onChange={setMarkdown} />
+                <div style={{ padding: "50px 0 0 0" }} />
+                <Button onClick={() => { handleEditSubmission() }}> Save Changes</Button>
+              </div>
+              :
+              <MDEditor.Markdown
+                source={markdown}
+                linkTarget="_blank"
+              />
+            }
+          </div>
+          :
+          <MDEditor.Markdown style={{ margin: "5%" }}
+            source={markdown}
+            linkTarget="_blank"
+          />
+        }
+      </div>
   );
 };
 

@@ -141,7 +141,7 @@ const AuctionInfo = ({ auction, projectId, price, tokenDist, deposit, totalRaise
             Auction Type: <p>{auctionType}</p>{" "}
           </h5>
           <h5>
-            Auction Mechanism: <p>1st step lfjnfsljbneljvenblfn</p>{" "}
+            Auction Mechanism: <p>Price will drop by the time goes. Try to be enter SUCoin amount according to your token price/supply strategy.</p>{" "}
           </h5>
           <h5>
             Starting Date: <p>{new Date(startingDate * 1000).toString()}</p>{" "}

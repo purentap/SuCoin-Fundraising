@@ -128,3 +128,49 @@
 .auction-info > div{
     margin: auto;
 }
+
+
+.circle,.custom{
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.custom{
+    flex-direction: column;
+
+}
+
+.balls{
+    display: flex;   
+}
+
+.ball{
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: #173A6A;
+    margin-right: 10px;
+    animation: ball 0.5s ease infinite alternate;
+}
+
+.ball2{
+    animation-delay: 0.1s;
+}
+
+.ball3{
+    animation-delay: 0.2s;
+}
+
+@keyframes ball {
+    to{
+        transform: translateY(-10px);
+    }
+}
+
+.customText{
+    font-weight: 600;
+    font-size: x-large;
+    font-family: 'Montserrat', sans-serif;
+}

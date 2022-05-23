@@ -10,6 +10,8 @@ import { ethers } from "ethers";
 import { hexToHash } from "../helpers";
 import ProjectInvitationCard from "./ProfilePageUI/ProjectInvitationCard";
 
+import LoadingIcon from './LoadingIcon';
+
 var user = [];
 
 const config = {
@@ -25,6 +27,8 @@ const apiInstance = axios.create({
 
 const ProfilePage = () => {
   const [User, setUser] = useState(user);
+
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(async () => {
     try {
@@ -57,57 +61,58 @@ const ProfilePage = () => {
   const [projects, setProjects] = useState([]);
   const [invitedProjects, setInvitedProjects] = useState([]);
 
-  useEffect( async () => {
-    try{
-    apiInstance.defaults.headers.common[
-      "Authorization"
-    ] = `Bearer ${Cookies.get("token")}`;
-    
-    let response2 = new Promise((resolve, reject) => {
-      apiInstance
-        .get("/Project/GetAllPermissioned/false")
-        .then((res) => {
-          console.log("response: ", res.data);
-          resolve(res);
-        })
-        .catch((e) => {
-          const err = "Unable to get the projects of the user";
-          reject(err);
-        });
-    });
-    let result = await response2;
-    console.log("Projects get request is successful", result);
-    setProjects(result.data.data);
-  } catch (error) {
-    console.log(error);
-  }
-}, []);
+  useEffect(async () => {
+    try {
+      apiInstance.defaults.headers.common[
+        "Authorization"
+      ] = `Bearer ${Cookies.get("token")}`;
 
-useEffect( async () => {
-  try{
-  apiInstance.defaults.headers.common[
-    "Authorization"
-  ] = `Bearer ${Cookies.get("token")}`;
-  
-  let response2 = new Promise((resolve, reject) => {
-    apiInstance
-      .get("/Project/GetAllInvitations")
-      .then((res) => {
-        console.log("response: ", res.data);
-        resolve(res);
-      })
-      .catch((e) => {
-        const err = "Unable to get invitations of the user";
-        reject(err);
+      let response2 = new Promise((resolve, reject) => {
+        apiInstance
+          .get("/Project/GetAllPermissioned/false")
+          .then((res) => {
+            console.log("response: ", res.data);
+            resolve(res);
+          })
+          .catch((e) => {
+            const err = "Unable to get the projects of the user";
+            reject(err);
+          });
       });
-  });
-  let result = await response2;
-  console.log("Invitation get request is successful", result);
-  setInvitedProjects(result.data.data);
-} catch (error) {
-  console.log(error);
-}
-}, []);
+      let result = await response2;
+      console.log("Projects get request is successful", result);
+      setProjects(result.data.data);
+    } catch (error) {
+      console.log(error);
+    }
+  }, []);
+
+  useEffect(async () => {
+    try {
+      apiInstance.defaults.headers.common[
+        "Authorization"
+      ] = `Bearer ${Cookies.get("token")}`;
+
+      let response2 = new Promise((resolve, reject) => {
+        apiInstance
+          .get("/Project/GetAllInvitations")
+          .then((res) => {
+            console.log("response: ", res.data);
+            resolve(res);
+          })
+          .catch((e) => {
+            const err = "Unable to get invitations of the user";
+            reject(err);
+          });
+      });
+      let result = await response2;
+      console.log("Invitation get request is successful", result);
+      setInvitedProjects(result.data.data);
+      setIsLoading(false);
+    } catch (error) {
+      console.log(error);
+    }
+  }, []);
 
 
   const onDelete = async (deletedProject) => {
@@ -125,8 +130,8 @@ useEffect( async () => {
             setProjects(newProjectList);
             resolve(res);
 
-            
-            
+
+
           })
           .catch((e) => {
             const err = "Unable to delete the project";
@@ -146,7 +151,7 @@ useEffect( async () => {
       ] = `Bearer ${Cookies.get("token")}`;
       let response2 = new Promise((resolve, reject) => {
         apiInstance
-          .put("/User/Invite/",invitationRequest)
+          .put("/User/Invite/", invitationRequest)
           .then((res) => {
             console.log("Invitation request sent")
             console.log("response: ", res.data)
@@ -164,10 +169,10 @@ useEffect( async () => {
 
   const onInvitationAccept = async (acceptedProject) => {
     const acceptRequest = {
-      projectID : acceptedProject.projectID,
-      Username : User.username,
-      Role : "Editor",
-      IsAccepted : true
+      projectID: acceptedProject.projectID,
+      Username: User.username,
+      Role: "Editor",
+      IsAccepted: true
     };
 
     try {
@@ -176,7 +181,7 @@ useEffect( async () => {
       ] = `Bearer ${Cookies.get("token")}`;
       let response2 = new Promise((resolve, reject) => {
         apiInstance
-          .post("/User/InvitationReply" , acceptRequest)
+          .post("/User/InvitationReply", acceptRequest)
           .then((res) => {
             console.log("Project is Accepted!")
             console.log("response: ", res.data);
@@ -186,8 +191,8 @@ useEffect( async () => {
             setInvitedProjects(newInvitationList);
             resolve(res);
 
-            
-            
+
+
           })
           .catch((e) => {
             const err = "Unable to accept the project";
@@ -202,10 +207,10 @@ useEffect( async () => {
 
   const onInvitationReject = async (rejectedProject) => {
     const rejectRequest = {
-      projectID : rejectedProject.projectID,
-      Username : User.username,
-      Role : "Editor",
-      IsAccepted : false
+      projectID: rejectedProject.projectID,
+      Username: User.username,
+      Role: "Editor",
+      IsAccepted: false
     };
 
     try {
@@ -214,7 +219,7 @@ useEffect( async () => {
       ] = `Bearer ${Cookies.get("token")}`;
       let response2 = new Promise((resolve, reject) => {
         apiInstance
-          .post("/User/InvitationReply" , rejectRequest)
+          .post("/User/InvitationReply", rejectRequest)
           .then((res) => {
             console.log("Project is Rejected!")
             console.log("response: ", res.data);
@@ -222,8 +227,8 @@ useEffect( async () => {
             setInvitedProjects(newInvitationList);
             resolve(res);
 
-            
-            
+
+
           })
           .catch((e) => {
             const err = "Unable to reject the project";
@@ -242,19 +247,19 @@ useEffect( async () => {
       baseURL: "https://localhost:5001",
     })
 
-    
+
     console.log(editRequest)
     apiInstance.defaults.headers.common["Authorization"] = `Bearer ${Cookies.get('token')}`
     let response2 = new Promise((resolve, reject) => {
       console.log(editRequest)
       apiInstance.put("/Project/Update/",
-      {
-        ProjectID: editRequest.projectID,
-        ProjectName: editRequest.projectName,
-        ProjectDescription: editRequest.projectDescription,
+        {
+          ProjectID: editRequest.projectID,
+          ProjectName: editRequest.projectName,
+          ProjectDescription: editRequest.projectDescription,
 
-      })
-    
+        })
+
         .then((res) => {
           console.log("Edit is done")
           console.log(res.data)
@@ -270,56 +275,63 @@ useEffect( async () => {
   };
 
   return (
-    <Grid
-      height="90%"
-      width="90%"
-      templateColumns="repeat(6, 1fr)"
-      gap={200}
-      m={20}
-    >
-      <GridItem colSpan={2}>
-        <ProfilePageCard
-          name={User.name}
-          surname={User.surname}
-          address={User.address}
-          email={User.mailAddress}
-          username={User.username}
-        />
-      </GridItem>
+    isLoading ?
 
-      <GridItem colSpan={4}>
-      {invitedProjects.map((invitation) => (
-          <ProjectInvitationCard
-            projectName={invitation.projectName}
-            status={invitation.status}
-            projectDescription={invitation.projectDescription}
-            imageUrl={invitation.imageUrl}
-            rating = {invitation.rating}
-            projectID = {invitation.projectID}
-            invitationAccept = {onInvitationAccept}
-            invitationReject = {onInvitationReject}>
-              
-          </ProjectInvitationCard>
-        ))}
+      <div style={{ width: '85%', margin: "auto" }}>
+        <div className="sectionName" style={{ paddingLeft: "200px", paddingTop: "25px", paddingBottom: "25px" }}></div>
+        <LoadingIcon />
+      </div>
+      :
+      <Grid
+        height="90%"
+        width="90%"
+        templateColumns="repeat(6, 1fr)"
+        gap={200}
+        m={20}
+      >
+        <GridItem colSpan={2}>
+          <ProfilePageCard
+            name={User.name}
+            surname={User.surname}
+            address={User.address}
+            email={User.mailAddress}
+            username={User.username}
+          />
+        </GridItem>
 
-        
-        {projects.map((project) => (
-          <ProjectsCard
-            projectName={project.projectName}
-            status={project.status}
-            projectDescription={project.projectDescription}
-            rating = {project.rating}
-            projectID = {project.projectID}
-            fileHash = {project.fileHash}
-            deleteFunction = {onDelete}
-            invitationFunction = {onInvitation}
-            editFunction = {onEdit}
-          ></ProjectsCard>
-        ))}
+        <GridItem colSpan={4}>
+          {invitedProjects.map((invitation) => (
+            <ProjectInvitationCard
+              projectName={invitation.projectName}
+              status={invitation.status}
+              projectDescription={invitation.projectDescription}
+              imageUrl={invitation.imageUrl}
+              rating={invitation.rating}
+              projectID={invitation.projectID}
+              invitationAccept={onInvitationAccept}
+              invitationReject={onInvitationReject}>
+
+            </ProjectInvitationCard>
+          ))}
 
 
-      </GridItem>
-    </Grid>
+          {projects.map((project) => (
+            <ProjectsCard
+              projectName={project.projectName}
+              status={project.status}
+              projectDescription={project.projectDescription}
+              rating={project.rating}
+              projectID={project.projectID}
+              fileHash={project.fileHash}
+              deleteFunction={onDelete}
+              invitationFunction={onInvitation}
+              editFunction={onEdit}
+            ></ProjectsCard>
+          ))}
+
+
+        </GridItem>
+      </Grid>
   );
 };
 

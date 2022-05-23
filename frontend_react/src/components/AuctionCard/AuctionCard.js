@@ -20,7 +20,7 @@ const AuctionCard = (props) => {
   return (
     <Wrapper>
         <div className="project-image">
-            <img src={imageURL ?? dummyimg} alt=""/>
+            <img src={imageURL ?? dummyimg} alt="" style={{width:"1000px", height:"200px"}}/>
         </div>
         <h1>{props.projectName}</h1>
         <div>

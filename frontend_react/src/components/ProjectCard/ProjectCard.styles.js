@@ -7,7 +7,7 @@ export const Wrapper = styled.div`
   box-shadow: 0 1px 10px rgba(0, 0, 0, 0.8);
   padding: 5px;
   width: 15rem;
-  height: auto;
+  height: 20 rem;
   margin-left: 20px;
   margin-top: 20px;
   overflow-wrap: break-word;

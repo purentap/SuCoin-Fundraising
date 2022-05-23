@@ -19,7 +19,7 @@ import axios from 'axios'
 import Cookies from 'js-cookie'
 import Maestro from "../contracts_hardhat/artifacts/contracts/Maestro.sol/Maestro.json"
 import { ethers } from 'ethers';
-import {getFileFromIpfs} from "../helpers.js"
+import { getFileFromIpfs } from "../helpers.js"
 // Hook
 import { useHomeFetch } from '../hooks/useHomeFetch';
 // Image
@@ -29,6 +29,8 @@ import cool_jpeg from '../images/cool_block.jpeg';
 import { getAuctionByStatus } from "./Auctions.js"
 
 import { useNavigate } from 'react-router-dom';
+
+import LoadingIcon from './LoadingIcon';
 
 const Home = () => {
   const {
@@ -48,6 +50,9 @@ const Home = () => {
   const [auctionIndex, setAuctionIndex] = useState(0);
   const [projectIndex, setProjectIndex] = useState(0);
 
+  const [isLoading, setIsLoading] = useState(true);
+
+
   const handleRead = async () => {
     console.log("state")
     console.log(state)
@@ -62,7 +67,7 @@ const Home = () => {
   //Count should be fixed later
 
   useEffect(async () => {
- 
+
 
     try {
       const apiInstance = axios.create({
@@ -85,7 +90,7 @@ const Home = () => {
       let result = await response2
 
       const tempAuctions = await getAuctionByStatus(1, 5)
-      const getImagePromise = (selected) => getFileFromIpfs(selected.fileHash,"image").then(imageInfo => selected.imageURL =  URL.createObjectURL(imageInfo.data))
+      const getImagePromise = (selected) => getFileFromIpfs(selected.fileHash, "image").then(imageInfo => selected.imageURL = URL.createObjectURL(imageInfo.data))
       const tempProjects = result.data.data
       await Promise.all(tempProjects.concat(tempAuctions).map(getImagePromise))
 
@@ -101,6 +106,8 @@ const Home = () => {
 
     //setProjects(await )
 
+    setIsLoading(false);
+
     console.log(auctions[0])
     console.log("Random projects:", projects)
   }, [])
@@ -109,19 +116,21 @@ const Home = () => {
 
   const navigate = useNavigate();
 
-  const increaseProjectIndex = () => {setProjectIndex((projectIndex +1) % projects.length)}
-  const increaseAuctionIndex = () => {setAuctionIndex((auctionIndex +1) % auctions.length)}
+  const increaseProjectIndex = () => { setProjectIndex((projectIndex + 1) % projects.length) }
+  const increaseAuctionIndex = () => { setAuctionIndex((auctionIndex + 1) % auctions.length) }
 
-  const decreaseProjectIndex = () => {setProjectIndex((projectIndex -1 + projects.length) % projects.length)}
-  const decreaseAuctionIndex = () => {setAuctionIndex((auctionIndex -1 + auctions.length) % auctions.length)}
+  const decreaseProjectIndex = () => { setProjectIndex((projectIndex - 1 + projects.length) % projects.length) }
+  const decreaseAuctionIndex = () => { setAuctionIndex((auctionIndex - 1 + auctions.length) % auctions.length) }
 
-  const navigateProjectDetail = (projectId) => {navigate('projects/' + projectId)}
-  const navigateAuctionDetail = (projectId) => {navigate('auction/' + projectId, {state:auctions[auctionIndex]})}
+  const navigateProjectDetail = (projectId) => { navigate('projects/' + projectId) }
+  const navigateAuctionDetail = (projectId) => { navigate('auction/' + projectId, { state: auctions[auctionIndex] }) }
+
+
 
 
 
   const courasel = (type) => {
-      
+
 
 
     if (type == "Projects") {
@@ -143,65 +152,71 @@ const Home = () => {
 
     if (selectedList.length > 0) {
 
-    //Get pictures
+      //Get pictures
 
 
-    const selected = selectedList[selectedIndex]
-    console.log(`Random ${type}: ${selectedList}`)
+      const selected = selectedList[selectedIndex]
+      console.log(`Random ${type}: ${selectedList}`)
 
-    console.log(selected.imageURL)
+      console.log(selected.imageURL)
 
-    return (
+      return (
 
-      <>
-        <div className="sectionName" style={{ textAlign: 'center' }}>{type}</div>
-        <div className="courasel" id={type}>
+        <>
+          <div className="sectionName" style={{ textAlign: 'center' }}>{type}</div>
+          <div className="courasel" id={type}>
 
-          <div className='arrow' id="before">
-            <img src={arrow} alt=""
-              onClick={indexDecrease}
-            />
-          </div>
-          <div className="img-courasel"><img src={
-            selected.imageURL ?? dummyimg
-            
-          } style={{ borderRadius: '20px', width:'auto' , height: '265px'}} alt="" /> </div>
-          <div className="info">
-            <div className="mini-info">
-              <div className="name"> {selected.projectName} </div>
-              <div className="button">
-                <button onClick={() => navigateTarget(selected.projectID)}>
-                  {buttonText}
-                </button>
-              </div>
+            <div className='arrow' id="before">
+              <img src={arrow} alt=""
+                onClick={indexDecrease}
+              />
             </div>
-            <div className="detail"> {selected.projectDescription}</div>
-          </div>
-          <div className='arrow' id="next">
-            <img style={{ transform: 'rotate(180deg)' }} src={arrow} alt="" onClick={indexIncrease}
-            />
-          </div>
-        </div></> 
-    )
-        }
+            <div className="img-courasel"><img src={
+              selected.imageURL ?? dummyimg
+
+            } style={{ borderRadius: '20px', width: '390px', height: '300px' }} alt="" /> </div>
+            <div className="info">
+              <div className="mini-info">
+                <div className="name"> {selected.projectName} </div>
+                <div className="button">
+                  <button onClick={() => navigateTarget(selected.projectID)}>
+                    {buttonText}
+                  </button>
+                </div>
+              </div>
+              <div className="detail"> {selected.projectDescription}</div>
+            </div>
+            <div className='arrow' id="next">
+              <img style={{ transform: 'rotate(180deg)' }} src={arrow} alt="" onClick={indexIncrease}
+              />
+            </div>
+          </div></>
+      )
+    }
   }
 
   if (error) return <div>Something went wrong ...</div>;
 
   return (
     <>
-      <div className={'home-page'}>
-        <div className="sectionName" style={{ paddingLeft: "50px", paddingTop: "25px", paddingBottom: "25px" }}>Welcome SULaunch</div>
-        {courasel('Live Auctions')}
-        {courasel('Projects')}
-        <div className="sectionName" style={{ textAlign: 'center' }}>How To Use SULaunch</div>
-        <img src={hwtouse} alt="" style={{ padding: '15px' }} />
-        <div style={{ padding: '15px' }}>
-          <div className="sectionName" style={{ paddingBottom: "15px" }} >About SuLaunch</div>
-          <div >SULaunch is an ENS491/492 project offered at the SabancÄ± University as a graduation project. The main aim of this project is to introduce Blockchain technology to CS enthusiasts and ...
+      {isLoading ?
+        <div className={'home-page'}>
+          <div className="sectionName" style={{ paddingLeft: "50px", paddingTop: "25px", paddingBottom: "25px" }}>Welcome SULaunch</div>
+          <LoadingIcon />
+        </div>
+        : <div className={'home-page'}>
+          <div className="sectionName" style={{ paddingLeft: "50px", paddingTop: "25px", paddingBottom: "25px" }}>Welcome SULaunch</div>
+          {courasel('Live Auctions')}
+          {courasel('Projects')}
+          <div className="sectionName" style={{ textAlign: 'center' }}>How To Use SULaunch</div>
+          <img src={hwtouse} alt="" style={{ padding: '15px' }} />
+          <div style={{ padding: '15px' }}>
+            <div className="sectionName" style={{ paddingBottom: "15px" }} >About SuLaunch</div>
+            <div >SULaunch is an ENS491/492 project offered at the SabancÄ± University as a graduation project. The main aim of this project is to introduce Blockchain technology to CS enthusiasts and ...
+            </div>
           </div>
         </div>
-      </div>
+      }
     </>
   );
 };

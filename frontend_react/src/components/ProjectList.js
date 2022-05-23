@@ -21,6 +21,8 @@ import axios from 'axios'
 import Accordion from 'react-bootstrap/Accordion'
 import Cookies from 'js-cookie'
 
+import LoadingIcon from './LoadingIcon';
+
 const radios = [
   { name: 'All', value: '0' },
   { name: 'Approved', value: '1' },
@@ -37,7 +39,7 @@ const Projects = (props) => {
 }
 
 var pj = [
- 
+
 ]
 
 
@@ -47,6 +49,7 @@ const ProjectList = () => {
   const [alignment, setAlignment] = useState(radios[0]);
   const [projects, setProjects] = useState(pj)
   const [response, setResponse] = useState([])
+  const [isLoading, setIsLoading] = useState(true);
 
   const handleChange = async (newAlignment) => {
     if (newAlignment != null) {
@@ -97,6 +100,7 @@ const ProjectList = () => {
       let result = await response2
       console.log("ehee", result)
       setProjects(result.data.data)
+      setIsLoading(false);
 
     } catch (error) {
       console.log(error)
@@ -108,42 +112,48 @@ const ProjectList = () => {
 
 
   return (
-    <div className='projects-page'>
-      <div className="sectionName" style={{paddingLeft:"50px", paddingTop:"25px", paddingBottom:"10px"}}>Projects</div>
-      <div style={{ display: "flex", justifyContent: "center", marginTop: "1rem" }}>
-        <ButtonGroup aria-label="Basic example"
-          exclusive
-        >
-          <Button className="simpletext" onClick={() => { handleChange(0) }} variant="outline-secondary" value={radios[0].value} >{radios[0].name} </Button>
-          <Button className="simpletext" onClick={() => { handleChange(1) }} variant="outline-secondary" value={radios[1].value} >{radios[1].name} </Button>
-          <Button className="simpletext" onClick={() => { handleChange(2) }} variant="outline-secondary" value={radios[2].value} >{radios[2].name} </Button>
-          <Button className="simpletext" onClick={() => { handleChange(3) }} variant="outline-secondary" value={radios[3].value} > {radios[3].name} </Button >
-        </ButtonGroup >
-      </div >
-
-      <br></br>
-
-      <div style={{ width: "90%", textAlign: "center", margin: "auto" }}>
-        <div class="grid-container" style={{display: 'grid'}}>
-          {projects.map((project, index) => (
-            <div>
-              <ProjectCard
-              imageUrl={project.imageUrl}
-              projectName={project.projectName}
-              projectDescription={project.projectDescription}
-              projectStatus={project.status}
-              projectRating={project.rating}
-              fileHash={project.fileHash}
-              projectID={project.projectID}
-              />
-            </div>
-          ))}
-
-        </div>
+    isLoading ?
+    
+      <div className='projects-page'>
+        <div className="sectionName" style={{ paddingLeft: "50px", paddingTop: "25px", paddingBottom: "10px" }}>Projects</div>
+        <LoadingIcon />
       </div>
+      : <div className='projects-page'>
+        <div className="sectionName" style={{ paddingLeft: "50px", paddingTop: "25px", paddingBottom: "10px" }}>Projects</div>
+        <div style={{ display: "flex", justifyContent: "center", marginTop: "1rem" }}>
+          <ButtonGroup aria-label="Basic example"
+            exclusive
+          >
+            <Button className="simpletext" onClick={() => { handleChange(0) }} variant="outline-secondary" value={radios[0].value} >{radios[0].name} </Button>
+            <Button className="simpletext" onClick={() => { handleChange(1) }} variant="outline-secondary" value={radios[1].value} >{radios[1].name} </Button>
+            <Button className="simpletext" onClick={() => { handleChange(2) }} variant="outline-secondary" value={radios[2].value} >{radios[2].name} </Button>
+            <Button className="simpletext" onClick={() => { handleChange(3) }} variant="outline-secondary" value={radios[3].value} > {radios[3].name} </Button >
+          </ButtonGroup >
+        </div >
 
-      <br></br>
-    </div>
+        <br></br>
+
+        <div style={{ width: "90%", textAlign: "center", margin: "auto" }}>
+          <div class="grid-container" style={{ display: 'grid' }}>
+            {projects.map((project, index) => (
+              <div>
+                <ProjectCard
+                  imageUrl={project.imageUrl}
+                  projectName={project.projectName}
+                  projectDescription={project.projectDescription}
+                  projectStatus={project.status}
+                  projectRating={project.rating}
+                  fileHash={project.fileHash}
+                  projectID={project.projectID}
+                />
+              </div>
+            ))}
+
+          </div>
+        </div>
+
+        <br></br>
+      </div>
   );
 };
 

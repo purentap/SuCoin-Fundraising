@@ -31,6 +31,11 @@ import { Line } from 'react-chartjs-2';
 
 import PriceChart from './PriceChart';
 
+
+import LoadingIcon from './LoadingIcon';
+
+
+
 const Auction = (props) => {
     const { state } = useLocation();
     const { auctionType, auction, projectId } = state
@@ -50,6 +55,8 @@ const Auction = (props) => {
     const [finalRate, setFinalRate] = useState();
     const [minimumPrice, setMinimumPrice] = useState();
     const [initDist,setInitDist] = useState();
+
+    const [isLoading, setIsLoading] = useState(true);
 
 
     const provider = new ethers.providers.Web3Provider(window.ethereum);
@@ -112,6 +119,8 @@ const Auction = (props) => {
         refreshInfo(abi, auctionContract) //todo it would be better if backend did this
 
         provider.on(tokenBoughtFilter, (log, event) => refreshInfo(abi, auctionContract))
+
+        setIsLoading(false);
     }, [])
 
     const getFile = async () => {
@@ -139,13 +148,20 @@ const Auction = (props) => {
 
 
     return (
+        isLoading ?
+
         <div style={{ width: '85%', margin: "auto" }}>
+            <div className="sectionName" style={{ paddingLeft: "200px", paddingTop: "25px", paddingBottom: "25px" }}>Auction Details</div>
+            <LoadingIcon />
+        </div>
+
+        : <div style={{ width: '85%', margin: "auto" }}>
             <div className="sectionName" style={{ paddingLeft: "200px", paddingTop: "25px", paddingBottom: "25px" }}>Auction Details</div>
 
             <Grid container spacing={0}>
                 <Grid item xs style={{ display: "flex", flexDirection: "column", justifyContent: 'space-between'}}>
                     <div className="project-image" style={{ display: "flex", flexDirection: "row", justifyContent: "center" }}>
-                        <img src={imageURL ?? dummyimg} alt="" style={{ borderRadius: '20px', width: '500px' }} />
+                        <img src={imageURL ?? dummyimg} alt="" style={{ borderRadius: '20px', width: '500px', height:'450px' }} />
                     </div>
                     <br></br>
                     <div className="sectionName" style={{ textAlign: 'center' }}>{state.projectName}</div>
