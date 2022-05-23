@@ -29,6 +29,11 @@
     justify-content: space-between;
     padding: 15px 0 15px 0;
 }
+.img-courasel{
+    width: 450px;
+    height: 300px;
+    border-radius: 20px;
+}
 .info{
     padding-left: 25px;
     width: 640px;
