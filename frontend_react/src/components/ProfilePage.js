@@ -282,7 +282,7 @@ useEffect( async () => {
           name={User.name}
           surname={User.surname}
           address={User.address}
-          email={User.email}
+          email={User.mailAddress}
           username={User.username}
         />
       </GridItem>
