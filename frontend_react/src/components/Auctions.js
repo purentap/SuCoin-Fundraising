@@ -98,7 +98,7 @@ const Auctions = () => {
 
     useEffect(async () => {
         try {
-            setAuctions(await getAuctionByStatus(0,10))
+            setAuctions(await getAuctionByStatus(1,10))
             }
             catch (error) {
                 setToastshow(true)

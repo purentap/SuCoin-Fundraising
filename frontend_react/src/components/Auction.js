@@ -238,6 +238,7 @@ const Auction = (props) => {
                     initialRate={startingPrice}
                     finalRate={finalRate}
                     initialSupply={initDist}
+                    soldTokens={soldToken}
                 /> : null}
         </div>
     );

@@ -18,7 +18,7 @@ import { Line } from 'react-chartjs-2';
 
 
 
-const PriceChart = ({auctionType, startTime, latestEndTime, initialRate, finalRate, initialSupply}) => {
+const PriceChart = ({auctionType, startTime, latestEndTime, initialRate, finalRate, initialSupply,soldTokens}) => {
 
     const realTime = Date.now();
 
@@ -100,7 +100,7 @@ const PriceChart = ({auctionType, startTime, latestEndTime, initialRate, finalRa
             },
             {
                 label: 'Total Supply',
-                data: timestamps.map((realTime) => Math.max(0,(initialSupply - (initialSupply) * (realTime / 1000 - startTime)  /  (latestEndTime - startTime)))),
+                data: timestamps.map((realTime) => Math.max(soldTokens,(initialSupply - (initialSupply) * (realTime / 1000 - startTime)  /  (latestEndTime - startTime)))),
                 function: function(realTime) {return (initialSupply) * (realTime / 1000 - startTime)  /  (latestEndTime - startTime)},
                 borderColor: 'rgb(53, 162, 235)',
                 backgroundColor: 'rgba(53, 162, 235, 0.5)',
