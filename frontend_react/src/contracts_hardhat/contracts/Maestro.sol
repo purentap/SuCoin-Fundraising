@@ -60,6 +60,8 @@ contract Maestro {
 
     function getProjectSurfaceByStatus(bytes32[] calldata hashes,Auction.AuctionStatus status,uint selectCount) view external returns(ProjectSurface[] memory){
 
+      if (selectCount > hashes.length)
+            selectCount = hashes.length;
 
         ProjectSurface[] memory wantedProjects = new ProjectSurface[](selectCount);
 
