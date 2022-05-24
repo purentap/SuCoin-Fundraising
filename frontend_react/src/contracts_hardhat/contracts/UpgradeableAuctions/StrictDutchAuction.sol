@@ -30,13 +30,14 @@ contract StrictDutchAuction is DutchAuction {
     }
 
     function getTotalSupply() public view virtual  returns(uint timeSupply) {
+        uint duration = endTime - startTime;
         if (startTime == 0)
             return initTokens;
         
         else if (block.timestamp >= latestEndTime)
             return soldProjectTokens;
         
-        uint timeTokens =  (initTokens - (initTokens) * (block.timestamp - startTime)  /  (latestEndTime - startTime));
+        uint timeTokens =  (initTokens - (initTokens) * (duration - (latestEndTime - block.timestamp))  /  (duration));
         //Number of tokens sold at least must be 1 higher than current sold or auction instnatly ends
         return timeTokens < soldProjectTokens ?  soldProjectTokens + 1 : timeTokens;
     }

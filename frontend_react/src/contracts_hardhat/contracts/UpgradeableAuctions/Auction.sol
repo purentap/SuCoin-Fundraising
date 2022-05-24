@@ -25,10 +25,15 @@ abstract contract Auction is AccessControlUpgradeable,Multicall  {              
     WrapperToken public bidCoin;                                          //Coin used for buying auction coins (Sucoin)
     uint public startTime;                                                    //Auction Start time in timestamp
     uint  public latestEndTime;                                               //Latest Auction end time in timestamp
-    enum AuctionStatus{OFF,RUNNING,ENDED} 
-    AuctionStatus public status;                                              //Current status of the auction         
+
+    uint internal variableStartTime;                                          //Pause support
+
+    enum AuctionStatus{OFF,RUNNING,PAUSED,ENDED} 
+    AuctionStatus public status;                                              //Current status of the auction       
+
     bytes32 public constant PROPOSER_ROLE = keccak256("PROPOSER_ROLE");
     bytes32 public constant PROPOSER_ADMIN_ROLE = keccak256("PROPOSER_ADMIN_ROLE");
+    
 
     address public projectWallet;
     uint public totalDepositedSucoins;
@@ -39,6 +44,8 @@ abstract contract Auction is AccessControlUpgradeable,Multicall  {              
     event BidSubmission(address indexed sender, uint amount);              //Logs bidder and bid amount in bidCoin
     event AuctionFinished(uint end, uint finalPrice);                         //Logs ending time and final price of the coin 
     event AuctionStarted(uint start, uint end);                               //Logs beginning and latest ending time of an auction
+    event AuctionPaused(uint pauseDuration);                                  //Logs pause duration
+
 
 
                                                                               //Gets and sets auction information
@@ -67,6 +74,7 @@ abstract contract Auction is AccessControlUpgradeable,Multicall  {              
    
 
         status = AuctionStatus.OFF;
+        
         bidCoin = WrapperToken(params.bidCoin);
     }
 
@@ -89,14 +97,18 @@ abstract contract Auction is AccessControlUpgradeable,Multicall  {              
 
 
    modifier stateUpdate() {
+        if (status == AuctionStatus.PAUSED  && block.timestamp >= variableStartTime)
+            status = AuctionStatus.RUNNING;
         if (status == AuctionStatus.RUNNING && block.timestamp >= latestEndTime)
             finalize();
         else
-            _;
+        _;
     }
 
     modifier quietStateUpdate() {
-          if (status == AuctionStatus.RUNNING && block.timestamp >= latestEndTime)
+        if (status == AuctionStatus.PAUSED  && block.timestamp >= variableStartTime)
+            status = AuctionStatus.RUNNING;
+        if (status == AuctionStatus.RUNNING && block.timestamp >= latestEndTime)
             finalize();
         _;
           
@@ -134,7 +146,7 @@ abstract contract Auction is AccessControlUpgradeable,Multicall  {              
         require(maximumAuctionTimeInHours > 0,"Auction Time must be longer");
     }
                                                                             //Create the auction if the auction creator already deposited the coins or have given approval
-    function startAuction(uint maximumAuctionTimeInHours) external virtual onlyRole(PROPOSER_ROLE) {
+    function startAuction(uint maximumAuctionTimeInHours) public virtual onlyRole(PROPOSER_ROLE) {
         
    
         auctionStartCheckConditions(maximumAuctionTimeInHours);
@@ -146,6 +158,14 @@ abstract contract Auction is AccessControlUpgradeable,Multicall  {              
  
         emit AuctionStarted(startTime,latestEndTime);
     
+    }
+
+    function pauseAuction(uint pauseTimeInHours) public virtual stateUpdate() onlyRole(DEFAULT_ADMIN_ROLE)  isRunning() {
+        require(pauseTimeInHours > 0,"Pause Time must be longer");
+        variableStartTime = block.timestamp + pauseTimeInHours * 1 seconds;
+        latestEndTime = startTime + latestEndTime - block.timestamp;
+        status = AuctionStatus.PAUSED;
+        emit AuctionPaused(pauseTimeInHours);
     }
 
     function finalize() internal virtual  {                                                     

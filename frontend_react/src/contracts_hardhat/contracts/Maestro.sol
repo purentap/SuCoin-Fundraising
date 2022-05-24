@@ -186,6 +186,8 @@ modifier multiSig(bytes32 role,uint walletCount,uint timeLimitInBlocks){
         _;
     }
 
+  
+
 
    modifier tokenOwner(bytes32 projectHash, address owner){
         require(projectTokens[projectHash].proposer == owner ,"You are not the owner of the token");
@@ -200,7 +202,14 @@ modifier multiSig(bytes32 role,uint walletCount,uint timeLimitInBlocks){
 
 
     
+    function pauseAuction(bytes32 projectHash,uint pauseTimeInHours) external multiSig(projectManager.ADMIN_ROLE(),1,1) {         //Admin count / sign time can change
+        address auction = projectTokens[projectHash].auction;
+        require(auction != address(0),"There are no auctions for this project");
+        Auction auctionContract = Auction(auction);
+        auctionContract.pauseAuction(pauseTimeInHours);
+        //Check conditions are done in the auction contract (already finished or already paused)
 
+    }
 
 
     function createAuction(

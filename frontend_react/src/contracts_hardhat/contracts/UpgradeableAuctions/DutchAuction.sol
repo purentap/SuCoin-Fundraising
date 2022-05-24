@@ -6,7 +6,8 @@ import "./FCFSAuction.sol";
 //Dutch Auction is just FCFS auction with constant decreasing price 
 contract DutchAuction is FCFSAuction {
 
-    uint public finalRate;                              
+    uint public finalRate;
+    uint internal endTime;                            
 
 
 
@@ -23,17 +24,27 @@ contract DutchAuction is FCFSAuction {
 
     function __DutchAuction_init_unchained(auctionParameters calldata params) internal onlyInitializing{
         finalRate = params.finalRate;
+      
         
         require((finalRate > 0),"Final Rate must be higher than 0");
         require((finalRate < rate),"Final Rate must be lower than Initial rate");
     }
 
 
-
+    function startAuction(uint maximumAuctionTimeInHours) public virtual override {
+        super.startAuction(maximumAuctionTimeInHours);
+        endTime = latestEndTime;
+    }
     
 
       function getCurrentRate() public virtual view override returns(uint current) {
-        return latestEndTime <= startTime  ? (rate - ((rate  - finalRate ) * (block.timestamp - startTime))  /  (latestEndTime - startTime)) : rate;
+        uint duration = endTime - startTime;
+          if (startTime == 0)
+            return rate;
+          else if (block.timestamp >= latestEndTime)
+            return finalRate;
+          return (rate - ((rate  - finalRate ) * (duration - (latestEndTime - block.timestamp)))  /  (duration));
+
     }
 
 }
