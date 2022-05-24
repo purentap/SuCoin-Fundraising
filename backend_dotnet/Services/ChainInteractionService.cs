@@ -232,5 +232,35 @@ namespace SU_COIN_BACK_END.Services
             }
             return response;
         }
+
+        public async Task<ServiceResponse<List<EventLog<CreateAuctionEventDTO>>>> GetCreateAuctionEventLogs()
+        {
+            ServiceResponse<List<EventLog<CreateAuctionEventDTO>>> response = new ServiceResponse<List<EventLog<CreateAuctionEventDTO>>>();
+
+            try
+            {
+                var createAuctionEventHandler = _web3.Eth.GetEvent<CreateAuctionEventDTO>(ContractConstants.MaestroContractAddress);
+                var filterAllCreateAuctionEvents = createAuctionEventHandler.CreateFilterInput(GetUserAddress());
+                var allEvents = await createAuctionEventHandler.GetAllChangesAsync(filterAllCreateAuctionEvents);
+
+                if (allEvents == null)
+                {
+                    response.Success = false;
+                    response.Message = MessageConstants.EVENT_NOT_FOUND;
+                    return response;
+                }
+
+                response.Success = true;
+                response.Data = allEvents;
+                response.Message = MessageConstants.OK;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"Exception message: {e.Message}");
+                response.Success = false;
+                response.Message = MessageConstants.CHAIN_INTERACTION_FAIL;
+            }
+            return response;
+        }
     }
 }

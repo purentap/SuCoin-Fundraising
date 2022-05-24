@@ -738,6 +738,15 @@ namespace SU_COIN_BACK_END.Services
                     response.Message = "Project is not approved. Therefore, not ready to be auctioned";
                     return response;
                 }
+                
+                ServiceResponse<bool> chainResponse = await IsAuctionCreatedInChain(project.FileHash);
+                
+                if (!chainResponse.Success)
+                {
+                    response.Success = chainResponse.Success;
+                    response.Message = chainResponse.Message;
+                    return response;
+                }
 
                 ProjectPermission? permission = await _context.ProjectPermissions
                 .FirstOrDefaultAsync(permission => permission.ProjectID == projectID && permission.UserID == GetUserId());
@@ -849,6 +858,42 @@ namespace SU_COIN_BACK_END.Services
             {
                 response.Success = false;
                 response.Message = String.Format(MessageConstants.FAIL_MESSAGE, "get all invited projects", e.Message);
+            }
+            return response;
+        }
+
+        public async Task<ServiceResponse<bool>> IsAuctionCreatedInChain(string fileHash)
+        {
+            ServiceResponse<bool> response = new ServiceResponse<bool>();
+            try
+            {
+                ServiceResponse<List<EventLog<CreateAuctionEventDTO>>> chainResponse = await _chainInteractionService.GetCreateAuctionEventLogs();
+                
+                if (!chainResponse.Success || chainResponse.Data == null)
+                {
+                    response.Success = chainResponse.Success;
+                    response.Message = chainResponse.Message;
+                    return response;
+                }
+                
+                for (int i = 0; i < chainResponse.Data.Count; i++)
+                {
+                    if (chainResponse.Data[i].Log.Data == ("0x" + fileHash).ToLower())
+                    {
+                        response.Success = true;
+                        response.Message = MessageConstants.OK;
+                        return response;
+                    }
+                }
+
+                response.Success = false;
+                response.Message = MessageConstants.EVENT_NOT_FOUND;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"Exception message: {e.Message}");
+                response.Success = false;
+                response.Message = MessageConstants.CHAIN_INTERACTION_FAIL;
             }
             return response;
         }

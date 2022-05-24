@@ -13,5 +13,6 @@ namespace SU_COIN_BACK_END.SU_COIN_INTERFACE
         Task<ServiceResponse<List<EventLog<WhitelistInsertEventDTO>>>> GetWhiteListInsertEventLogs(string address);
         Task<ServiceResponse<string>> GetChainRole(string address);
         Task<ServiceResponse<List<EventLog<ProjectEvaluationEventDTO>>>> GetProjectEvaluationEventLogs();
+        Task<ServiceResponse<List<EventLog<CreateAuctionEventDTO>>>> GetCreateAuctionEventLogs();
     }
 }

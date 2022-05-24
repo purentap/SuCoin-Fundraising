@@ -288,13 +288,17 @@ namespace SU_COIN_BACK_END.Controllers
             ServiceResponse<string> response = await _projectService.CreateAuction(id);
             if (!response.Success)
             {
-                if (response.Message == MessageConstants.PROJECT_NOT_FOUND)
+                if (response.Message == MessageConstants.PROJECT_NOT_FOUND || response.Message == MessageConstants.EVENT_NOT_FOUND)
                 {
-                    return NotFound();
+                    return NotFound(response);
                 }
                 if (response.Message == MessageConstants.PROJECT_NOT_ACCEPTED_BY_VIEWER || response.Message == MessageConstants.PROJECT_PERMISSION_MANAGE_DENIED)
                 {
                     return Forbid();
+                }
+                if (response.Message == MessageConstants.CHAIN_INTERACTION_FAIL)
+                {
+                    return StatusCode(StatusCodes.Status408RequestTimeout, response);
                 }
                 return BadRequest(response);
             }
