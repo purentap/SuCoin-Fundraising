@@ -53,9 +53,8 @@ namespace SU_COIN_BACK_END.Services
                     response.Message = MessageConstants.OK;
                 }
             }
-            catch (Exception e)
+            catch (Exception)
             {
-                Console.WriteLine($"Message:{e.Message}");
                 response.Success = false;
                 response.Message = MessageConstants.IPFS_INTERACTION_FAIL;
             }

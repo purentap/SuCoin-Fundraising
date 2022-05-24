@@ -726,12 +726,6 @@ namespace SU_COIN_BACK_END.Services
                     response.Message = MessageConstants.PROJECT_NOT_FOUND;
                     return response;
                 }
-                if (!project.ViewerAccepted)
-                {
-                    response.Success = false;
-                    response.Message = MessageConstants.PROJECT_NOT_ACCEPTED_BY_VIEWER;
-                    return response;
-                }
                 if (project.Status != ProjectStatusConstants.APPROVED)
                 {
                     response.Success = false;
@@ -889,9 +883,8 @@ namespace SU_COIN_BACK_END.Services
                 response.Success = false;
                 response.Message = MessageConstants.EVENT_NOT_FOUND;
             }
-            catch (Exception e)
+            catch (Exception)
             {
-                Console.WriteLine($"Exception message: {e.Message}");
                 response.Success = false;
                 response.Message = MessageConstants.CHAIN_INTERACTION_FAIL;
             }

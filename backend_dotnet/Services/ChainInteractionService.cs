@@ -65,9 +65,8 @@ namespace SU_COIN_BACK_END.Services
                 response.Success = true;
                 response.Data = allEvents;
             }
-            catch (Exception e)
+            catch (Exception)
             {
-                Console.WriteLine($"Exception message: {e.Message}");
                 response.Success = false;
                 response.Message = MessageConstants.CHAIN_INTERACTION_FAIL;
             }
@@ -103,9 +102,8 @@ namespace SU_COIN_BACK_END.Services
                 response.Success = true;
                 response.Data = allEvents; 
             }
-            catch (Exception e)
+            catch (Exception)
             {
-                Console.WriteLine($"Exception message: {e.Message}");
                 response.Success = false;
                 response.Message = MessageConstants.CHAIN_INTERACTION_FAIL;
             }
@@ -142,9 +140,8 @@ namespace SU_COIN_BACK_END.Services
                 response.Success = true;
                 response.Data = allEvents; 
             } 
-            catch (Exception e)
+            catch (Exception)
             {
-                Console.WriteLine($"Exception message: {e.Message}");
                 response.Success = false;
                 response.Message = MessageConstants.CHAIN_INTERACTION_FAIL;
             }
@@ -189,16 +186,14 @@ namespace SU_COIN_BACK_END.Services
                     response.Data = chainRole;
                     response.Success = true;
                 }
-                catch (Exception e)
+                catch (Exception)
                 {
-                    Console.WriteLine($"Error message: {e.Message}");
                     response.Message =  MessageConstants.USER_ROLE_NOT_FOUND_IN_CHAIN;
                     response.Success = false;
                 }                    
             } 
-            catch (Exception e)
+            catch (Exception)
             {
-                Console.WriteLine($"Exception message: {e.Message}");
                 response.Message = MessageConstants.CHAIN_INTERACTION_FAIL;
                 response.Success = false;
             }
@@ -224,9 +219,8 @@ namespace SU_COIN_BACK_END.Services
                 response.Success = true;
                 response.Data = allEvents;
             }
-            catch (Exception e)
+            catch (Exception)
             {
-                Console.WriteLine($"Exception message: {e.Message}");
                 response.Success = false;
                 response.Message = MessageConstants.CHAIN_INTERACTION_FAIL;
             }
@@ -254,9 +248,8 @@ namespace SU_COIN_BACK_END.Services
                 response.Data = allEvents;
                 response.Message = MessageConstants.OK;
             }
-            catch (Exception e)
+            catch (Exception)
             {
-                Console.WriteLine($"Exception message: {e.Message}");
                 response.Success = false;
                 response.Message = MessageConstants.CHAIN_INTERACTION_FAIL;
             }
