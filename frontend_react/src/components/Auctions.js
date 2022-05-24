@@ -37,7 +37,7 @@ const options = [
     { value: 'fman', label: 'FMAN' }
 ]
 
-const MaestroAddress = "0xDE764E4A7Caf779b7623B373955120C3D4e70Eef";
+const MaestroAddress = "0x0a6814CB1E8853E36AF9990bE19D7b0Ad7ADbf92";
 
 const IDs = []
 
@@ -100,7 +100,7 @@ const Auctions = () => {
 
     useEffect(async () => {
         try {
-            setAuctions(await getAuctionByStatus(1, 10))
+            setAuctions(await getAuctionByStatus(1))
             setIsLoading(false);
         }
         catch (error) {
