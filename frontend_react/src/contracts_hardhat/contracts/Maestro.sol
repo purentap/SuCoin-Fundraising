@@ -71,7 +71,7 @@ contract Maestro {
                if (auction == address(0))
                 continue;
 
-               if (Auction(auction).status() == status) {
+               if (Auction(auction).getStatus() == status) {
                    ERC20 token = ERC20(project.token);
                    wantedProjects[--selectCount] = ProjectSurface(project.auction,token.name(),token.symbol(),project.auctionType,hashes[i]);
                }
