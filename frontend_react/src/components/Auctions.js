@@ -37,7 +37,7 @@ const options = [
     { value: 'fman', label: 'FMAN' }
 ]
 
-const MaestroAddress = "0x5964Fb463b9f634f3138a167b0EFDe6E37075f1b";
+const MaestroAddress = "0xDE764E4A7Caf779b7623B373955120C3D4e70Eef";
 
 const IDs = []
 
