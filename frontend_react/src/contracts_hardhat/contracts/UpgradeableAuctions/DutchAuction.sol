@@ -35,6 +35,11 @@ contract DutchAuction is FCFSAuction {
         super.startAuction(maximumAuctionTimeInHours);
         endTime = latestEndTime;
     }
+
+      function pauseAuction(uint pauseTimeInHours) public virtual override  {
+        setCurrentRate();
+        super.pauseAuction(pauseTimeInHours);
+    }
     
 
       function getCurrentRate() public virtual view override returns(uint current) {
@@ -43,6 +48,8 @@ contract DutchAuction is FCFSAuction {
             return rate;
           else if (block.timestamp >= latestEndTime)
             return finalRate;
+          else if (block.timestamp < variableStartTime)
+            return currentRate;
           return (rate - ((rate  - finalRate ) * (duration - (latestEndTime - block.timestamp)))  /  (duration));
 
     }

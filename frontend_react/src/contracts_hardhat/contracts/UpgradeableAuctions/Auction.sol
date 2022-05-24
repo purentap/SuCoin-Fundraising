@@ -163,13 +163,22 @@ abstract contract Auction is AccessControlUpgradeable,Multicall  {              
     function pauseAuction(uint pauseTimeInHours) public virtual stateUpdate() onlyRole(DEFAULT_ADMIN_ROLE)  isRunning() {
         require(pauseTimeInHours > 0,"Pause Time must be longer");
         variableStartTime = block.timestamp + pauseTimeInHours * 1 seconds;
-        latestEndTime = startTime + latestEndTime - block.timestamp;
+        latestEndTime = variableStartTime + latestEndTime - block.timestamp;
         status = AuctionStatus.PAUSED;
         emit AuctionPaused(pauseTimeInHours);
     }
 
     function finalize() internal virtual  {                                                     
         status = AuctionStatus.ENDED;
+    }
+
+    function getStatus() external view returns(AuctionStatus){
+        AuctionStatus stat;
+        if (status == AuctionStatus.PAUSED  && block.timestamp >= variableStartTime)
+            stat = AuctionStatus.RUNNING;
+        if (status == AuctionStatus.RUNNING && block.timestamp >= latestEndTime)
+            stat = AuctionStatus.ENDED;
+        return stat;
     }
 
     function handleValidTimeBid(uint bidCoinBits) internal virtual;
