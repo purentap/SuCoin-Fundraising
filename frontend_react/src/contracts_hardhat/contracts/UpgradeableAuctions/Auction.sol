@@ -173,7 +173,7 @@ abstract contract Auction is AccessControlUpgradeable,Multicall  {              
     }
 
     function getStatus() external view returns(AuctionStatus){
-        AuctionStatus stat;
+        AuctionStatus stat = status;
         if (status == AuctionStatus.PAUSED  && block.timestamp >= variableStartTime)
             stat = AuctionStatus.RUNNING;
         if (status == AuctionStatus.RUNNING && block.timestamp >= latestEndTime)
