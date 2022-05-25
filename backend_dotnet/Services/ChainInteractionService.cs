@@ -62,7 +62,6 @@ namespace SU_COIN_BACK_END.Services
                 
                 if (allEvents == null) // user has not registered projects so far
                 {
-                    response.Success = false;
                     response.Message = MessageConstants.EVENT_NOT_FOUND;
                     return response;
                 }
@@ -73,7 +72,6 @@ namespace SU_COIN_BACK_END.Services
             }
             catch (Exception)
             {
-                response.Success = false;
                 response.Message = MessageConstants.CHAIN_INTERACTION_FAIL;
             }
             return response;
@@ -88,7 +86,6 @@ namespace SU_COIN_BACK_END.Services
             if (role_response.Data != UserRoleConstants.WHITELIST)
             {
                 response.Message = MessageConstants.NOT_WHITLISTED;
-                response.Success = false;
                 return response;
             }
             
@@ -100,7 +97,6 @@ namespace SU_COIN_BACK_END.Services
                 
                 if (allEvents == null) // user has not been inserted into the whitelist before
                 {
-                    response.Success = false;
                     response.Message = MessageConstants.EVENT_NOT_FOUND;
                 }
 
@@ -110,7 +106,6 @@ namespace SU_COIN_BACK_END.Services
             }
             catch (Exception)
             {
-                response.Success = false;
                 response.Message = MessageConstants.CHAIN_INTERACTION_FAIL;
             }
             return response;
@@ -125,7 +120,6 @@ namespace SU_COIN_BACK_END.Services
             if (role_response.Data != UserRoleConstants.WHITELIST)
             {
                 response.Message = MessageConstants.NOT_WHITLISTED;
-                response.Success = false;
                 return response;
             }
 
@@ -137,7 +131,6 @@ namespace SU_COIN_BACK_END.Services
                 
                 if (allEvents == null) // user has not been removed from the whitelist before
                 {
-                    response.Success = false;
                     response.Message = MessageConstants.EVENT_NOT_FOUND;
                     return response;
                 }
@@ -148,7 +141,6 @@ namespace SU_COIN_BACK_END.Services
             } 
             catch (Exception)
             {
-                response.Success = false;
                 response.Message = MessageConstants.CHAIN_INTERACTION_FAIL;
             }
             return response;
@@ -164,7 +156,6 @@ namespace SU_COIN_BACK_END.Services
                 if (contract == null)
                 {
                     response.Message = MessageConstants.CONTRACT_NOT_FOUND;
-                    response.Success = false;
                     return response;
                 }
                 
@@ -194,13 +185,11 @@ namespace SU_COIN_BACK_END.Services
                 catch (Exception)
                 {
                     response.Message =  MessageConstants.USER_ROLE_NOT_FOUND_IN_CHAIN;
-                    response.Success = false;
                 }                    
             } 
             catch (Exception)
             {
                 response.Message = MessageConstants.CHAIN_INTERACTION_FAIL;
-                response.Success = false;
             }
             return response;
         }
@@ -216,7 +205,6 @@ namespace SU_COIN_BACK_END.Services
                 if (contract == null)
                 {
                     response.Message = MessageConstants.CONTRACT_NOT_FOUND;
-                    response.Success = false;
                     return response;
                 }
 
@@ -239,13 +227,11 @@ namespace SU_COIN_BACK_END.Services
                 catch (Exception)
                 {   
                     response.Message =  MessageConstants.PROJECT_NOT_FOUND_IN_CHAIN;
-                    response.Success = false;
                 }
             }
             catch (Exception)
             {
                 response.Message = MessageConstants.CHAIN_INTERACTION_FAIL;
-                response.Success = false;
             }
 
             return response;
@@ -319,7 +305,6 @@ namespace SU_COIN_BACK_END.Services
                 var allEvents = await whitelistInsertEventHandler.GetAllChangesAsync(filterAllProjEvalEvents);
                 if (allEvents == null) // projects have not been evaluated before
                 {
-                    response.Success = false;
                     response.Message = MessageConstants.EVENT_NOT_FOUND;
                     return response;
                 }
@@ -330,7 +315,6 @@ namespace SU_COIN_BACK_END.Services
             }
             catch (Exception)
             {
-                response.Success = false;
                 response.Message = MessageConstants.CHAIN_INTERACTION_FAIL;
             }
             return response;

@@ -62,31 +62,26 @@ namespace SU_COIN_BACK_END.Services
 
             if (GetUserRole() == UserRoleConstants.BLACKLIST) 
             {
-                response.Success = false;
                 response.Message = MessageConstants.USER_IS_BLACKLISTED;
                 return response;
             }
             if (Encoding.ASCII.GetBytes(request.FileHex).Count() > MAXIMUM_FILE_SIZE)
             {
-                response.Success = false;
                 response.Message = $"Maximum file size is exceeded. Please upload a file which has size smaller than {MAXIMUM_FILE_SIZE}";
                 return response;
             }
             if (request.ProjectName == null)
             {
-                response.Success = false;
                 response.Message = "Project name is not added";
                 return response;
             }
             if (await ProjectNameExists(request.ProjectName))
             {
-                response.Success = false;
                 response.Message = MessageConstants.PROJECT_NAME_EXISTS;
                 return response;
             }
             if (await _context.Projects.Where(project => project.Status == ProjectStatusConstants.PENDING).CountAsync() == MAXIMUM_ALLOWED_PENDING_PROJECTS)
             {
-                response.Success = false;
                 response.Message = "Viewer is busy. Please try again later";
                 return response;
             }
@@ -146,7 +141,6 @@ namespace SU_COIN_BACK_END.Services
             }
             catch (Exception e)
             {
-                response.Success = false;
                 response.Message = String.Format(MessageConstants.FAIL_MESSAGE, "add project", e.Message);
             }
             return response;
@@ -159,7 +153,6 @@ namespace SU_COIN_BACK_END.Services
             {
                 if (!await HasOwnerPermission(id)) // owner does not allow you to delete the project
                 {
-                    response.Success = false;
                     response.Message = MessageConstants.PROJECT_PERMISSION_MANAGE_DENIED;
                     return response;
                 }
@@ -170,7 +163,6 @@ namespace SU_COIN_BACK_END.Services
                 if (project == null)
                 {
                     response.Message = MessageConstants.PROJECT_NOT_FOUND;
-                    response.Success = false;
                     return response;
                 }
 
@@ -194,7 +186,6 @@ namespace SU_COIN_BACK_END.Services
             }
             catch (Exception e)
             {
-                response.Success = false;
                 response.Message = String.Format(MessageConstants.FAIL_MESSAGE, "delete project", e.Message);
             }
             return response;
@@ -237,7 +228,6 @@ namespace SU_COIN_BACK_END.Services
             catch (Exception e)
             {
                 response.Message = String.Format(MessageConstants.FAIL_MESSAGE, "get projects", e.Message);
-                response.Success = false;
             }
 
             return response;
@@ -252,13 +242,11 @@ namespace SU_COIN_BACK_END.Services
 
                 if (project == null)
                 {
-                    response.Success = false;
                     response.Message = MessageConstants.PROJECT_NOT_FOUND;
                     return response;
                 }
                 if (!project.ViewerAccepted)
                 {
-                    response.Success = false;
                     response.Message = MessageConstants.PROJECT_NOT_ACCEPTED_BY_VIEWER;
                     return response;                    
                 }
@@ -273,14 +261,12 @@ namespace SU_COIN_BACK_END.Services
                 }
                 else
                 {
-                    response.Success = false;
                     response.Message = MessageConstants.NOT_AUTHORIZED_TO_ACCESS;
                 }
             }
             catch (Exception e) // Error occurred while retrieving the project from the database
             {
                 response.Message = String.Format(MessageConstants.FAIL_MESSAGE, "get project by id", e.Message);
-                response.Success = false;
             }
             return response;
         }
@@ -301,7 +287,6 @@ namespace SU_COIN_BACK_END.Services
                     if (GetUserRole() != UserRoleConstants.ADMIN)
                     {
                         response.Message = MessageConstants.NOT_AUTHORIZED_TO_ACCESS;
-                        response.Success = false;
                         return response;
                     }
                     hashes = await _context.Projects.Select(project => project.FileHash).ToListAsync();
@@ -321,7 +306,6 @@ namespace SU_COIN_BACK_END.Services
             catch (Exception e) 
             {
                 response.Message = String.Format(MessageConstants.FAIL_MESSAGE, "get all file hashes", e.Message);
-                response.Success = false;
             }
             return response;
         }
@@ -333,7 +317,6 @@ namespace SU_COIN_BACK_END.Services
             {
                 if (rating_value < 0 || rating_value > 10) // rating is invalid
                 {
-                    response.Success = false;
                     response.Message = MessageConstants.INVALID_INPUT;
                     return response;
                 }
@@ -342,13 +325,11 @@ namespace SU_COIN_BACK_END.Services
 
                 if (project == null)
                 {
-                    response.Success = false;
                     response.Message = MessageConstants.PROJECT_NOT_FOUND;
                     return response;
                 }
                 if (!project.ViewerAccepted)
                 {
-                    response.Success = false;
                     response.Message = MessageConstants.PROJECT_NOT_ACCEPTED_BY_VIEWER;
                     return response;
                 }
@@ -383,7 +364,6 @@ namespace SU_COIN_BACK_END.Services
             }
             catch (Exception e)
             {
-                response.Success = false;
                 response.Message = String.Format(MessageConstants.FAIL_MESSAGE, "rate project", e.Message);
             }
             return response;
@@ -396,7 +376,6 @@ namespace SU_COIN_BACK_END.Services
             {
                 if (!await HasPermission(project.ProjectID))
                 {
-                    response.Success = false;
                     response.Message = MessageConstants.PROJECT_PERMISSION_MANAGE_DENIED;
                     return response;
                 }
@@ -405,8 +384,6 @@ namespace SU_COIN_BACK_END.Services
 
                 if (sameNameProjectId > 0 && sameNameProjectId != project.ProjectID)
                 {
-     
-                    response.Success = false;
                     response.Message = MessageConstants.PROJECT_NAME_EXISTS;
                     return response;
                 }
@@ -418,7 +395,6 @@ namespace SU_COIN_BACK_END.Services
                 if (dbProject == null)
                 {
                     response.Message = MessageConstants.PROJECT_NOT_FOUND;
-                    response.Success = false;
                     return response;
                 }
                 
@@ -434,7 +410,6 @@ namespace SU_COIN_BACK_END.Services
             catch (Exception e)
             {
                 response.Message = String.Format(MessageConstants.FAIL_MESSAGE, "update project", e.Message);
-                response.Success = false;
             }
             return response;
         }
@@ -460,7 +435,6 @@ namespace SU_COIN_BACK_END.Services
                 if (projects == null)
                 {
                     response.Message = MessageConstants.PROJECT_NOT_FOUND;
-                    response.Success = false;
                     return response;
                 }
                     
@@ -471,7 +445,6 @@ namespace SU_COIN_BACK_END.Services
             catch (Exception e)
             {
                 response.Message = String.Format(MessageConstants.FAIL_MESSAGE, "get project by status", e.Message);
-                response.Success = false;
             }
             return response;
         }
@@ -484,7 +457,6 @@ namespace SU_COIN_BACK_END.Services
                 Project? project = await _context.Projects.FirstOrDefaultAsync(c => c.ProjectID == id);
                 if (project == null)
                 {
-                    response.Success = false;
                     response.Message = MessageConstants.PROJECT_NOT_FOUND;
                     return response;
                 }
@@ -492,14 +464,12 @@ namespace SU_COIN_BACK_END.Services
                 if (!project.ViewerAccepted)
                 {
                     response.Message = MessageConstants.PROJECT_NOT_ACCEPTED_BY_VIEWER;
-                    response.Success = false;
                     return response;
                 }
                         
                 ServiceResponse<List<EventLog<ProjectEvaluationEventDTO>>> response_chain = await _chainInteractionService.GetProjectEvaluationEventLogs();
                 if (!response_chain.Success)
                 {
-                    response.Success = false;
                     response.Message = MessageConstants.CHAIN_INTERACTION_FAIL;
                     return response;
                 }
@@ -509,7 +479,6 @@ namespace SU_COIN_BACK_END.Services
                 }
                 if (project.FileHash == null)
                 {
-                    response.Success = false;
                     response.Message = MessageConstants.PROPOSAL_FILE_NOT_FOUND;
                     return response;
                 }
@@ -540,7 +509,6 @@ namespace SU_COIN_BACK_END.Services
             catch (Exception e)
             {
                 response.Message = String.Format(MessageConstants.FAIL_MESSAGE, "change project status", e.Message);
-                response.Success = false;
             }
             return response;
         }
@@ -551,7 +519,6 @@ namespace SU_COIN_BACK_END.Services
             {
                 if (!await HasPermission(projectID)) 
                 {
-                    response.Success = false;
                     response.Message = MessageConstants.PROJECT_PERMISSION_MANAGE_DENIED;
                     return response;
                 }
@@ -561,7 +528,6 @@ namespace SU_COIN_BACK_END.Services
                 if (dbProject == null)
                 {
                     response.Message = MessageConstants.PROJECT_NOT_FOUND;
-                    response.Success = false;
                     return response;
                 }
 
@@ -575,7 +541,6 @@ namespace SU_COIN_BACK_END.Services
             catch (Exception e)
             {
                 response.Message = String.Format(MessageConstants.FAIL_MESSAGE, "update markdown", e.Message);
-                response.Success = false;
             }
             return response;
         }
@@ -591,7 +556,6 @@ namespace SU_COIN_BACK_END.Services
 
                 if (projectPermissions == null)
                 {
-                    response.Success = false;
                     response.Message = $"No permissioned projects found user {GetUsername()}";
                     return response;
                 }
@@ -620,7 +584,6 @@ namespace SU_COIN_BACK_END.Services
             }
             catch (Exception e)
             {
-                response.Success = false;
                 response.Message = String.Format(MessageConstants.FAIL_MESSAGE, "get all permissioned projects", e.Message);
             }
             return response;
@@ -635,7 +598,6 @@ namespace SU_COIN_BACK_END.Services
                 if (project == null)
                 {
                     response.Message = MessageConstants.PROJECT_NOT_FOUND;
-                    response.Success = false;
                     return response;
                 }
 
@@ -657,7 +619,6 @@ namespace SU_COIN_BACK_END.Services
             catch (Exception e)
             {
                 response.Message = String.Format(MessageConstants.FAIL_MESSAGE, "reply project preview", e.Message);
-                response.Success = false;
             }
             return response;
         }
@@ -671,19 +632,16 @@ namespace SU_COIN_BACK_END.Services
                 if (project == null || project.FileHash == null)
                 {
                     response.Message = MessageConstants.PROJECT_NOT_FOUND;
-                    response.Success = false;
                     return response;
                 }
-                if (!project.IsAuctionCreated) // User tries to re-create an auction
+                if (!project.IsAuctionCreated)
                 {
                     response.Message = "Auction of this project has not been created yet";
-                    response.Success = false;
                     return response;
                 }
-                if (project.IsAuctionStarted) 
+                if (project.IsAuctionStarted)  // User tries to re-start an auction
                 {
                     response.Message = $"Auction of project {projectID} has already been started";
-                    response.Success = false;
                     return response;
                 }
 
@@ -691,7 +649,6 @@ namespace SU_COIN_BACK_END.Services
 
                 if (!chainResponse.Success)
                 {
-                    response.Success = chainResponse.Success;
                     response.Message = chainResponse.Message;
                     return response;
                 }
@@ -701,15 +658,13 @@ namespace SU_COIN_BACK_END.Services
 
                 if (permission == null)
                 {
-                    response.Message = MessageConstants.PROJECT_PERMISSION_MANAGE_DENIED;
-                    response.Success = false;                    
+                    response.Message = MessageConstants.PROJECT_PERMISSION_MANAGE_DENIED;                  
                     return response;
                 }
                 
                 if (permission.Role != UserPermissionRoleConstants.OWNER)
                 {
                     response.Message = MessageConstants.NOT_AUTHORIZED_TO_ACCESS;
-                    response.Success = false;
                     return response;
                 }
                                 
@@ -724,7 +679,6 @@ namespace SU_COIN_BACK_END.Services
             catch (Exception e)
             {
                 response.Message = String.Format(MessageConstants.FAIL_MESSAGE, "start auction", e.Message);
-                response.Success = false;
             }
             return response;
         }
@@ -737,19 +691,16 @@ namespace SU_COIN_BACK_END.Services
                 Project? project = await _context.Projects.FirstOrDefaultAsync(project => project.ProjectID == projectID);
                 if (project == null || project.FileHash == null)
                 {
-                    response.Success = false;
                     response.Message = MessageConstants.PROJECT_NOT_FOUND;
                     return response;
                 }
                 if (project.Status != ProjectStatusConstants.APPROVED)
                 {
-                    response.Success = false;
                     response.Message = "Project is not approved. Therefore, not ready to be auctioned";
                     return response;
                 }
                 if (project.IsAuctionCreated) // User tries to re-create an auction
                 {
-                    response.Success = false;
                     response.Message = $"Auction of project {projectID} has already been created";
                     return response;
                 }
@@ -758,7 +709,6 @@ namespace SU_COIN_BACK_END.Services
                 
                 if (!chainResponse.Success)
                 {
-                    response.Success = chainResponse.Success;
                     response.Message = chainResponse.Message;
                     return response;
                 }
@@ -768,13 +718,11 @@ namespace SU_COIN_BACK_END.Services
 
                 if (permission == null)
                 {
-                    response.Success = false;
                     response.Message = MessageConstants.PROJECT_PERMISSION_MANAGE_DENIED;
                     return response;
                 }
                 if (permission.Role != UserPermissionRoleConstants.OWNER)
                 {
-                    response.Success = false;
                     response.Message = MessageConstants.NOT_AUTHORIZED_TO_ACCESS;
                     return response;
                 }
@@ -789,7 +737,6 @@ namespace SU_COIN_BACK_END.Services
             }
             catch (Exception e)
             {
-                response.Success = false;
                 response.Message = String.Format(MessageConstants.FAIL_MESSAGE, "create auction", e.Message);
             }
             return response;
@@ -843,7 +790,6 @@ namespace SU_COIN_BACK_END.Services
 
                 if (projectPermissions == null)
                 {
-                    response.Success = false;
                     response.Message = $"No invitations found for user: {GetUsername()}";
                     return response;
                 }
@@ -871,7 +817,6 @@ namespace SU_COIN_BACK_END.Services
             }
             catch (Exception e)
             {
-                response.Success = false;
                 response.Message = String.Format(MessageConstants.FAIL_MESSAGE, "get all invited projects", e.Message);
             }
             return response;

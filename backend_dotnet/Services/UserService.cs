@@ -44,7 +44,6 @@ namespace SU_COIN_BACK_END.Services
 
                 if (user == null)
                 {
-                    response.Success = false;
                     response.Message = MessageConstants.USER_NOT_FOUND;
                     return response;
                 }
@@ -56,7 +55,6 @@ namespace SU_COIN_BACK_END.Services
             }
             catch (Exception e)
             {
-                response.Success = false;
                 response.Message = String.Format(MessageConstants.FAIL_MESSAGE, "delete user", e.Message);
             }
             return response;
@@ -71,8 +69,7 @@ namespace SU_COIN_BACK_END.Services
                 User? user = await _context.Users.FirstOrDefaultAsync(c => c.Id == userID);
 
                 if (user == null)
-                {   
-                    response.Success = false;
+                {
                     response.Message = MessageConstants.USER_NOT_FOUND;
                     return response;
                 }
@@ -88,7 +85,6 @@ namespace SU_COIN_BACK_END.Services
             catch (Exception e)
             {
                 response.Message = String.Format(MessageConstants.FAIL_MESSAGE, "get user", e.Message);
-                response.Success = false;
             }
             return response;
         }
@@ -100,7 +96,6 @@ namespace SU_COIN_BACK_END.Services
             {
                 if (user == null || user.Name == null || user.Surname == null || user.Address == null || user.MailAddress == null || user.Username == null)
                 {
-                    response.Success = false;
                     response.Message = MessageConstants.INVALID_INPUT;
                     return response;
                 }
@@ -108,7 +103,6 @@ namespace SU_COIN_BACK_END.Services
                 User? dbUser = await _context.Users.FirstOrDefaultAsync(c => c.Id == GetUserId());
                 if (dbUser == null)
                 {
-                    response.Success = false;
                     response.Message = MessageConstants.USER_NOT_FOUND;
                     return response;
                 }
@@ -118,7 +112,6 @@ namespace SU_COIN_BACK_END.Services
                 
                 if (user.Username != GetUsername() && await _authenticationService.UserNameExists(user.Username))
                 {
-                    response.Success = false;
                     response.Message = MessageConstants.USER_NAME_EXIST;
                     return response;
                 }
@@ -139,7 +132,6 @@ namespace SU_COIN_BACK_END.Services
             catch (Exception e)
             {
                 response.Message = String.Format(MessageConstants.FAIL_MESSAGE, "update user", e.Message);
-                response.Success = false;
             }
             return response;
         }
@@ -155,7 +147,6 @@ namespace SU_COIN_BACK_END.Services
                         
                 if (permission == null)
                 {
-                    response.Success = false;
                     response.Message = MessageConstants.PROJECT_PERMISSION_MANAGE_DENIED;
                     return response;
                 }
@@ -163,7 +154,6 @@ namespace SU_COIN_BACK_END.Services
 
                 if (GetUsername() == request.Username)
                 {
-                    response.Success = false;
                     response.Message = "You cannot give permission to yourself"; 
                     return response;
                 }
@@ -172,7 +162,6 @@ namespace SU_COIN_BACK_END.Services
 
                 if (user == null)
                 {
-                    response.Success = false;
                     response.Message = MessageConstants.USER_NOT_FOUND;
                     return response;
                 }
@@ -180,7 +169,6 @@ namespace SU_COIN_BACK_END.Services
                 if (_context.ProjectPermissions
                     .Any(c => c.ProjectID == request.ProjectID && c.UserID == user.Id)) // Such a projectPermission entity already exists in the database
                     {
-                        response.Success = false;
                         response.Message = "Invitation already exists or accepted";
                     }
                     else 
@@ -203,7 +191,6 @@ namespace SU_COIN_BACK_END.Services
             }
             catch (Exception e)
             {
-                response.Success = false;
                 response.Message = String.Format(MessageConstants.FAIL_MESSAGE, "give permission to the project", e.Message);
             }
             return response;
@@ -222,7 +209,6 @@ namespace SU_COIN_BACK_END.Services
                 /* Default value for IsAccepted is false. If the user accepted the invitation, change its value of IsAccepted property as true. */
                 if (permission == null)
                 {
-                    response.Success = false;
                     response.Message = MessageConstants.PROJECT_PERMISSION_MANAGE_DENIED;
                     return response;
                 }
@@ -248,7 +234,6 @@ namespace SU_COIN_BACK_END.Services
             }
             catch (Exception e)
             {
-                response.Success = false;
                 response.Message = String.Format(MessageConstants.FAIL_MESSAGE, "evaluate pending projects", e.Message);
             }
             return response;
@@ -261,7 +246,6 @@ namespace SU_COIN_BACK_END.Services
             {
                 if (GetUserRole() != UserRoleConstants.ADMIN)
                 {
-                    response.Success = false;
                     response.Message = MessageConstants.NOT_AUTHORIZED_TO_ACCESS;
                     return response;
                 }
@@ -271,7 +255,6 @@ namespace SU_COIN_BACK_END.Services
                 if (users == null)
                 {
                     response.Message = MessageConstants.USER_NOT_FOUND;
-                    response.Success = false;
                     return response;
                 }
                 
@@ -280,8 +263,7 @@ namespace SU_COIN_BACK_END.Services
                 response.Success = true;
             } 
             catch (Exception e) 
-            {    
-                response.Success = false;
+            {
                 response.Message = String.Format(MessageConstants.FAIL_MESSAGE, "get all users", e.Message);
             }
             return response;
@@ -298,7 +280,6 @@ namespace SU_COIN_BACK_END.Services
                 
                 if (permission == null)
                 {
-                    response.Success = false;
                     response.Message = MessageConstants.PROJECT_PERMISSION_MANAGE_DENIED;
                     return response;
                 }
@@ -309,14 +290,12 @@ namespace SU_COIN_BACK_END.Services
                         
                     if (user == null) // logged in user does not have any permission for any project
                     {
-                        response.Success = false;
                         response.Message = MessageConstants.USER_NOT_FOUND;
                         return response;
                     }
                         
                     if (loggedIn_userID == user.Id) // remove yourself
                     {
-                        response.Success = false;
                         response.Message = "You cannot remove ownership before you transfer it to someone else."; 
                         return response;
                     }
@@ -325,8 +304,7 @@ namespace SU_COIN_BACK_END.Services
                     .FirstOrDefaultAsync(c => c.ProjectID == request.ProjectID && c.UserID == user.Id && c.IsAccepted);
 
                     if (perm == null)
-                    {                        
-                        response.Success = false;
+                    {
                         response.Message = "User does not have permission to remove";
                         return response;
                     }
@@ -339,7 +317,6 @@ namespace SU_COIN_BACK_END.Services
                 {
                     if (GetUsername() != request.Username) // Trying to remove permission of another person
                     {
-                        response.Success = false;
                         response.Message = "You cannot remove permission of other user without being owner."; 
                         return response;
                     }
@@ -353,7 +330,6 @@ namespace SU_COIN_BACK_END.Services
             }
             catch (Exception e)
             {
-                response.Success = false;
                 response.Message = String.Format(MessageConstants.FAIL_MESSAGE, "remove permission", e.Message);
             }
             return response;

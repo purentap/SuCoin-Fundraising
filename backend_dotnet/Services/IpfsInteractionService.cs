@@ -55,7 +55,6 @@ namespace SU_COIN_BACK_END.Services
             }
             catch (Exception)
             {
-                response.Success = false;
                 response.Message = MessageConstants.IPFS_INTERACTION_FAIL;
             }
             return response;
@@ -81,7 +80,6 @@ namespace SU_COIN_BACK_END.Services
                 }
                 else 
                 {
-                    response.Success = false;
                     response.Message = MessageConstants.IPFS_INTERACTION_FAIL;
                 }
                 return response;

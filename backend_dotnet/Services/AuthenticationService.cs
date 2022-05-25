@@ -50,7 +50,6 @@ namespace SU_COIN_BACK_END.Services
                 User? user = await _context.Users.FirstOrDefaultAsync(c => c.Address == address);
                 if (user == null)
                 {
-                    response.Success = false;
                     response.Message = MessageConstants.USER_NOT_FOUND;
                     return response;
                 }
@@ -72,7 +71,6 @@ namespace SU_COIN_BACK_END.Services
             }
             catch (Exception e)
             {
-                response.Success = false;
                 response.Message = e.Message;
             }
             return response;
@@ -87,13 +85,11 @@ namespace SU_COIN_BACK_END.Services
                 if (user == null) // user check
                 {
                     response.Message = MessageConstants.USER_NOT_FOUND;
-                    response.Success = false;
                     return response;
                 }
 
                 if (user.Nonce == null) // nonce check
                 {
-                    response.Success = false;
                     response.Message = $"You should first create the nonce from /authentication/getnonce/{request.Address}";
                     return response;
                 }
@@ -103,7 +99,6 @@ namespace SU_COIN_BACK_END.Services
                 
                 if (request.Address != addressRec) // verification of the user signature
                 {
-                    response.Success = false;
                     response.Message =  $"Signature provided does belong to the address: {request.Address}";
                     return response;
                 }
@@ -138,7 +133,6 @@ namespace SU_COIN_BACK_END.Services
             }
             catch (Exception e)
             {
-                response.Success = false;
                 response.Message = String.Format(MessageConstants.FAIL_MESSAGE, "login", e.Message);
             }
             return response;
@@ -151,7 +145,6 @@ namespace SU_COIN_BACK_END.Services
             {
                 if (request == null || request.Name == null || request.Surname == null || request.MailAddress == null || request.Username == null)
                 {
-                    response.Success = false;
                     response.Message = MessageConstants.INVALID_INPUT;
                     Console.WriteLine(response.Message);
                     return response;
@@ -161,14 +154,12 @@ namespace SU_COIN_BACK_END.Services
                 var addressRec = signer.EncodeUTF8AndEcRecover("REGISTER", request.SignedMessage);
                 if (await UserExists(addressRec))
                 {
-                    response.Success = false;
                     response.Message = "User Already Exists";
                     Console.WriteLine(response.Message);
                     return response;
                 }
                 if (await UserNameExists(request.Username))
                 {
-                    response.Success = false;
                     response.Message = MessageConstants.USER_NAME_EXIST;
                     Console.WriteLine(response.Message);
                     return response;
@@ -192,7 +183,6 @@ namespace SU_COIN_BACK_END.Services
             }
             catch (Exception e)
             {
-                response.Success = false;
                 response.Message = String.Format(MessageConstants.FAIL_MESSAGE, "register", e.Message);
             }
             return response;
