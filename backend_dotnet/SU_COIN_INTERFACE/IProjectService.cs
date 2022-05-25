@@ -21,12 +21,6 @@ namespace SU_COIN_BACK_END.SU_COIN_INTERFACE
         Task<ServiceResponse<List<string>>> GetAllFileHashes(bool areOnlyAuctionsStarted = true);
         Task<ServiceResponse<string>> ReplyProjectPreview(int id, bool reply);
         Task<ServiceResponse<string>> CreateAuction(int id);
-        Task<ServiceResponse<string>> StartAuction(int id);
-        Task<ServiceResponse<bool>> IsAuctionCreatedInChain(string fileHash);
-
-        Task<ServiceResponse<bool>> IsAuctionStartedInChain(string fileHash);
-
-
-        
+        Task<ServiceResponse<string>> StartAuction(int id);  
     }
 }

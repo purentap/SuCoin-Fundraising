@@ -668,22 +668,27 @@ namespace SU_COIN_BACK_END.Services
             try
             {
                 Project? project = await _context.Projects.FirstOrDefaultAsync(project => project.ProjectID == projectID);
-                if (project == null)
+                if (project == null || project.FileHash == null)
                 {
                     response.Message = MessageConstants.PROJECT_NOT_FOUND;
                     response.Success = false;
                     return response;
                 }
-                if (!project.IsAuctionCreated)
+                if (!project.IsAuctionCreated) // User tries to re-create an auction
                 {
                     response.Message = "Auction of this project has not been created yet";
                     response.Success = false;
                     return response;
                 }
-                
-                ServiceResponse<bool> chainResponse = await IsAuctionStartedInChain(project.FileHash);
+                if (project.IsAuctionStarted) 
+                {
+                    response.Message = $"Auction of project {projectID} has already been started";
+                    response.Success = false;
+                    return response;
+                }
 
-                
+                ServiceResponse<bool> chainResponse = await _chainInteractionService.IsAuctionStartedInChain(project.FileHash);
+
                 if (!chainResponse.Success)
                 {
                     response.Success = chainResponse.Success;
@@ -730,7 +735,7 @@ namespace SU_COIN_BACK_END.Services
             try
             {
                 Project? project = await _context.Projects.FirstOrDefaultAsync(project => project.ProjectID == projectID);
-                if (project == null)
+                if (project == null || project.FileHash == null)
                 {
                     response.Success = false;
                     response.Message = MessageConstants.PROJECT_NOT_FOUND;
@@ -742,8 +747,14 @@ namespace SU_COIN_BACK_END.Services
                     response.Message = "Project is not approved. Therefore, not ready to be auctioned";
                     return response;
                 }
+                if (project.IsAuctionCreated) // User tries to re-create an auction
+                {
+                    response.Success = false;
+                    response.Message = $"Auction of project {projectID} has already been created";
+                    return response;
+                }
                 
-                ServiceResponse<bool> chainResponse = await IsAuctionCreatedInChain(project.FileHash);
+                ServiceResponse<bool> chainResponse = await _chainInteractionService.IsAuctionCreatedInChain(project.FileHash);
                 
                 if (!chainResponse.Success)
                 {
@@ -864,18 +875,6 @@ namespace SU_COIN_BACK_END.Services
                 response.Message = String.Format(MessageConstants.FAIL_MESSAGE, "get all invited projects", e.Message);
             }
             return response;
-        }
-
-        public async Task<ServiceResponse<bool>> IsAuctionCreatedInChain(string fileHash)
-        {
-            return await _chainInteractionService.isAuctionCreated(fileHash);
-            
-        }
-
-        public async Task<ServiceResponse<bool>> IsAuctionStartedInChain(string fileHash)
-        {
-            return await _chainInteractionService.isAuctionStarted(fileHash);
-            
         }
     }
 }

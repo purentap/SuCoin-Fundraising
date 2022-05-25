@@ -288,7 +288,8 @@ namespace SU_COIN_BACK_END.Controllers
             ServiceResponse<string> response = await _projectService.CreateAuction(id);
             if (!response.Success)
             {
-                if (response.Message == MessageConstants.PROJECT_NOT_FOUND || response.Message == MessageConstants.EVENT_NOT_FOUND)
+                if (response.Message == MessageConstants.PROJECT_NOT_FOUND || response.Message == MessageConstants.CONTRACT_NOT_FOUND 
+                    || response.Message == MessageConstants.PROJECT_NOT_FOUND_IN_CHAIN)
                 {
                     return NotFound(response);
                 }
@@ -312,9 +313,11 @@ namespace SU_COIN_BACK_END.Controllers
             ServiceResponse<string> response = await _projectService.StartAuction(id);
             if (!response.Success)
             {
-                if (response.Message == MessageConstants.PROJECT_NOT_FOUND)
+                if (response.Message == MessageConstants.PROJECT_NOT_FOUND || response.Message == MessageConstants.CONTRACT_NOT_FOUND
+                    || response.Message == MessageConstants.PROJECT_NOT_FOUND_IN_CHAIN || response.Message == MessageConstants.AUCTION_NOT_FOUND
+                    || response.Message == MessageConstants.AUCTION_NOT_STARTED)
                 {
-                    return NotFound();
+                    return NotFound(response);
                 }
                 if (response.Message == MessageConstants.PROJECT_PERMISSION_MANAGE_DENIED)
                 {

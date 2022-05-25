@@ -12,10 +12,8 @@ namespace SU_COIN_BACK_END.SU_COIN_INTERFACE
         Task<ServiceResponse<List<EventLog<WhitelistRemoveEventDTO>>>> GetWhiteListRemoveEventLogs(string address);
         Task<ServiceResponse<List<EventLog<WhitelistInsertEventDTO>>>> GetWhiteListInsertEventLogs(string address);
         Task<ServiceResponse<string>> GetChainRole(string address);
-
-        Task<ServiceResponse<bool>> isAuctionCreated(string projectHash);
-        Task<ServiceResponse<bool>> isAuctionStarted(string projectHash);
-
+        Task<ServiceResponse<bool>> IsAuctionCreatedInChain(string projectHash);
+        Task<ServiceResponse<bool>> IsAuctionStartedInChain(string projectHash);
         Task<ServiceResponse<List<EventLog<ProjectEvaluationEventDTO>>>> GetProjectEvaluationEventLogs();
     }
 }
