@@ -156,5 +156,29 @@ namespace SU_COIN_BACK_END.Controllers
             }
             return StatusCode(StatusCodes.Status204NoContent);
         }
+
+        [HttpPatch]
+        [Route("[action]/{address}")]
+        public async Task<IActionResult> ChangeUserRole(string address)
+        {
+            ServiceResponse<string> response = await _userInterface.ChangeUserRole(address);
+            if (!response.Success)
+            {
+                if (response.Message == MessageConstants.NOT_AUTHORIZED_TO_ACCESS)
+                {
+                    return Forbid();
+                }
+                if (response.Message == MessageConstants.USER_NOT_FOUND || response.Message == MessageConstants.CONTRACT_NOT_FOUND
+                    || response.Message == MessageConstants.USER_ROLE_NOT_FOUND_IN_CHAIN)
+                {
+                    return NotFound(response);
+                }
+                if (response.Message == MessageConstants.CHAIN_INTERACTION_FAIL)
+                {
+                    return StatusCode(StatusCodes.Status408RequestTimeout, response);
+                }
+            }
+            return Ok(response);
+        }
     }
 }

@@ -24,15 +24,18 @@ namespace SU_COIN_BACK_END.Services
         private readonly DataContext _context;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IAuthencticationService _authenticationService;
+        private readonly IChainInteractionService _chainInteractionService;
         private int GetUserId() => int.Parse(_httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier));
         private string GetUsername() => _httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.Name);
         private string GetUserRole() => _httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.Role);
-        public UserService(IMapper mapper, DataContext context, IHttpContextAccessor httpContextAccessor, IAuthencticationService authencticationService)
+        public UserService(IMapper mapper, DataContext context, IHttpContextAccessor httpContextAccessor,
+                             IAuthencticationService authencticationService, IChainInteractionService chainInteractionService)
         {
             _mapper = mapper;
             _context = context;
             _httpContextAccessor = httpContextAccessor;
             _authenticationService = authencticationService;
+            _chainInteractionService = chainInteractionService;
         }
 
         public async Task<ServiceResponse<string>> DeleteUser()
@@ -331,6 +334,47 @@ namespace SU_COIN_BACK_END.Services
             catch (Exception e)
             {
                 response.Message = String.Format(MessageConstants.FAIL_MESSAGE, "remove permission", e.Message);
+            }
+            return response;
+        }
+
+        public async Task<ServiceResponse<string>> ChangeUserRole(string address)
+        {
+            ServiceResponse<string> response = new ServiceResponse<string>();
+            
+            if (GetUserRole() != UserRoleConstants.ADMIN)
+            {
+                response.Message = MessageConstants.NOT_AUTHORIZED_TO_ACCESS;
+                return response;
+            }
+
+            User? user = _context.Users.FirstOrDefault(user => user.Address == address);
+            if (user == null)
+            {
+                response.Message = MessageConstants.USER_NOT_FOUND;
+                return response;
+            }
+            
+            try
+            {
+                ServiceResponse<string> chainResponse = await _chainInteractionService.GetChainRole(address);
+                if (!chainResponse.Success || chainResponse.Data == null)
+                {
+                    response.Message = chainResponse.Message;
+                }
+                else
+                {
+                    string oldRole = user.Role;
+                    user.Role = chainResponse.Data;
+                     _context.Users.Update(user);
+                    await _context.SaveChangesAsync();
+
+                    response.Message = $"User role is switched {oldRole} to {user.Role}";
+                }
+            }
+            catch (Exception e)
+            {
+                response.Message = String.Format(MessageConstants.FAIL_MESSAGE, "change role", e.Message);
             }
             return response;
         }

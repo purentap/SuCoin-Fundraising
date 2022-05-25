@@ -200,7 +200,7 @@ namespace SU_COIN_BACK_END.Services
                 List<Project> projects = new List<Project>();
 
                 /* Filter and fetch the projects according to role of the user who logged in */
-               if (userRole == UserRoleConstants.VIEWER)
+               if (userRole == UserRoleConstants.VIEWER || userRole == UserRoleConstants.ADMIN)
                {
                     projects = await _context.Projects.ToListAsync();
                }
