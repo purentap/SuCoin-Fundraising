@@ -34,6 +34,11 @@ namespace SU_COIN_BACK_END.Services
         private readonly DataContext _context;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly Web3 _web3;
+
+         private readonly string maestroABI = @"[{ ""inputs"": [{ ""internalType"": ""address"", ""name"": ""_sucoin"", ""type"": ""address"" }, { ""internalType"": ""address"", ""name"": ""_projectManager"", ""type"": ""address"" }, { ""internalType"": ""string[]"", ""name"": ""nameArray"", ""type"": ""string[]"" }, { ""internalType"": ""address[]"", ""name"": ""implementationContracts"", ""type"": ""address[]"" } ], ""stateMutability"": ""nonpayable"", ""type"": ""constructor"" }, { ""anonymous"": false, ""inputs"": [{ ""indexed"": true, ""internalType"": ""address"", ""name"": ""creator"", ""type"": ""address"" }, { ""indexed"": false, ""internalType"": ""address"", ""name"": ""auction"", ""type"": ""address"" }, { ""indexed"": false, ""internalType"": ""string"", ""name"": ""auctionType"", ""type"": ""string"" }, { ""indexed"": false, ""internalType"": ""bytes32"", ""name"": ""fileHash"", ""type"": ""bytes32"" } ], ""name"": ""CreateAuctionEvent"", ""type"": ""event"" }, { ""anonymous"": false, ""inputs"": [{ ""indexed"": true, ""internalType"": ""address"", ""name"": ""creator"", ""type"": ""address"" }, { ""indexed"": false, ""internalType"": ""string"", ""name"": ""Name"", ""type"": ""string"" }, { ""indexed"": false, ""internalType"": ""string"", ""name"": ""Symbol"", ""type"": ""string"" }, { ""indexed"": true, ""internalType"": ""address"", ""name"": ""token"", ""type"": ""address"" } ], ""name"": ""TokenCreation"", ""type"": ""event"" }, { ""inputs"": [{ ""internalType"": ""bytes32"", ""name"": ""projectHash"", ""type"": ""bytes32"" }, { ""internalType"": ""string"", ""name"": ""auctionType"", ""type"": ""string"" }, { ""components"": [{ ""internalType"": ""uint256"", ""name"": ""numberOfTokensToBeDistributed"", ""type"": ""uint256"" }, { ""internalType"": ""uint256"", ""name"": ""rate"", ""type"": ""uint256"" }, { ""internalType"": ""uint256"", ""name"": ""finalRate"", ""type"": ""uint256"" }, { ""internalType"": ""uint256"", ""name"": ""limit"", ""type"": ""uint256"" } ], ""internalType"": ""struct Maestro.userAuctionParameters"", ""name"": ""userParams"", ""type"": ""tuple"" } ], ""name"": ""createAuction"", ""outputs"": [], ""stateMutability"": ""nonpayable"", ""type"": ""function"" }, { ""inputs"": [{ ""internalType"": ""bytes32"", ""name"": ""projectHash"", ""type"": ""bytes32"" }, { ""internalType"": ""string"", ""name"": ""tokenName"", ""type"": ""string"" }, { ""internalType"": ""string"", ""name"": ""tokenSymbol"", ""type"": ""string"" }, { ""internalType"": ""uint256"", ""name"": ""initialSupply"", ""type"": ""uint256"" } ], ""name"": ""createToken"", ""outputs"": [{ ""internalType"": ""address"", ""name"": """", ""type"": ""address"" }], ""stateMutability"": ""nonpayable"", ""type"": ""function"" }, { ""inputs"": [{ ""internalType"": ""string"", ""name"": ""name"", ""type"": ""string"" }, { ""internalType"": ""address"", ""name"": ""newImplementationAddress"", ""type"": ""address"" } ], ""name"": ""editImplementation"", ""outputs"": [], ""stateMutability"": ""nonpayable"", ""type"": ""function"" }, { ""inputs"": [{ ""internalType"": ""bytes32[]"", ""name"": ""hashes"", ""type"": ""bytes32[]"" }, { ""internalType"": ""enum Auction.AuctionStatus"", ""name"": ""status"", ""type"": ""uint8"" }, { ""internalType"": ""uint256"", ""name"": ""selectCount"", ""type"": ""uint256"" } ], ""name"": ""getProjectSurfaceByStatus"", ""outputs"": [{ ""components"": [{ ""internalType"": ""address"", ""name"": ""auction"", ""type"": ""address"" }, { ""internalType"": ""string"", ""name"": ""tokenName"", ""type"": ""string"" }, { ""internalType"": ""string"", ""name"": ""tokenSymbol"", ""type"": ""string"" }, { ""internalType"": ""string"", ""name"": ""auctionType"", ""type"": ""string"" }, { ""internalType"": ""bytes32"", ""name"": ""projectHash"", ""type"": ""bytes32"" } ], ""internalType"": ""struct Maestro.ProjectSurface[]"", ""name"": """", ""type"": ""tuple[]"" }], ""stateMutability"": ""view"", ""type"": ""function"" }, { ""inputs"": [{ ""internalType"": ""bytes32"", ""name"": ""projectHash"", ""type"": ""bytes32"" }, { ""internalType"": ""uint256"", ""name"": ""pauseTimeInHours"", ""type"": ""uint256"" } ], ""name"": ""pauseAuction"", ""outputs"": [], ""stateMutability"": ""nonpayable"", ""type"": ""function"" }, { ""inputs"": [{ ""internalType"": ""bytes32"", ""name"": """", ""type"": ""bytes32"" }], ""name"": ""projectTokens"", ""outputs"": [{ ""internalType"": ""address"", ""name"": ""proposer"", ""type"": ""address"" }, { ""internalType"": ""address"", ""name"": ""token"", ""type"": ""address"" }, { ""internalType"": ""address"", ""name"": ""auction"", ""type"": ""address"" }, { ""internalType"": ""string"", ""name"": ""auctionType"", ""type"": ""string"" } ], ""stateMutability"": ""view"", ""type"": ""function"" }, { ""inputs"": [{ ""internalType"": ""address"", ""name"": ""newAddress"", ""type"": ""address"" }], ""name"": ""setSucoin"", ""outputs"": [], ""stateMutability"": ""nonpayable"", ""type"": ""function"" } ]";
+        private readonly string auctionABI = @"[ { ""anonymous"": false, ""inputs"": [ { ""indexed"": false, ""internalType"": ""uint256"", ""name"": ""end"", ""type"": ""uint256"" }, { ""indexed"": false, ""internalType"": ""uint256"", ""name"": ""finalPrice"", ""type"": ""uint256"" } ], ""name"": ""AuctionFinished"", ""type"": ""event"" }, { ""anonymous"": false, ""inputs"": [ { ""indexed"": false, ""internalType"": ""uint256"", ""name"": ""pauseDuration"", ""type"": ""uint256"" } ], ""name"": ""AuctionPaused"", ""type"": ""event"" }, { ""anonymous"": false, ""inputs"": [ { ""indexed"": false, ""internalType"": ""uint256"", ""name"": ""start"", ""type"": ""uint256"" }, { ""indexed"": false, ""internalType"": ""uint256"", ""name"": ""end"", ""type"": ""uint256"" } ], ""name"": ""AuctionStarted"", ""type"": ""event"" }, { ""anonymous"": false, ""inputs"": [ { ""indexed"": true, ""internalType"": ""address"", ""name"": ""sender"", ""type"": ""address"" }, { ""indexed"": false, ""internalType"": ""uint256"", ""name"": ""amount"", ""type"": ""uint256"" } ], ""name"": ""BidSubmission"", ""type"": ""event"" }, { ""anonymous"": false, ""inputs"": [ { ""indexed"": true, ""internalType"": ""bytes32"", ""name"": ""role"", ""type"": ""bytes32"" }, { ""indexed"": true, ""internalType"": ""bytes32"", ""name"": ""previousAdminRole"", ""type"": ""bytes32"" }, { ""indexed"": true, ""internalType"": ""bytes32"", ""name"": ""newAdminRole"", ""type"": ""bytes32"" } ], ""name"": ""RoleAdminChanged"", ""type"": ""event"" }, { ""anonymous"": false, ""inputs"": [ { ""indexed"": true, ""internalType"": ""bytes32"", ""name"": ""role"", ""type"": ""bytes32"" }, { ""indexed"": true, ""internalType"": ""address"", ""name"": ""account"", ""type"": ""address"" }, { ""indexed"": true, ""internalType"": ""address"", ""name"": ""sender"", ""type"": ""address"" } ], ""name"": ""RoleGranted"", ""type"": ""event"" }, { ""anonymous"": false, ""inputs"": [ { ""indexed"": true, ""internalType"": ""bytes32"", ""name"": ""role"", ""type"": ""bytes32"" }, { ""indexed"": true, ""internalType"": ""address"", ""name"": ""account"", ""type"": ""address"" }, { ""indexed"": true, ""internalType"": ""address"", ""name"": ""sender"", ""type"": ""address"" } ], ""name"": ""RoleRevoked"", ""type"": ""event"" }, { ""inputs"": [], ""name"": ""DEFAULT_ADMIN_ROLE"", ""outputs"": [ { ""internalType"": ""bytes32"", ""name"": """", ""type"": ""bytes32"" } ], ""stateMutability"": ""view"", ""type"": ""function"" }, { ""inputs"": [], ""name"": ""PROPOSER_ADMIN_ROLE"", ""outputs"": [ { ""internalType"": ""bytes32"", ""name"": """", ""type"": ""bytes32"" } ], ""stateMutability"": ""view"", ""type"": ""function"" }, { ""inputs"": [], ""name"": ""PROPOSER_ROLE"", ""outputs"": [ { ""internalType"": ""bytes32"", ""name"": """", ""type"": ""bytes32"" } ], ""stateMutability"": ""view"", ""type"": ""function"" }, { ""inputs"": [ { ""internalType"": ""uint256"", ""name"": ""bidCoinBits"", ""type"": ""uint256"" } ], ""name"": ""bid"", ""outputs"": [], ""stateMutability"": ""nonpayable"", ""type"": ""function"" }, { ""inputs"": [], ""name"": ""bidCoin"", ""outputs"": [ { ""internalType"": ""contract WrapperToken"", ""name"": """", ""type"": ""address"" } ], ""stateMutability"": ""view"", ""type"": ""function"" }, { ""inputs"": [ { ""internalType"": ""bytes32"", ""name"": ""role"", ""type"": ""bytes32"" } ], ""name"": ""getRoleAdmin"", ""outputs"": [ { ""internalType"": ""bytes32"", ""name"": """", ""type"": ""bytes32"" } ], ""stateMutability"": ""view"", ""type"": ""function"" }, { ""inputs"": [], ""name"": ""getStatus"", ""outputs"": [ { ""internalType"": ""enum Auction.AuctionStatus"", ""name"": """", ""type"": ""uint8"" } ], ""stateMutability"": ""view"", ""type"": ""function"" }, { ""inputs"": [ { ""internalType"": ""bytes32"", ""name"": ""role"", ""type"": ""bytes32"" }, { ""internalType"": ""address"", ""name"": ""account"", ""type"": ""address"" } ], ""name"": ""grantRole"", ""outputs"": [], ""stateMutability"": ""nonpayable"", ""type"": ""function"" }, { ""inputs"": [ { ""internalType"": ""bytes32"", ""name"": ""role"", ""type"": ""bytes32"" }, { ""internalType"": ""address"", ""name"": ""account"", ""type"": ""address"" } ], ""name"": ""hasRole"", ""outputs"": [ { ""internalType"": ""bool"", ""name"": """", ""type"": ""bool"" } ], ""stateMutability"": ""view"", ""type"": ""function"" }, { ""inputs"": [ { ""components"": [ { ""internalType"": ""address"", ""name"": ""token"", ""type"": ""address"" }, { ""internalType"": ""address"", ""name"": ""bidCoin"", ""type"": ""address"" }, { ""internalType"": ""uint256"", ""name"": ""numberOfTokensToBeDistributed"", ""type"": ""uint256"" }, { ""internalType"": ""uint256"", ""name"": ""rate"", ""type"": ""uint256"" }, { ""internalType"": ""uint256"", ""name"": ""finalRate"", ""type"": ""uint256"" }, { ""internalType"": ""uint256"", ""name"": ""limit"", ""type"": ""uint256"" } ], ""internalType"": ""struct Auction.auctionParameters"", ""name"": ""params"", ""type"": ""tuple"" } ], ""name"": ""initialize"", ""outputs"": [], ""stateMutability"": ""nonpayable"", ""type"": ""function"" }, { ""inputs"": [], ""name"": ""latestEndTime"", ""outputs"": [ { ""internalType"": ""uint256"", ""name"": """", ""type"": ""uint256"" } ], ""stateMutability"": ""view"", ""type"": ""function"" }, { ""inputs"": [], ""name"": ""manualFinish"", ""outputs"": [], ""stateMutability"": ""nonpayable"", ""type"": ""function"" }, { ""inputs"": [ { ""internalType"": ""bytes[]"", ""name"": ""data"", ""type"": ""bytes[]"" } ], ""name"": ""multicall"", ""outputs"": [ { ""internalType"": ""bytes[]"", ""name"": ""results"", ""type"": ""bytes[]"" } ], ""stateMutability"": ""nonpayable"", ""type"": ""function"" }, { ""inputs"": [ { ""internalType"": ""uint256"", ""name"": ""pauseTimeInHours"", ""type"": ""uint256"" } ], ""name"": ""pauseAuction"", ""outputs"": [], ""stateMutability"": ""nonpayable"", ""type"": ""function"" }, { ""inputs"": [], ""name"": ""projectWallet"", ""outputs"": [ { ""internalType"": ""address"", ""name"": """", ""type"": ""address"" } ], ""stateMutability"": ""view"", ""type"": ""function"" }, { ""inputs"": [ { ""internalType"": ""bytes32"", ""name"": ""role"", ""type"": ""bytes32"" }, { ""internalType"": ""address"", ""name"": ""account"", ""type"": ""address"" } ], ""name"": ""renounceRole"", ""outputs"": [], ""stateMutability"": ""nonpayable"", ""type"": ""function"" }, { ""inputs"": [ { ""internalType"": ""bytes32"", ""name"": ""role"", ""type"": ""bytes32"" }, { ""internalType"": ""address"", ""name"": ""account"", ""type"": ""address"" } ], ""name"": ""revokeRole"", ""outputs"": [], ""stateMutability"": ""nonpayable"", ""type"": ""function"" }, { ""inputs"": [ { ""internalType"": ""address"", ""name"": ""wallet"", ""type"": ""address"" } ], ""name"": ""setTeamWallet"", ""outputs"": [], ""stateMutability"": ""nonpayable"", ""type"": ""function"" }, { ""inputs"": [ { ""internalType"": ""uint256"", ""name"": ""maximumAuctionTimeInHours"", ""type"": ""uint256"" } ], ""name"": ""startAuction"", ""outputs"": [], ""stateMutability"": ""nonpayable"", ""type"": ""function"" }, { ""inputs"": [], ""name"": ""startTime"", ""outputs"": [ { ""internalType"": ""uint256"", ""name"": """", ""type"": ""uint256"" } ], ""stateMutability"": ""view"", ""type"": ""function"" }, { ""inputs"": [], ""name"": ""status"", ""outputs"": [ { ""internalType"": ""enum Auction.AuctionStatus"", ""name"": """", ""type"": ""uint8"" } ], ""stateMutability"": ""view"", ""type"": ""function"" }, { ""inputs"": [ { ""internalType"": ""bytes4"", ""name"": ""interfaceId"", ""type"": ""bytes4"" } ], ""name"": ""supportsInterface"", ""outputs"": [ { ""internalType"": ""bool"", ""name"": """", ""type"": ""bool"" } ], ""stateMutability"": ""view"", ""type"": ""function"" }, { ""inputs"": [], ""name"": ""totalDepositedSucoins"", ""outputs"": [ { ""internalType"": ""uint256"", ""name"": """", ""type"": ""uint256"" } ], ""stateMutability"": ""view"", ""type"": ""function"" } ]";
+
+        private readonly string projectABI = @"[ { ""inputs"": [ { ""internalType"": ""uint256"", ""name"": ""_threshold"", ""type"": ""uint256"" } ], ""stateMutability"": ""nonpayable"", ""type"": ""constructor"" }, { ""anonymous"": false, ""inputs"": [ { ""indexed"": false, ""internalType"": ""address"", ""name"": ""from"", ""type"": ""address"" }, { ""indexed"": false, ""internalType"": ""address"", ""name"": ""to"", ""type"": ""address"" } ], ""name"": ""AdminChange"", ""type"": ""event"" }, { ""anonymous"": false, ""inputs"": [ { ""indexed"": true, ""internalType"": ""bytes32"", ""name"": ""projectHash"", ""type"": ""bytes32"" }, { ""indexed"": false, ""internalType"": ""bool"", ""name"": ""isApproved"", ""type"": ""bool"" } ], ""name"": ""ProjectEvaluation"", ""type"": ""event"" }, { ""anonymous"": false, ""inputs"": [ { ""indexed"": true, ""internalType"": ""address"", ""name"": ""from"", ""type"": ""address"" }, { ""indexed"": false, ""internalType"": ""bytes32"", ""name"": ""projectHash"", ""type"": ""bytes32"" } ], ""name"": ""Register"", ""type"": ""event"" }, { ""anonymous"": false, ""inputs"": [ { ""indexed"": true, ""internalType"": ""bytes32"", ""name"": ""role"", ""type"": ""bytes32"" }, { ""indexed"": true, ""internalType"": ""bytes32"", ""name"": ""previousAdminRole"", ""type"": ""bytes32"" }, { ""indexed"": true, ""internalType"": ""bytes32"", ""name"": ""newAdminRole"", ""type"": ""bytes32"" } ], ""name"": ""RoleAdminChanged"", ""type"": ""event"" }, { ""anonymous"": false, ""inputs"": [ { ""indexed"": true, ""internalType"": ""bytes32"", ""name"": ""role"", ""type"": ""bytes32"" }, { ""indexed"": true, ""internalType"": ""address"", ""name"": ""account"", ""type"": ""address"" }, { ""indexed"": true, ""internalType"": ""address"", ""name"": ""sender"", ""type"": ""address"" } ], ""name"": ""RoleGranted"", ""type"": ""event"" }, { ""anonymous"": false, ""inputs"": [ { ""indexed"": true, ""internalType"": ""bytes32"", ""name"": ""role"", ""type"": ""bytes32"" }, { ""indexed"": true, ""internalType"": ""address"", ""name"": ""account"", ""type"": ""address"" }, { ""indexed"": true, ""internalType"": ""address"", ""name"": ""sender"", ""type"": ""address"" } ], ""name"": ""RoleRevoked"", ""type"": ""event"" }, { ""anonymous"": false, ""inputs"": [ { ""indexed"": true, ""internalType"": ""bytes32"", ""name"": ""project"", ""type"": ""bytes32"" }, { ""indexed"": false, ""internalType"": ""address"", ""name"": ""from"", ""type"": ""address"" }, { ""indexed"": false, ""internalType"": ""bool"", ""name"": ""decision"", ""type"": ""bool"" }, { ""indexed"": false, ""internalType"": ""uint256"", ""name"": ""weight"", ""type"": ""uint256"" } ], ""name"": ""Vote"", ""type"": ""event"" }, { ""anonymous"": false, ""inputs"": [ { ""indexed"": false, ""internalType"": ""address"", ""name"": ""from"", ""type"": ""address"" }, { ""indexed"": false, ""internalType"": ""address"", ""name"": ""to"", ""type"": ""address"" }, { ""indexed"": false, ""internalType"": ""bytes32"", ""name"": ""project"", ""type"": ""bytes32"" }, { ""indexed"": false, ""internalType"": ""uint256"", ""name"": ""weight"", ""type"": ""uint256"" } ], ""name"": ""VoteDelegate"", ""type"": ""event"" }, { ""anonymous"": false, ""inputs"": [ { ""indexed"": true, ""internalType"": ""address"", ""name"": ""user"", ""type"": ""address"" } ], ""name"": ""WhitelistInsert"", ""type"": ""event"" }, { ""anonymous"": false, ""inputs"": [ { ""indexed"": true, ""internalType"": ""address"", ""name"": ""user"", ""type"": ""address"" } ], ""name"": ""WhitelistRemove"", ""type"": ""event"" }, { ""inputs"": [], ""name"": ""ADMIN_ROLE"", ""outputs"": [ { ""internalType"": ""bytes32"", ""name"": """", ""type"": ""bytes32"" } ], ""stateMutability"": ""view"", ""type"": ""function"" }, { ""inputs"": [], ""name"": ""DEFAULT_ADMIN_ROLE"", ""outputs"": [ { ""internalType"": ""bytes32"", ""name"": """", ""type"": ""bytes32"" } ], ""stateMutability"": ""view"", ""type"": ""function"" }, { ""inputs"": [ { ""internalType"": ""address"", ""name"": ""to"", ""type"": ""address"" }, { ""internalType"": ""bytes32"", ""name"": ""fileHash"", ""type"": ""bytes32"" } ], ""name"": ""delegate"", ""outputs"": [], ""stateMutability"": ""nonpayable"", ""type"": ""function"" }, { ""inputs"": [ { ""internalType"": ""address"", ""name"": ""user"", ""type"": ""address"" }, { ""internalType"": ""enum ProjectRegister.USER_STATUS"", ""name"": ""newStatus"", ""type"": ""uint8"" } ], ""name"": ""editUserStatus"", ""outputs"": [], ""stateMutability"": ""nonpayable"", ""type"": ""function"" }, { ""inputs"": [ { ""internalType"": ""bytes32"", ""name"": ""role"", ""type"": ""bytes32"" } ], ""name"": ""getRoleAdmin"", ""outputs"": [ { ""internalType"": ""bytes32"", ""name"": """", ""type"": ""bytes32"" } ], ""stateMutability"": ""view"", ""type"": ""function"" }, { ""inputs"": [ { ""internalType"": ""bytes32"", ""name"": ""role"", ""type"": ""bytes32"" }, { ""internalType"": ""address"", ""name"": ""account"", ""type"": ""address"" } ], ""name"": ""grantRole"", ""outputs"": [], ""stateMutability"": ""nonpayable"", ""type"": ""function"" }, { ""inputs"": [ { ""internalType"": ""bytes32"", ""name"": ""role"", ""type"": ""bytes32"" }, { ""internalType"": ""address"", ""name"": ""account"", ""type"": ""address"" } ], ""name"": ""hasRole"", ""outputs"": [ { ""internalType"": ""bool"", ""name"": """", ""type"": ""bool"" } ], ""stateMutability"": ""view"", ""type"": ""function"" }, { ""inputs"": [ { ""internalType"": ""address"", ""name"": ""addr"", ""type"": ""address"" }, { ""internalType"": ""bytes32"", ""name"": ""fileHash"", ""type"": ""bytes32"" } ], ""name"": ""isValidToDistribute"", ""outputs"": [ { ""internalType"": ""bool"", ""name"": """", ""type"": ""bool"" } ], ""stateMutability"": ""view"", ""type"": ""function"" }, { ""inputs"": [ { ""internalType"": ""bytes32"", ""name"": """", ""type"": ""bytes32"" } ], ""name"": ""projectsRegistered"", ""outputs"": [ { ""internalType"": ""uint256"", ""name"": ""approved"", ""type"": ""uint256"" }, { ""internalType"": ""uint256"", ""name"": ""rejected"", ""type"": ""uint256"" }, { ""internalType"": ""address"", ""name"": ""proposer"", ""type"": ""address"" }, { ""internalType"": ""bool"", ""name"": ""finalized"", ""type"": ""bool"" }, { ""internalType"": ""bool"", ""name"": ""decision"", ""type"": ""bool"" } ], ""stateMutability"": ""view"", ""type"": ""function"" }, { ""inputs"": [ { ""internalType"": ""bytes32"", ""name"": ""fileHash"", ""type"": ""bytes32"" } ], ""name"": ""registerProject"", ""outputs"": [], ""stateMutability"": ""nonpayable"", ""type"": ""function"" }, { ""inputs"": [ { ""internalType"": ""bytes32"", ""name"": ""fileHash"", ""type"": ""bytes32"" } ], ""name"": ""removeProject"", ""outputs"": [], ""stateMutability"": ""nonpayable"", ""type"": ""function"" }, { ""inputs"": [ { ""internalType"": ""bytes32"", ""name"": ""role"", ""type"": ""bytes32"" }, { ""internalType"": ""address"", ""name"": ""account"", ""type"": ""address"" } ], ""name"": ""renounceRole"", ""outputs"": [], ""stateMutability"": ""nonpayable"", ""type"": ""function"" }, { ""inputs"": [ { ""internalType"": ""bytes32"", ""name"": ""role"", ""type"": ""bytes32"" }, { ""internalType"": ""address"", ""name"": ""account"", ""type"": ""address"" } ], ""name"": ""revokeRole"", ""outputs"": [], ""stateMutability"": ""nonpayable"", ""type"": ""function"" }, { ""inputs"": [ { ""internalType"": ""address"", ""name"": """", ""type"": ""address"" } ], ""name"": ""statusList"", ""outputs"": [ { ""internalType"": ""enum ProjectRegister.USER_STATUS"", ""name"": """", ""type"": ""uint8"" } ], ""stateMutability"": ""view"", ""type"": ""function"" }, { ""inputs"": [ { ""internalType"": ""bytes4"", ""name"": ""interfaceId"", ""type"": ""bytes4"" } ], ""name"": ""supportsInterface"", ""outputs"": [ { ""internalType"": ""bool"", ""name"": """", ""type"": ""bool"" } ], ""stateMutability"": ""view"", ""type"": ""function"" }, { ""inputs"": [], ""name"": ""threshold"", ""outputs"": [ { ""internalType"": ""uint256"", ""name"": """", ""type"": ""uint256"" } ], ""stateMutability"": ""view"", ""type"": ""function"" }, { ""inputs"": [ { ""internalType"": ""bytes32"", ""name"": ""fileHash"", ""type"": ""bytes32"" }, { ""internalType"": ""bool"", ""name"": ""decision"", ""type"": ""bool"" } ], ""name"": ""voteProposal"", ""outputs"": [], ""stateMutability"": ""nonpayable"", ""type"": ""function"" }, { ""inputs"": [], ""name"": ""whitelistedCount"", ""outputs"": [ { ""internalType"": ""uint256"", ""name"": """", ""type"": ""uint256"" } ], ""stateMutability"": ""view"", ""type"": ""function"" } ]"; 
         private int GetUserId() => int.Parse(_httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier));
         private string GetUserAddress() => (_httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.Surname));
         public ChainInteractionService(IMapper mapper, DataContext context, IHttpContextAccessor httpContextAccessor)
@@ -153,8 +158,7 @@ namespace SU_COIN_BACK_END.Services
             ServiceResponse<string> response = new ServiceResponse<string>();
             try
             {
-                var ABI = @"[{ ""inputs"": [ { ""internalType"": ""address"", ""name"": """", ""type"": ""address"" } ], ""name"": ""statusList"", ""outputs"": [ { ""internalType"": ""enum ProjectRegister.USER_STATUS"", ""name"": """", ""type"": ""uint8"" } ], ""stateMutability"": ""view"", ""type"": ""function"" }]";
-                var contract = _web3.Eth.GetContract(ABI, ContractConstants.RegisterContractAddress);
+                var contract = _web3.Eth.GetContract(projectABI, ContractConstants.RegisterContractAddress);
 
                 if (contract == null)
                 {
@@ -199,6 +203,112 @@ namespace SU_COIN_BACK_END.Services
             }
             return response;
         }
+
+        private async Task<ServiceResponse<string>> getAuctionFromHash(string projectHash) {
+                ServiceResponse<string> response = new ServiceResponse<string>();
+
+                try {
+                var contract = _web3.Eth.GetContract(maestroABI, ContractConstants.MaestroContractAddress);
+
+                if (contract == null)
+                {
+                    response.Message = "There is no contract for the current ABI";
+                    response.Success = false;
+                    return response;
+                }
+
+                try
+                {
+                    var hashValue =  Convert.FromHexString(projectHash);
+                    var project = await contract.GetFunction("projectTokens").CallDeserializingToObjectAsync<HashToProjectDTO>(hashValue);
+               
+
+                    if (HexBigIntegerConvertorExtensions.HexToBigInteger(project.proposerAddress,false) == 0) {
+                        response.Message = $"Project does not exist for {projectHash}";
+                        response.Success = false;
+                    }
+
+                    else {
+                        response.Message = $"Project exists for {projectHash}";
+                        response.Data = project.auctionAddress;
+                        response.Success = true;
+                    }
+                }
+                catch (Exception e)
+                {   
+                    response.Message =  MessageConstants.PROJECT_NOT_FOUND_IN_CHAIN;
+                    response.Success = false;
+                }
+                }
+                 catch (Exception)
+                {
+                    response.Message = MessageConstants.CHAIN_INTERACTION_FAIL;
+                    response.Success = false;
+                }
+
+                return response;
+        }
+
+         public async Task<ServiceResponse<bool>> isAuctionCreated(string projectHash)
+        {
+            var projectResponse = await getAuctionFromHash(projectHash);
+
+            ServiceResponse<bool> auctionResponse = new ServiceResponse<bool>();
+
+            var projectFound = projectResponse.Success;
+
+            if (!projectFound) {
+                auctionResponse.Message = projectResponse.Message;
+            }
+
+            else {
+    
+                auctionResponse.Message = $"Auction exists for {projectHash}";
+                auctionResponse.Success = true;
+            }
+
+            return auctionResponse;
+        }
+
+         public async Task<ServiceResponse<bool>> isAuctionStarted(string projectHash)
+        {
+            var projectResponse = await getAuctionFromHash(projectHash);
+
+            ServiceResponse<bool> auctionStartedResponse = new ServiceResponse<bool>();
+
+            var projectFound = projectResponse.Success;
+
+            if (!projectFound) 
+                auctionStartedResponse.Message = projectResponse.Message;
+            
+
+            else {
+                try {
+                    var address = projectResponse.Data;
+                    var contract = _web3.Eth.GetContract(auctionABI,address);
+                    var auctionStatus = await contract.GetFunction("status").CallAsync<int>();
+
+
+                    if (auctionStatus == 0) {
+                   
+                        auctionStartedResponse.Message = $"Auction not started for {projectHash}";
+                    }
+
+                    else {
+                        auctionStartedResponse.Success = true;
+                        auctionStartedResponse.Data = true;
+                        auctionStartedResponse.Message = $"Auction started for for {projectHash}";
+
+                    }
+                }
+                catch (Exception) 
+                {
+                    auctionStartedResponse.Message = $"Legitimate Auction Not found for {projectHash}";
+                }
+            }
+
+            return auctionStartedResponse;
+        }
     
         public async Task<ServiceResponse<List<EventLog<ProjectEvaluationEventDTO>>>> GetProjectEvaluationEventLogs()
         {
@@ -227,33 +337,6 @@ namespace SU_COIN_BACK_END.Services
             return response;
         }
 
-        public async Task<ServiceResponse<List<EventLog<CreateAuctionEventDTO>>>> GetCreateAuctionEventLogs()
-        {
-            ServiceResponse<List<EventLog<CreateAuctionEventDTO>>> response = new ServiceResponse<List<EventLog<CreateAuctionEventDTO>>>();
-
-            try
-            {
-                var createAuctionEventHandler = _web3.Eth.GetEvent<CreateAuctionEventDTO>(ContractConstants.MaestroContractAddress);
-                var filterAllCreateAuctionEvents = createAuctionEventHandler.CreateFilterInput(GetUserAddress());
-                var allEvents = await createAuctionEventHandler.GetAllChangesAsync(filterAllCreateAuctionEvents);
-
-                if (allEvents == null)
-                {
-                    response.Success = false;
-                    response.Message = MessageConstants.EVENT_NOT_FOUND;
-                    return response;
-                }
-
-                response.Success = true;
-                response.Data = allEvents;
-                response.Message = MessageConstants.OK;
-            }
-            catch (Exception)
-            {
-                response.Success = false;
-                response.Message = MessageConstants.CHAIN_INTERACTION_FAIL;
-            }
-            return response;
-        }
+        
     }
 }

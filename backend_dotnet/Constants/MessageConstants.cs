@@ -18,6 +18,9 @@ namespace SU_COIN_BACK_END.Constants.MessageConstants
         public const string FAIL_MESSAGE = "Failed to {0}. Exception message: {1}";
         public const string INVALID_INPUT = "Invalid input";
         public const string NOT_WHITLISTED = "Not Whitelisted";
+
+        public const string PROJECT_NOT_FOUND_IN_CHAIN = "No Project exists for this projectHash";
+
         public const string USER_ROLE_NOT_FOUND_IN_CHAIN = "User role not found in the chain";
         public const string PROPOSAL_FILE_NOT_FOUND = "Proposal file is not found";
         public const string PROJECT_NOT_ACCEPTED_BY_VIEWER = "Project has not been accepted by the viewer yet";
