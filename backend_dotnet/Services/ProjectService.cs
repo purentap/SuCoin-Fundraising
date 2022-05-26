@@ -93,7 +93,6 @@ namespace SU_COIN_BACK_END.Services
 
                 if (!ipfs_response.Success) 
                 {
-                    response.Success = ipfs_response.Success;
                     response.Message = ipfs_response.Message;
                     return response;
                 }
@@ -119,7 +118,6 @@ namespace SU_COIN_BACK_END.Services
                 if (dbProject == null)  // The project was not added, because some operations were applied to the project while adding the project to the database.
                 {
                     response.Message = MessageConstants.PROJECT_ADD_FAIL;
-                    response.Success = true;
                     return response;
                 }
                     

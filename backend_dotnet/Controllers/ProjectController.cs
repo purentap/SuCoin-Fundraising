@@ -129,6 +129,10 @@ namespace SU_COIN_BACK_END.Controllers
                 {
                     return StatusCode(StatusCodes.Status503ServiceUnavailable, response);
                 }
+                if (response.Message == MessageConstants.PROJECT_ADD_FAIL)
+                {
+                    return StatusCode(StatusCodes.Status500InternalServerError, response);
+                }
                 return BadRequest(response);
             }
             return Created($"projects/{response.Data.ProjectID}", response);
