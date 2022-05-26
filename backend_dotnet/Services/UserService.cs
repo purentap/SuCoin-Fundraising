@@ -38,16 +38,27 @@ namespace SU_COIN_BACK_END.Services
             _chainInteractionService = chainInteractionService;
         }
 
-        public async Task<ServiceResponse<string>> DeleteUser()
+        public async Task<ServiceResponse<string>> DeleteUser(int id)
         {
             ServiceResponse<string> response = new ServiceResponse<string>();
             try
             {
+                if (GetUserRole() != UserRoleConstants.ADMIN)
+                {
+                    response.Message = MessageConstants.NOT_AUTHORIZED_TO_ACCESS;
+                    return response;
+                }
+
                 User? user = await _context.Users.FirstOrDefaultAsync(c => c.Id == GetUserId());
 
                 if (user == null)
                 {
                     response.Message = MessageConstants.USER_NOT_FOUND;
+                    return response;
+                }
+                if (user.Role == UserRoleConstants.ADMIN)
+                {
+                    response.Message = "Admin cannot delete himself/herself";
                     return response;
                 }
                 
@@ -338,7 +349,7 @@ namespace SU_COIN_BACK_END.Services
             return response;
         }
 
-        public async Task<ServiceResponse<string>> ChangeUserRole(string address)
+        public async Task<ServiceResponse<string>> UpdateUserRole(string address)
         {
             ServiceResponse<string> response = new ServiceResponse<string>();
             

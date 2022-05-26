@@ -8,13 +8,13 @@ namespace SU_COIN_BACK_END.SU_COIN_INTERFACE
 {
     public interface IUserService
     {
-        Task<ServiceResponse<string>> DeleteUser();
+        Task<ServiceResponse<string>> DeleteUser(int id);
         Task<ServiceResponse<UserDTO>> UpdateUser(UserDTO user);
         Task<ServiceResponse<UserDTO>> GetUser();
         Task<ServiceResponse<int>> GivePermissionToProject(ProjectPermissionRequest request);
         Task<ServiceResponse<string>> EvaluatePendingProjectPermission(ProjectPermissionRequest request);
         Task<ServiceResponse<List<UserDTO>>> GetAllUsers();
         Task<ServiceResponse<string>> RemovePermissionToProject(ProjectPermissionRequest request);
-        Task<ServiceResponse<string>> ChangeUserRole(string address);
+        Task<ServiceResponse<string>> UpdateUserRole(string address);
     }
 }
