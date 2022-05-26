@@ -84,9 +84,9 @@ namespace SU_COIN_BACK_END.Controllers
 
         [HttpDelete]
         [Route("Delete/{id:int}")]
-        public async Task<IActionResult> DeleteProject(int Id)
+        public async Task<IActionResult> DeleteProject(int id)
         {
-            ServiceResponse<string> response = await _projectService.DeleteProject(Id);
+            ServiceResponse<string> response = await _projectService.DeleteProject(id);
             if (!response.Success)
             {
                 if (response.Message == MessageConstants.PROJECT_NOT_FOUND)

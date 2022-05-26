@@ -151,7 +151,8 @@ namespace SU_COIN_BACK_END.Services
             ServiceResponse<string> response = new ServiceResponse<string>();
             try
             {
-                if (!await HasOwnerPermission(id)) // owner does not allow you to delete the project
+                // Role of the user is not admin or owner does not allow you to delete the project
+                if (GetUserRole() != UserRoleConstants.ADMIN && !await HasOwnerPermission(id))
                 {
                     response.Message = MessageConstants.PROJECT_PERMISSION_MANAGE_DENIED;
                     return response;
@@ -172,17 +173,17 @@ namespace SU_COIN_BACK_END.Services
                 if (!ipfs_response.Success)
                 {
                     response.Message = ipfs_response.Message;
-                    response.Success = ipfs_response.Success;
-                    return response;
                 }
-                
-                /* Remove both the current project and the related project permissions */
-                _context.ProjectPermissions.RemoveRange(_context.ProjectPermissions.Where(c => c.ProjectID == id));
-                _context.Remove(project);
-                await _context.SaveChangesAsync();
-                response.Message = MessageConstants.OK;
-                response.Data = "Project is deleted successfully";
-                response.Success = true;
+                else
+                {
+                    /* Remove both the current project and the related project permissions */
+                    _context.ProjectPermissions.RemoveRange(_context.ProjectPermissions.Where(c => c.ProjectID == id));
+                    _context.Remove(project);
+                    await _context.SaveChangesAsync();
+                    response.Message = MessageConstants.OK;
+                    response.Data = "Project is deleted successfully";
+                    response.Success = true;
+                }
             }
             catch (Exception e)
             {

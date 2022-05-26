@@ -24,9 +24,9 @@ namespace SU_COIN_BACK_END.Controllers
     { 
         private readonly IUserService _userService;
 
-        public UserController(IUserService userInterface)
+        public UserController(IUserService userService)
         {
-            _userService = userInterface;
+            _userService = userService;
         }
 
         [HttpGet]
