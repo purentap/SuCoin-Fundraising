@@ -6,12 +6,14 @@ import "@openzeppelin/contracts/access/AccessControl.sol";
 
 
 contract ProjectRegister is AccessControl{
-    enum USER_STATUS {DEFAULT,WHITELISTED,BLACKLISTED}
+    enum USER_STATUS {DEFAULT,WHITELISTED,BLACKLISTED,VIEWER}
+    bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
+
+
     mapping(bytes32 => election) public projectsRegistered;
     mapping (address => USER_STATUS) public statusList;
 
 
-    bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
 
 
     
