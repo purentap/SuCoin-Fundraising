@@ -108,10 +108,13 @@ namespace SU_COIN_BACK_END.Services
 
                 if (!chainResponse.Success)
                 {
-                    response.Success = chainResponse.Success;
                     response.Message = chainResponse.Message;
+                    return response;
                 }
-                else if (chainResponse.Data == null) // Although response returned successfully, user role is not found in the chain
+
+                string? chainRole = chainResponse.Data;
+
+                if (chainRole == null) // Although response returned successfully, user role is not found in the chain
                 {
                     throw new Exception(MessageConstants.USER_ROLE_NOT_FOUND_IN_CHAIN);
                 }
@@ -119,7 +122,7 @@ namespace SU_COIN_BACK_END.Services
                 {
                     if (user.Role != UserRoleConstants.ADMIN)
                     {
-                        user.Role = chainResponse.Data;
+                        user.Role = chainRole;
                     }
 
                     response.Success = true;

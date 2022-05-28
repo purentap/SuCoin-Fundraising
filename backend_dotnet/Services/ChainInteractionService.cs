@@ -174,6 +174,9 @@ namespace SU_COIN_BACK_END.Services
                         case 2:
                             chainRole = UserRoleConstants.BLACKLIST;
                             break;
+                        case 3:
+                            chainRole = UserRoleConstants.VIEWER;
+                            break;
                         default:
                             chainRole = UserRoleConstants.BASE;
                             break;
