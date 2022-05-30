@@ -30,10 +30,16 @@ const ProfilePageCard = (props) => {
     event.preventDefault();
 
     var editRequest = {
+      username: props.username,
+      name: name,
+      surname: surname,
+      email: email,
+      address: props.address,
       
     };
 
-    //props.userEditFunction(editRequest);
+    console.log(editRequest);
+    props.userEditFunction(editRequest);
   };
 
   const handleInput = (e) => {
@@ -93,26 +99,31 @@ const ProfilePageCard = (props) => {
             >
               <ModalOverlay />
               <ModalContent>
-                <ModalHeader>Edit your project name & description</ModalHeader>
+                <ModalHeader>Edit your user information</ModalHeader>
                 <ModalCloseButton />
                 <form onSubmit={editHandler}>
                   <ModalBody>
                     <FormControl isRequired>
-                      <FormLabel>Please enter the project name:</FormLabel>
+                      <FormLabel>Please enter your name:</FormLabel>
                       <Input
                         name="name"
                         onChange={handleInput}
-                        placeholder="Project Name"
+                        placeholder="Name"
                       />
                       <FormLabel>
-                        Please enter the project description:
+                        Please enter your surname:
                       </FormLabel>
-                      <Textarea
-                        name="projectDescription"
+                      <Input
+                        name="surname"
                         onChange={handleInput}
-                        placeholder="Project Description"
+                        placeholder="Surname"
                       />
-                    
+                      <FormLabel>Please enter your email:</FormLabel>
+                      <Input
+                        name="email"
+                        onChange={handleInput}
+                        placeholder="Email"
+                      />
                     </FormControl>
                   </ModalBody>
                   <ModalFooter>

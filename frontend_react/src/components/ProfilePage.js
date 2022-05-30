@@ -4,7 +4,7 @@ import Cookies from "js-cookie";
 import ProfilePageCard from "./ProfilePageUI/ProfilePageCard";
 import ProjectsCard from "./ProfilePageUI/ProjectsCard";
 import { Row } from "./ProfilePage.styles";
-import { VStack, Grid, GridItem } from "@chakra-ui/react";
+import { VStack, Grid, GridItem, Stack, Alert, AlertIcon } from "@chakra-ui/react";
 import abi from "../abi/project.json";
 import { ethers } from "ethers";
 import { hexToHash } from "../helpers";
@@ -274,6 +274,41 @@ const ProfilePage = () => {
     })
   };
 
+  const onUserInfoEdit = async (editRequest) => {
+    editRequest.imageUrl = ""
+    const apiInstance = axios.create({
+      baseURL: "https://localhost:5001",
+    })
+
+
+    console.log(editRequest)
+    apiInstance.defaults.headers.common["Authorization"] = `Bearer ${Cookies.get('token')}`
+    let response2 = new Promise((resolve, reject) => {
+      console.log(editRequest)
+      apiInstance.put("/User/Update/",
+        {
+          Username: editRequest.username,
+          Name: editRequest.name,
+          surname: editRequest.surname,
+          MailAddress: editRequest.email,
+          Address: editRequest.address,
+
+        })
+
+        .then((res) => {
+          console.log("User info edit is done")
+          console.log(res.data)
+          resolve(res)
+        })
+        .catch((e) => {
+          const err = "Unable to edit the user info"
+          reject(err)
+          console.log(e)
+        })
+
+    })
+  };
+
   return (
     isLoading ?
 
@@ -282,9 +317,11 @@ const ProfilePage = () => {
         <LoadingIcon />
       </div>
       :
+      
       <Grid
         height="90%"
         width="90%"
+        templateRows={6}
         templateColumns="repeat(6, 1fr)"
         gap={200}
         m={20}
@@ -296,6 +333,7 @@ const ProfilePage = () => {
             address={User.address}
             email={User.mailAddress}
             username={User.username}
+            userEditFunction = {onUserInfoEdit}
           />
         </GridItem>
 
@@ -331,7 +369,10 @@ const ProfilePage = () => {
 
 
         </GridItem>
+        <GridItem>
+        </GridItem>
       </Grid>
+
   );
 };
 
