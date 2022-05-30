@@ -64,6 +64,7 @@ abstract contract Auction is AccessControlUpgradeable,Multicall  {              
         __Auction_init_unchained(params);
     }
 
+
     function __Auction_init_unchained(auctionParameters calldata params) internal onlyInitializing {
          _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
          
@@ -82,6 +83,11 @@ abstract contract Auction is AccessControlUpgradeable,Multicall  {              
         projectWallet = wallet;
     }
 
+
+     function forcedManualFinish() public onlyRole(DEFAULT_ADMIN_ROLE) {
+         require(status != AuctionStatus.ENDED,"This Auction already ended");
+         finalize();
+     }
 
    struct auctionParameters {
        address token;
