@@ -164,7 +164,11 @@ namespace SU_COIN_BACK_END.Services
                     response.Message = MessageConstants.PROJECT_NOT_FOUND;
                     return response;
                 }
-
+                if (project.IsAuctionCreated)
+                {
+                    response.Message = "You have live project on auction. In order to delete this project, you need to end the auction.";
+                    return response;
+                }
 
                 /* Remove the file (unpin) from ipfs if it still exists*/
                 ServiceResponse<bool> ipfs_response = await _ipfsInteractionService.RemoveFromIpfs(SimpleBase.Base58.Bitcoin.Encode(Convert.FromHexString("1220" + project.FileHash)).ToString());
@@ -776,6 +780,16 @@ namespace SU_COIN_BACK_END.Services
                     .Select(u => u.ProjectID)
                     .FirstOrDefaultAsync();
 
+        }
+
+        public async Task<bool> IsUserOwnerInAnyProject()
+        {
+            if (await _context.ProjectPermissions.AnyAsync(permission => permission.UserID == GetUserId()
+            && permission.Role == UserPermissionRoleConstants.OWNER && permission.IsAccepted))
+            {
+                return true;
+            }
+            return false;
         }
 
         public async Task<ServiceResponse<List<ProjectDTO>>> GetAllInvitedProjects()

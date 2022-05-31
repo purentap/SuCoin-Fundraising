@@ -62,10 +62,10 @@ namespace SU_COIN_BACK_END.Controllers
         } 
 
         [HttpDelete]
-        [Route("[action]/{id}")]
-        public async Task<IActionResult> Delete(int id) // Only Admin may delete specific user
+        [Route("[action]")]
+        public async Task<IActionResult> Delete() // User can delete himself/herself
         {
-            ServiceResponse<string> response = await _userService.DeleteUser(id);
+            ServiceResponse<string> response = await _userService.DeleteUser();
             if (!response.Success)
             {
                 if (response.Message == MessageConstants.NOT_AUTHORIZED_TO_ACCESS)

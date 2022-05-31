@@ -25,30 +25,27 @@ namespace SU_COIN_BACK_END.Services
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IAuthencticationService _authenticationService;
         private readonly IChainInteractionService _chainInteractionService;
+        private readonly IProjectService _projectService;
         private int GetUserId() => int.Parse(_httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier));
         private string GetUsername() => _httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.Name);
         private string GetUserRole() => _httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.Role);
-        public UserService(IMapper mapper, DataContext context, IHttpContextAccessor httpContextAccessor,
-                             IAuthencticationService authencticationService, IChainInteractionService chainInteractionService)
+        public UserService(IMapper mapper, DataContext context, IHttpContextAccessor httpContextAccessor, 
+            IAuthencticationService authencticationService, IChainInteractionService chainInteractionService, 
+            IProjectService projectService)
         {
             _mapper = mapper;
             _context = context;
             _httpContextAccessor = httpContextAccessor;
             _authenticationService = authencticationService;
             _chainInteractionService = chainInteractionService;
+            _projectService = projectService;
         }
 
-        public async Task<ServiceResponse<string>> DeleteUser(int id)
+        public async Task<ServiceResponse<string>> DeleteUser()
         {
             ServiceResponse<string> response = new ServiceResponse<string>();
             try
             {
-                if (GetUserRole() != UserRoleConstants.ADMIN)
-                {
-                    response.Message = MessageConstants.NOT_AUTHORIZED_TO_ACCESS;
-                    return response;
-                }
-
                 User? user = await _context.Users.FirstOrDefaultAsync(c => c.Id == GetUserId());
 
                 if (user == null)
@@ -56,16 +53,26 @@ namespace SU_COIN_BACK_END.Services
                     response.Message = MessageConstants.USER_NOT_FOUND;
                     return response;
                 }
-                if (user.Role == UserRoleConstants.ADMIN)
+                if (GetUserRole() == UserRoleConstants.ADMIN)
                 {
-                    response.Message = "Admin cannot delete himself/herself";
+                    response.Message = "Admin cannot delete himself/herself.";
                     return response;
                 }
                 
-                _context.Remove(user);
-                await _context.SaveChangesAsync();
-                response.Message = MessageConstants.OK;
-                response.Success = true;
+                bool anyProject = await _projectService.IsUserOwnerInAnyProject();
+
+                if (anyProject)
+                {
+                    response.Message = "You have some active projects as Owner. In order to delete yourself, first you need to delete these projects or change your role.";
+                    return response;
+                }
+                else
+                {
+                    _context.Remove(user);
+                    await _context.SaveChangesAsync();
+                    response.Message = MessageConstants.OK;
+                    response.Success = true;
+                }
             }
             catch (Exception e)
             {

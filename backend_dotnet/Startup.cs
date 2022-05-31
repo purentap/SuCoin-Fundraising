@@ -50,8 +50,11 @@ namespace SU_COIN_BACK_END
 
             var connectionString = Configuration["ConnectionStrings:DefaultConnection"];
 
-            services.AddDbContext<DataContext>(options =>
-            options.UseMySql(connectionString,new MySqlServerVersion(new Version(10, 1, 40)))); 
+            services.AddDbContext<DataContext>(
+                options => options.UseMySql(
+                    connectionString,new MySqlServerVersion(new Version(10, 1, 40))
+                )
+            ); 
 
             services.AddControllers();
             services.AddSwaggerGen(c =>

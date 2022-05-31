@@ -7,9 +7,10 @@ namespace SU_COIN_BACK_END.SU_COIN_INTERFACE
 {
     public interface IProjectService
     {
-        Task<ServiceResponse<ProjectDTO>> GetProjectById(int ID);
+        Task<ServiceResponse<ProjectDTO>> GetProjectById(int id);
         Task<ServiceResponse<ProjectDTO>> AddProject(ProjectRequest project);
-        Task<ServiceResponse<string>> DeleteProject(int ID);
+        Task<bool> IsUserOwnerInAnyProject();
+        Task<ServiceResponse<string>> DeleteProject(int id);
         Task<ServiceResponse<ProjectDTO>> UpdateProject(ProjectDTO project);
         Task<ServiceResponse<ProjectDTO>> RateProject(int id, double rating);
         Task<ServiceResponse<List<ProjectDTO>>> GetProjectsByStatus(string status);
