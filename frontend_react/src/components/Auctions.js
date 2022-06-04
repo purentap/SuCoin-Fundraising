@@ -7,6 +7,7 @@ import { jsPDF } from "jspdf";
 // Components
 import MDEditor from "@uiw/react-md-editor";
 import Button from 'react-bootstrap/Button'
+import ButtonGroup from 'react-bootstrap/ButtonGroup'
 import Form from 'react-bootstrap/Form'
 import Card from 'react-bootstrap/Card'
 import Row from 'react-bootstrap/Row'
@@ -29,6 +30,15 @@ import { ethers } from 'ethers';
 import Maestro from "../contracts_hardhat/artifacts/contracts/Maestro.sol/Maestro.json"
 
 import LoadingIcon from './LoadingIcon';
+
+const radios = [
+    { name: 'Off', value: '0' },
+    { name: 'Running', value: '1' },
+    { name: 'Paused', value: '2' },
+    { name: 'Ended', value: '3' },
+    { name: 'All', value: '4' },
+];
+
 
 
 const options = [
@@ -81,6 +91,14 @@ const Auctions = () => {
     const [auctions, setAuctions] = useState([
 
     ]);
+    const [alignment, setAlignment] = useState(radios[1]);
+    const [listedAuctions, setListedAuctions] = useState();
+
+    const handleChange = async (newAlignment) => {
+        if (newAlignment != null) {
+            await setAlignment(newAlignment);
+        }
+    };
 
     const [var2, setVar2] = useState();
     const [var3, setVar3] = useState();
@@ -98,7 +116,9 @@ const Auctions = () => {
 
     useEffect(async () => {
         try {
-            setAuctions(await getAuctionByStatus(1))
+            const tempAuctions = await getAuctionByStatus(alignment.value)
+            setAuctions(tempAuctions)
+            setListedAuctions(tempAuctions)
             setIsLoading(false);
         }
         catch (error) {
@@ -126,6 +146,14 @@ const Auctions = () => {
 
     };
 
+    useEffect(async () => {
+        try {
+            setListedAuctions(await getAuctionByStatus(radios[alignment].value))
+        } catch {
+
+        }
+    }, [alignment])
+
     const navigate = useNavigate();
 
 
@@ -138,13 +166,24 @@ const Auctions = () => {
             :
             <div>
                 <div className="sectionName" style={{ paddingLeft: "50px", paddingTop: "25px", paddingBottom: "25px" }}>Auctions</div>
+                <div style={{ display: "flex", justifyContent: "center", marginTop: "1rem" }}>
+                    <ButtonGroup aria-label="Basic example"
+                        exclusive
+                    >
+                        <Button className="simpletext" onClick={() => { handleChange(4) }} variant="outline-secondary" value={radios[3].value} > {radios[4].name} </Button >
+                        <Button className="simpletext" onClick={() => { handleChange(0) }} variant="outline-secondary" value={radios[0].value} >{radios[0].name} </Button>
+                        <Button className="simpletext" onClick={() => { handleChange(1) }} variant="outline-secondary" value={radios[1].value} >{radios[1].name} </Button>
+                        <Button className="simpletext" onClick={() => { handleChange(2) }} variant="outline-secondary" value={radios[2].value} >{radios[2].name} </Button>
+                        <Button className="simpletext" onClick={() => { handleChange(3) }} variant="outline-secondary" value={radios[3].value} > {radios[3].name} </Button >
+                    </ButtonGroup >
+                </div >
                 <ToastBar toastText={toastText} toastHeader={toastHeader} toastShow={toastShow} setToastshow={setToastshow}></ToastBar>
 
                 <br></br>
 
                 <div style={{ width: "90%", textAlign: "center", margin: "auto" }}>
                     <div class="grid-container" style={{ display: 'grid' }}>
-                        {auctions.map((project, index) => (
+                        {listedAuctions.map((project, index) => (
                             <div>
                                 <AuctionCard
                                     project={project}

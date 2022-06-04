@@ -115,7 +115,7 @@ const Auction = (props) => {
     const getHistoricalBidData = async (auctionContract) => {
         const bidFilter = auctionContract.filters.BidSubmission()
         const bidEvents = await auctionContract.queryFilter(bidFilter)
-        const bidAmounts = bidEvents.map(bid => bid.args.amount.toString())
+        const bidAmounts = bidEvents.map(bid => parseFloat(fixedNumberToNumber(bid.args.amount)))
         const blockNumbers = bidEvents.map(bid => bid.blockNumber)
 
         const timeStampsFromBlockNumbers = await Promise.all(blockNumbers.map(async blockNumber => {
@@ -175,7 +175,7 @@ const Auction = (props) => {
         refreshInfo(abi, auctionContract) //todo it would be better if backend did this
 
         provider.on(tokenBoughtFilter, (log, event) => refreshInfo(abi, auctionContract))
-        setHistoricBids(getHistoricalBidData(auctionContract))
+        setHistoricBids(await getHistoricalBidData(auctionContract))
 
         setIsLoading(false);
     }, [])
