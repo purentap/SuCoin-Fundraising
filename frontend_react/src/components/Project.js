@@ -74,6 +74,7 @@ const Project = ({ navigation }) => {
   });
 
 
+
   useEffect(async () => {
     const apiInstance = axios.create({
       baseURL: "https://localhost:5001",

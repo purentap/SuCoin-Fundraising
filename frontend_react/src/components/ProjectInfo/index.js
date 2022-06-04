@@ -21,6 +21,8 @@ import Cookies from 'js-cookie'
 
 import { ethers } from 'ethers';
 import ethersAbi from '../../contracts_hardhat/artifacts/contracts/ProjectRegister.sol/ProjectRegister.json'
+import Maestro from "../../contracts_hardhat/artifacts/contracts/Maestro.sol/Maestro.json"
+
 import abi from '../../abi/project.json'
 import { useEffect } from 'react';
 
@@ -31,6 +33,8 @@ import Form from 'react-bootstrap/Form'
 import Row from 'react-bootstrap/Row'
 import Col from 'react-bootstrap/Col'
 import Container from 'react-bootstrap/Col'
+
+const maestro = { address: "0x4E4EF001c70E5426fA8C98eFED240253501014d5" }
 
 const ProjectInfo = ({ setProject,
   projectId,
@@ -61,6 +65,8 @@ const ProjectInfo = ({ setProject,
 
   const navigate = useNavigate();
 
+
+
     
   useEffect(async () => {
     const CryptoJS = require('crypto-js');
@@ -73,10 +79,25 @@ const ProjectInfo = ({ setProject,
 
     const provider = await new ethers.providers.Web3Provider(window.ethereum)
 
+
     const signer = await provider.getSigner()
 
+
     var registerContract = new ethers.Contract(abi.address, ethersAbi.abi, signer)
-    var maestroContract = new ethers.Contract(abi.address, ethersAbi.abi, provider)
+    var maestroContract = new ethers.Contract(maestro.address, Maestro.abi, provider)
+
+    const projectInfo = await maestroContract.projectTokens(fileHash)
+
+    project.auction = projectInfo?.auction
+
+    project.isAuctionCreated = project.auction != 0
+
+    project.auctionType = projectInfo?.auctionType
+
+    setProject(project)
+
+    
+
 
     var threshold = await registerContract.threshold()
     var wlCount = await registerContract.whitelistedCount()
@@ -87,6 +108,8 @@ const ProjectInfo = ({ setProject,
     setVotesneeded(Math.ceil(wlCount.toString() * threshold.toString() / 100))
     //changeProjectStatus()
   })
+
+
 
   const addWhitelist = async () => {
     const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
@@ -121,6 +144,10 @@ const ProjectInfo = ({ setProject,
         })
     })
   }
+
+
+
+
 
 
 
@@ -259,6 +286,7 @@ const ProjectInfo = ({ setProject,
     )
 }
 
+
 const ownerButtonGroup = (isOwner, isAuctionCreated , project) => {
     return (isOwner ?
         <div style={{ display: "flex", flexDirection: "row", justifyContent: "center" }}>
@@ -267,10 +295,10 @@ const ownerButtonGroup = (isOwner, isAuctionCreated , project) => {
                     Create Tokens
                 </a>
             </button>
-            <button className="button" onClick={!isAuctionCreated ? onClickCreateAuction : navigate('/auction/' + projectId, {state:project})}>
-                <a href={!isAuctionCreated ? '/projects/' + projectId : null}>
+            <button className="button" onClick={() => !project?.isAuctionCreated ? onClickCreateAuction : navigate('/auction/' + projectId, {state:project})}>
+                
                     {isAuctionCreated ? "Start Auction" : "Create Auction"}
-                </a>
+                
             </button>
         </div> : null
     )
@@ -308,7 +336,7 @@ const ownerButtonGroup = (isOwner, isAuctionCreated , project) => {
                     <h5>
                         Latest Token Price: <p>{tokenPrice}</p>{" "}
                     </h5>
-                    {ownerButtonGroup(isOwner, isAuctionCreated)}
+                    {ownerButtonGroup(isOwner, isAuctionCreated,project)}
                 </Grid>
             </Grid>
         </Wrapper>
