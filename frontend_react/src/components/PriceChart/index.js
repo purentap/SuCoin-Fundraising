@@ -18,13 +18,15 @@ import { Line } from 'react-chartjs-2';
 
 
 
-const PriceChart = ({auctionType, startTime, latestEndTime, initialRate, finalRate, initialSupply,soldTokens}) => {
+const PriceChart = ({auctionType, startTime, latestEndTime, initialRate, finalRate, initialSupply,soldTokens,historicBids}) => {
 
     const realTime = Date.now();
 
     const timeDifference = realTime / 1000 - startTime;
 
     console.log("Final Rate", finalRate)
+
+    console.log("Historic Bids", historicBids)
 
     ChartJS.register(
         CategoryScale,

@@ -57,6 +57,7 @@ const Auction = (props) => {
     const [initDist,setInitDist] = useState();
 
     const [isLoading, setIsLoading] = useState(true);
+    const [historicBids,setHistoricBids] = useState();
 
 
     const provider = new ethers.providers.Web3Provider(window.ethereum);
@@ -98,7 +99,62 @@ const Auction = (props) => {
     }
 
 
+    const cumulativeUniqueBuyAmount = (buyTime,buyAmounts) => {
+        let uniqueBuytime = {}
+        let cumulative = 0;
 
+        for (let i = 0; i < buyTime.length; i++) {
+            cumulative += buyAmounts[i]
+            uniqueBuytime[buyTime[i]] = cumulative
+        }
+
+        //Convert uniqueBuytime to 2D array
+        return Object.entries(uniqueBuytime)
+    }
+
+    const getHistoricalBidData = async (auctionContract) => {
+        const bidFilter = auctionContract.filters.BidSubmission()
+        const bidEvents = await auctionContract.queryFilter(bidFilter)
+        const bidAmounts = bidEvents.map(bid => bid.args.amount.toString())
+        const blockNumbers = bidEvents.map(bid => bid.blockNumber)
+
+        const timeStampsFromBlockNumbers = await Promise.all(blockNumbers.map(async blockNumber => {
+            const block = await provider.getBlock(blockNumber)
+            return block.timestamp
+        }))
+
+
+
+
+
+        
+        const uniqueBidAmounts = cumulativeUniqueBuyAmount(timeStampsFromBlockNumbers,bidAmounts)
+        return uniqueBidAmounts
+    }
+
+    
+
+    
+
+
+
+  
+  
+
+
+
+
+
+   
+    
+    
+
+
+ 
+
+    
+
+    //
 
     const navigate = useNavigate();
 
@@ -119,9 +175,13 @@ const Auction = (props) => {
         refreshInfo(abi, auctionContract) //todo it would be better if backend did this
 
         provider.on(tokenBoughtFilter, (log, event) => refreshInfo(abi, auctionContract))
+        setHistoricBids(getHistoricalBidData(auctionContract))
 
         setIsLoading(false);
     }, [])
+
+    
+
 
     const getFile = async () => {
 
@@ -255,6 +315,7 @@ const Auction = (props) => {
                     finalRate={finalRate}
                     initialSupply={initDist}
                     soldTokens={soldToken}
+                    historicBids={historicBids}
                 /> : null}
         </div>
     );

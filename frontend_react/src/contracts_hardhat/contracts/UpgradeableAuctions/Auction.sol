@@ -193,6 +193,13 @@ abstract contract Auction is AccessControlUpgradeable,Multicall  {              
 
      function bid(uint bidCoinBits)  public  virtual stateUpdate() isRunning() {
 
+         require(projectWallet != address(0),"Project wallet is not set");
+
+         require(msg.sender != projectWallet,"Project wallet cannot bid");
+
+         require(hasRole(PROPOSER_ROLE,msg.sender),"Proposers cannot bid");
+
+
          require(bidCoinBits > 0, "You need to bid some coins");
 
         emit BidSubmission(msg.sender, bidCoinBits);
