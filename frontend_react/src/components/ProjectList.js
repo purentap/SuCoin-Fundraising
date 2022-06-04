@@ -48,6 +48,7 @@ const ProjectList = () => {
   const [error, setError] = useState(false);
   const [alignment, setAlignment] = useState(radios[0]);
   const [projects, setProjects] = useState(pj)
+  const [listedProjects, setListedProjects] = useState();
   const [response, setResponse] = useState([])
   const [isLoading, setIsLoading] = useState(true);
 
@@ -55,7 +56,6 @@ const ProjectList = () => {
     if (newAlignment != null) {
       await setAlignment(newAlignment);
     }
-
   };
 
 
@@ -100,6 +100,7 @@ const ProjectList = () => {
       let result = await response2
       console.log("ehee", result)
       setProjects(result.data.data)
+      setListedProjects(result.data.data)
       setIsLoading(false);
 
     } catch (error) {
@@ -107,6 +108,14 @@ const ProjectList = () => {
     }
 
 
+  }, [])
+
+  useEffect(async () => {
+    try {
+      alignment != 0 ? setListedProjects(projects.filter(project => project.status == radios[alignment].name)) : setListedProjects(projects);
+    } catch {
+
+    }
   }, [alignment])
 
 
@@ -135,7 +144,7 @@ const ProjectList = () => {
 
         <div style={{ width: "90%", textAlign: "center", margin: "auto" }}>
           <div class="grid-container" style={{ display: 'grid' }}>
-            {projects.map((project, index) => (
+            {listedProjects.map((project, index) => (
               <div>
                 <ProjectCard
                   imageUrl={project.imageUrl}

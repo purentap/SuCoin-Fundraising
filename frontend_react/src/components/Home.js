@@ -174,7 +174,7 @@ const Home = () => {
             <div className="img-courasel"><img src={
               selected.imageURL ?? dummyimg
 
-            } style={{ borderRadius: '20px', width: '390px', height: '300px' }} alt="" /> </div>
+            } style={{ borderRadius: '20px', width: '350px', height: '250px' }} alt="" /> </div>
             <div className="info">
               <div className="mini-info">
                 <div className="name"> {selected.projectName} </div>

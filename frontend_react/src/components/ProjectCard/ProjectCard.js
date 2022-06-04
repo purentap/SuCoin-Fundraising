@@ -48,7 +48,7 @@ const ProjectCard = (props) => {
   return (
     <Wrapper>
         <div className="project-image">
-            <img src={image == "" ? dummyimg : URL.createObjectURL(image.data)} alt="" style={{width:"1000px", height:"200px"}}/>
+            <img src={image == "" ? dummyimg : URL.createObjectURL(image.data)} alt="" style={{width:"1000px", height:"200px", borderRadius: '20px',}}/>
         </div>
         <h1>{props.projectName}</h1>
         <div>
