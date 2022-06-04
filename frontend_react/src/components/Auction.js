@@ -109,7 +109,7 @@ const Auction = (props) => {
         }
 
         //Convert uniqueBuytime to 2D array
-        return Object.entries(uniqueBuytime)
+        return Object.entries(uniqueBuytime).map(([key, value]) => [Number(key), value])
     }
 
     const getHistoricalBidData = async (auctionContract) => {
@@ -118,9 +118,11 @@ const Auction = (props) => {
         const bidAmounts = bidEvents.map(bid => parseFloat(fixedNumberToNumber(bid.args.amount)))
         const blockNumbers = bidEvents.map(bid => bid.blockNumber)
 
+        
+
         const timeStampsFromBlockNumbers = await Promise.all(blockNumbers.map(async blockNumber => {
             const block = await provider.getBlock(blockNumber)
-            return block.timestamp
+            return  block.timestamp  *1000
         }))
 
 
@@ -205,6 +207,7 @@ const Auction = (props) => {
 
     
     }
+
 
 
     return (

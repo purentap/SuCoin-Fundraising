@@ -13,14 +13,20 @@ import {
     Title,
     Tooltip,
     Legend,
+    TimeScale
 } from 'chart.js';
 import { Line } from 'react-chartjs-2';
 
+import 'chartjs-adapter-date-fns';
+import star from 'react-rating-stars-component/dist/star';
+
+ 
 
 
 const PriceChart = ({auctionType, startTime, latestEndTime, initialRate, finalRate, initialSupply,soldTokens,historicBids}) => {
 
     const realTime = Date.now();
+
 
     const timeDifference = realTime / 1000 - startTime;
 
@@ -31,6 +37,7 @@ const PriceChart = ({auctionType, startTime, latestEndTime, initialRate, finalRa
     ChartJS.register(
         CategoryScale,
         LinearScale,
+        TimeScale,
         PointElement,
         LineElement,
         Title,
@@ -40,19 +47,38 @@ const PriceChart = ({auctionType, startTime, latestEndTime, initialRate, finalRa
 
     const options = {
         responsive: true,
+        //Create scale with moment.js
+        scales: {
+
+            x: {
+                
+                type: 'linear',
+                min : startTime * 1000,
+                max : new Date() - new Date(null),
+                ticks : {
+                    count : 5,
+                    callback: function(value) { 
+                        return new Date(value).toLocaleDateString('en-US', {month:'short', year:'numeric', day:'numeric', hour:'numeric', minute:'numeric'}); 
+                    },
+                }
+            },
+          
+        },
+
         plugins: {
+          
             legend: {
                 position: 'top',
             },
         },
     };
 
-    const timestamps = [new Date(startTime * 1000), 
+        const timestamps = [new Date(startTime * 1000), 
         new Date(startTime * 1000 + 1*timeDifference/5 * 1000), 
         new Date(startTime * 1000 + 2*timeDifference/5 * 1000),  
         new Date(startTime * 1000 + 3*timeDifference/5 * 1000), 
         new Date(startTime * 1000 + 4*timeDifference/5 * 1000),
-        new Date(realTime)];
+        new Date(realTime)]; 
 
     const auctionTypesForChart = {
         "DutchAuction":[
@@ -95,18 +121,23 @@ const PriceChart = ({auctionType, startTime, latestEndTime, initialRate, finalRa
         "StrictDutchAuction":[
             {
                 label: 'Token Price',
-                data: timestamps.map((realTime) => Math.max(finalRate,(initialRate - ((initialRate  - finalRate ) * (realTime / 1000 - startTime))  /  (latestEndTime - startTime)))),
-                function: function(realTime) {return (initialRate - ((initialRate  - finalRate ) * (realTime / 1000 - startTime))  /  (latestEndTime - startTime))},
+                data: timestamps.map((realTime) => [realTime,Math.max(finalRate,(initialRate - ((initialRate  - finalRate ) * (realTime / 1000 - startTime))  /  (latestEndTime - startTime)))]),
                 borderColor: 'rgb(255, 99, 132)',
                 backgroundColor: 'rgba(255, 99, 132, 0.5)',
             },
             {
                 label: 'Total Supply',
-                data: timestamps.map((realTime) => Math.max(soldTokens,(initialSupply - (initialSupply) * (realTime / 1000 - startTime)  /  (latestEndTime - startTime)))),
-                function: function(realTime) {return (initialSupply) * (realTime / 1000 - startTime)  /  (latestEndTime - startTime)},
+                data: timestamps.map((realTime) => [realTime,Math.max(soldTokens,(initialSupply - (initialSupply) * (realTime / 1000 - startTime)  /  (latestEndTime - startTime)))]),
                 borderColor: 'rgb(53, 162, 235)',
                 backgroundColor: 'rgba(53, 162, 235, 0.5)',
-            }
+            },
+            {
+            label: 'Total Raised',
+            data: historicBids,
+            borderColor: 'rgb(20, 72, 25)',
+            backgroundColor: 'rgba(53, 162, 235, 0.5)',
+            },
+
         ], 
         "UncappedAuction":[
             {
@@ -118,10 +149,9 @@ const PriceChart = ({auctionType, startTime, latestEndTime, initialRate, finalRa
         ]
     };
 
-    const labels = timestamps.map((timestamp) => timestamp.toLocaleString())
+    //const labels = timestamps.map((timestamp) => timestamp.toLocaleString())
 
     const data = {
-        labels,
         datasets: auctionTypesForChart[auctionType],
     };
 
