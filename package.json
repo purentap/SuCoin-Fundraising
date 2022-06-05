@@ -1,5 +1,7 @@
 {
   "dependencies": {
+    "react-custom-scrollbars-2": "^4.4.0",
+    "react-icons": "^4.4.0",
     "react-rating-stars-component": "^2.2.0"
   }
 }

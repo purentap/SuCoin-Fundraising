@@ -22,6 +22,7 @@ import { WalletSwitcher, UserContext } from './User';
 // Styles
 import { GlobalStyle } from './GlobalStyle';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import AdminPage from './components/adminPage/Admin';
 
 
 const App = () => {
@@ -49,6 +50,7 @@ const App = () => {
             <Route path='/auction/:projectId' element={<Auction />} />
             <Route path = '/profile' element = {<ProfilePage />} />
             <Route path = '/tt' element = {<Templates />} />
+            <Route path = '/admin' element = {<AdminPage/>} />
             <Route path='/*' element={<NotFound />} />
           </Routes>
           <GlobalStyle />
