@@ -26,6 +26,9 @@ namespace SU_COIN_BACK_END.Services
         private readonly IAuthencticationService _authenticationService;
         private readonly IChainInteractionService _chainInteractionService;
         private readonly IProjectService _projectService;
+        
+        string[] justInDBRoles = {UserRoleConstants.ADMIN, UserRoleConstants.VIEWER, UserRoleConstants.BASE};
+
         private int GetUserId() => int.Parse(_httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier));
         private string GetUsername() => _httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.Name);
         private string GetUserRole() => _httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.Role);
@@ -356,7 +359,7 @@ namespace SU_COIN_BACK_END.Services
             return response;
         }
 
-        public async Task<ServiceResponse<string>> UpdateUserRole(string address)
+        public async Task<ServiceResponse<string>> UpdateUserRole(string address, string new_role)
         {
             ServiceResponse<string> response = new ServiceResponse<string>();
             
@@ -372,30 +375,84 @@ namespace SU_COIN_BACK_END.Services
                 response.Message = MessageConstants.USER_NOT_FOUND;
                 return response;
             }
-            
-            try
-            {
-                ServiceResponse<string> chainResponse = await _chainInteractionService.GetChainRole(address);
-                if (!chainResponse.Success || chainResponse.Data == null)
-                {
-                    response.Message = chainResponse.Message;
-                }
-                else
-                {
-                    string oldRole = user.Role;
-                    user.Role = chainResponse.Data;
-                    string newRole = user.Role;
-                     _context.Users.Update(user);
-                    await _context.SaveChangesAsync();
 
-                    response.Message = $"User role is switched {oldRole} to {newRole}";
+            bool isJustInDB = false;
+
+            foreach (string dbRole in justInDBRoles)
+            {
+                if (new_role == dbRole)
+                {
+                    isJustInDB = true;
+                    break;
                 }
             }
-            catch (Exception e)
+            
+            if (isJustInDB)
             {
-                response.Message = String.Format(MessageConstants.FAIL_MESSAGE, "change role", e.Message);
+                if (user.Role == UserRoleConstants.BLACKLIST || user.Role == UserRoleConstants.WHITELIST)
+                {
+                    response.Message = "You cannot update the roles defined in the chain from the server";
+                    return response;
+                }
+
+                response = await UpdateRoleJustInDb(address, new_role);
+
+                if (!response.Success)
+                {
+                    return response;
+                }
+
+                _context.Users.Update(user);
+                await _context.SaveChangesAsync();
+            }
+            else // Role is also defined in the chain, so read the updated role from the chain
+            {
+                try
+                {
+                    ServiceResponse<string> chainResponse = await _chainInteractionService.GetChainRole(address);
+                    if (!chainResponse.Success || chainResponse.Data == null)
+                    {
+                        response.Message = chainResponse.Message;
+                    }
+                    else
+                    {
+                        string oldRole = user.Role;
+                        user.Role = chainResponse.Data;
+                        string newRole = user.Role;
+                        _context.Users.Update(user);
+                        await _context.SaveChangesAsync();
+
+                        response.Message = $"User role is switched {oldRole} to {newRole}";
+                    }
+                }
+                catch (Exception e)
+                {
+                    response.Message = String.Format(MessageConstants.FAIL_MESSAGE, "change role", e.Message);
+                }
             }
             return response;
         }
+
+        public async Task<ServiceResponse<string>> UpdateRoleJustInDb(string address, string new_role)
+        {
+            ServiceResponse<string> response = new ServiceResponse<string>();
+            User? user = await _context.Users.FirstOrDefaultAsync(user => user.Address == address);
+            
+            if (user == null) // for security reasons
+            {
+                response.Message = MessageConstants.USER_NOT_FOUND;
+                return response;
+            }
+            else
+            {
+                user.Role = new_role;    
+                response.Success = true;
+                response.Message = MessageConstants.OK;
+                response.Data = $"User role is switched {user.Role} to {new_role}";
+            }
+
+            return response;
+        }
+
     }
 }

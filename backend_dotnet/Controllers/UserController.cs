@@ -162,10 +162,10 @@ namespace SU_COIN_BACK_END.Controllers
         }
 
         [HttpPatch]
-        [Route("[action]/{address}")]
-        public async Task<IActionResult> UpdateRole(string address)
+        [Route("[action]/{address}/{role}")]
+        public async Task<IActionResult> UpdateRole(string address, string role)
         {
-            ServiceResponse<string> response = await _userService.UpdateUserRole(address);
+            ServiceResponse<string> response = await _userService.UpdateUserRole(address, role);
             if (!response.Success)
             {
                 if (response.Message == MessageConstants.NOT_AUTHORIZED_TO_ACCESS)
