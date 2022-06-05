@@ -198,7 +198,7 @@ abstract contract Auction is AccessControlUpgradeable,Multicall  {              
 
          require(msg.sender != projectWallet,"Project wallet cannot bid");
 
-         require(hasRole(PROPOSER_ROLE,msg.sender),"Proposers cannot bid");
+         require(!hasRole(PROPOSER_ROLE,msg.sender),"Proposers cannot bid");
 
 
          require(bidCoinBits > 0, "You need to bid some coins");

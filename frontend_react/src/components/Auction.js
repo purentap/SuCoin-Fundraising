@@ -43,21 +43,13 @@ const Auction = (props) => {
 
     console.log(state)
 
+ 
 
+    const [currentData,setCurrentData] = useState()
 
-    const [startingPrice, setStartingPrice] = useState();
-    const [tokenDist, setTokenDist] = useState();
-    const [soldToken, setSoldTokens] = useState();
-    const [startTime, setStartTime] = useState();
-    const [endTime, setEndTime] = useState();
-    const [totalDeposit, setTotalDeposit] = useState();
-    const [currentPrice, setCurrentPrice] = useState();
-    const [finalRate, setFinalRate] = useState();
-    const [minimumPrice, setMinimumPrice] = useState();
-    const [initDist,setInitDist] = useState();
 
     const [isLoading, setIsLoading] = useState(true);
-    const [historicBids,setHistoricBids] = useState();
+    const [historicData,setHistoricData] = useState();
 
 
     const provider = new ethers.providers.Web3Provider(window.ethereum);
@@ -65,74 +57,99 @@ const Auction = (props) => {
     const auctionTypesForChart = ["DutchAuction", "OBFCFSAuction", "PseudoCappedAuction", "StrictDutchAuction", "UncappedAuction"];
 
 
+    const { startTime, endTime,startingPrice,currentPrice , initDist,finalRate,minimumPrice,tokenDist,totalDeposit,soldTokens} = currentData ??  {}
+
     const refreshInfo = async (abi, auctionContract) => {
+
         const { rate, soldProjectTokens, numberOfTokensToBeDistributed, minPrice, startTime, latestEndTime, totalDepositedSucoins, getCurrentRate, finalRate,getTotalSupply,initTokens} = await getAllPublicVariables(abi, auctionContract)
         const currentSupply = (getTotalSupply ?? numberOfTokensToBeDistributed)[0]
 
+        const auctionInfo = {}
+
         switch (auctionType) {
             case "StrictDutchAuction":
-                setInitDist(fixedNumberToNumber(initTokens[0]))
+                auctionInfo.initDist = fixedNumberToNumber(initTokens[0])
             case "DutchAuction":
-                setSoldTokens(fixedNumberToNumber(soldProjectTokens[0]))
-                setStartingPrice(fixedNumberToNumber(rate[0]))
-                setTokenDist(fixedNumberToNumber(currentSupply))
-                setFinalRate(fixedNumberToNumber(finalRate[0]))
-                setCurrentPrice(fixedNumberToNumber(getCurrentRate[0]))
+                auctionInfo.soldTokens = fixedNumberToNumber(soldProjectTokens[0])
+                auctionInfo.startingPrice = fixedNumberToNumber(rate[0])
+                auctionInfo.tokenDist = fixedNumberToNumber(currentSupply)
+                auctionInfo.finalRate = fixedNumberToNumber(finalRate[0])
+                auctionInfo.currentPrice = fixedNumberToNumber(getCurrentRate[0])
                 break;
             case "UncappedAuction":
-                setSoldTokens(fixedNumberToNumber(soldProjectTokens[0]))
-                setStartingPrice(fixedNumberToNumber(rate[0]))
+                auctionInfo.soldTokens = fixedNumberToNumber(soldProjectTokens[0])
+                auctionInfo.startingPrice = fixedNumberToNumber(rate[0])
                 break;
             case "PseudoCappedAuction":
-                setTokenDist(fixedNumberToNumber(numberOfTokensToBeDistributed[0]))
-                setCurrentPrice(fixedNumberToNumber(getCurrentRate[0]))
+                auctionInfo.tokenDist = (fixedNumberToNumber(numberOfTokensToBeDistributed[0]))
+                auctionInfo.currentPrice = fixedNumberToNumber(getCurrentRate[0])
                 break
             case "OBDutchAuction":
-                setTokenDist(fixedNumberToNumber(numberOfTokensToBeDistributed[0]))
-                setSoldTokens(fixedNumberToNumber(soldProjectTokens[0]))
-                setMinimumPrice(fixedNumberToNumber(minPrice[0]))
+                auctionInfo.tokenDist = (fixedNumberToNumber(numberOfTokensToBeDistributed[0]))
+                auctionInfo.soldTokens = (fixedNumberToNumber(soldProjectTokens[0]))
+                auctionInfo.minimumPrice = (fixedNumberToNumber(minPrice[0]))
                 break;
         }
-        setStartTime(startTime.toString())
-        setEndTime(latestEndTime.toString())
-        setTotalDeposit(fixedNumberToNumber(totalDepositedSucoins[0]))
+
+        auctionInfo.startTime = startTime[0]
+        auctionInfo.endTime = latestEndTime[0]
+        auctionInfo.totalDeposit = fixedNumberToNumber(totalDepositedSucoins[0])
+
+
+        setHistoricData(await getHistoricalData(auctionContract,auctionInfo))
+
+        setCurrentData(auctionInfo)
     }
 
 
-    const cumulativeUniqueBuyAmount = (buyTime,buyAmounts) => {
-        let uniqueBuytime = {}
-        let cumulative = 0;
 
-        for (let i = 0; i < buyTime.length; i++) {
-            cumulative += buyAmounts[i]
-            uniqueBuytime[buyTime[i]] = cumulative
-        }
 
-        //Convert uniqueBuytime to 2D array
-        return Object.entries(uniqueBuytime).map(([key, value]) => [Number(key), value])
-    }
 
-    const getHistoricalBidData = async (auctionContract) => {
-        const bidFilter = auctionContract.filters.BidSubmission()
+
+    const getHistoricalData = async (auctionContract,auctionInfo) => {
+
+        
+
+        const { startTime, endTime,startingPrice,currentPrice , initDist,finalRate,minimumPrice,tokenDist,totalDeposit} = auctionInfo
+        
+        const bidFilter = auctionContract.filters.VariableChange()
         const bidEvents = await auctionContract.queryFilter(bidFilter)
-        const bidAmounts = bidEvents.map(bid => parseFloat(fixedNumberToNumber(bid.args.amount)))
-        const blockNumbers = bidEvents.map(bid => bid.blockNumber)
+
+
+        const timeStamps = Object.fromEntries(await Promise.all(bidEvents.map(async (bidEvent) => [bidEvent.blockNumber,(await provider.getBlock(bidEvent.blockNumber)).timestamp * 1000])))
+
+        const groupedMap =  bidEvents.reduce(
+            (entryMap, e) => entryMap.set(e.args[0], [...entryMap.get(e.args[0])||[], e]),
+            new Map()
+        );
+        
+      
+
+
+        Array.from(groupedMap.keys()).map( key =>
+            groupedMap.set(key, groupedMap.get(key).reduce(
+                (entryMap, e) => entryMap.set(timeStamps[e.blockNumber], parseFloat(fixedNumberToNumber(e.args[1]))),
+                new Map()
+        )))
+
+        console.log(endTime,"end")
+
+        groupedMap.set("currentRate", [[startTime * 1000 ,parseFloat(startingPrice)] , ...groupedMap.get("currentRate") , [Math.min(new Date(),endTime * 1000),parseFloat(currentPrice)]])
+        groupedMap.set("numberOfTokensToBeDistributed", [[startTime * 1000,parseFloat(initDist)] ,...groupedMap.get("numberOfTokensToBeDistributed") , [Math.min(new Date(),endTime * 1000),parseFloat(tokenDist)]])
+        groupedMap.set("totalDepositedSucoins", [[startTime * 1000,parseFloat(0)] ,...groupedMap.get("totalDepositedSucoins") , [Math.min(new Date(),endTime * 1000),parseFloat(totalDeposit)]])
+        
+     
+
+        return groupedMap;
+
+
 
         
-
-        const timeStampsFromBlockNumbers = await Promise.all(blockNumbers.map(async blockNumber => {
-            const block = await provider.getBlock(blockNumber)
-            return  block.timestamp  *1000
-        }))
-
-
-
-
-
-        
-        const uniqueBidAmounts = cumulativeUniqueBuyAmount(timeStampsFromBlockNumbers,bidAmounts)
-        return uniqueBidAmounts
     }
+
+        
+  
+
 
     
 
@@ -174,13 +191,15 @@ const Auction = (props) => {
 
         console.log("before refresh info")
 
-        refreshInfo(abi, auctionContract) //todo it would be better if backend did this
+        await refreshInfo(abi, auctionContract) //todo it would be better if backend did this
+
+
 
         provider.on(tokenBoughtFilter, (log, event) => refreshInfo(abi, auctionContract))
-        setHistoricBids(await getHistoricalBidData(auctionContract))
 
         setIsLoading(false);
     }, [])
+
 
     
 
@@ -247,12 +266,12 @@ const Auction = (props) => {
                                 projectId={projectId}
                                 auction={auction}
                                 tokenName={state.tokenName}
-                                price={currentPrice}
-                                tokenDist={tokenDist}
-                                deposit={soldToken}
-                                totalRaise={totalDeposit}
-                                startingDate={startTime}
-                                endingDate={endTime}
+                                price={currentData?.currentPrice}
+                                tokenDist={currentData?.tokenDist}
+                                deposit={currentData?.soldTokens}
+                                totalRaise={currentData?.totalDeposit}
+                                startingDate={currentData?.startTime}
+                                endingDate={currentData?.endTime}
                                 auctionType={auctionType}
                             />
                         </div>
@@ -290,8 +309,8 @@ const Auction = (props) => {
                         <Grid item xs>
                             <div style={{ width: "50%", margin: "auto" }}>
                                 <CircularProgressbar
-                                    value={soldToken / tokenDist * 100}
-                                    text={parseFloat(soldToken / tokenDist * 100).toFixed(4) + '%'}
+                                    value={soldTokens / currentData.tokenDist * 100}
+                                    text={parseFloat(soldTokens / tokenDist * 100).toFixed(4) + '%'}
                                     circleRatio={0.75}
                                     styles={buildStyles({
                                         rotation: 1 / 2 + 1 / 8,
@@ -309,16 +328,11 @@ const Auction = (props) => {
             </div>
             <br></br>
             <br></br>
-            {auctionTypesForChart.includes(auctionType) ?
+            {auctionTypesForChart.includes(auctionType) && currentData  ?
                 <PriceChart
+                    currentData = {currentData}
+                    historicData={historicData}
                     auctionType={auctionType}
-                    startTime={startTime}
-                    latestEndTime={endTime}
-                    initialRate={startingPrice}
-                    finalRate={finalRate}
-                    initialSupply={initDist}
-                    soldTokens={soldToken}
-                    historicBids={historicBids}
                 /> : null}
         </div>
     );

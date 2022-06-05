@@ -23,8 +23,14 @@ import star from 'react-rating-stars-component/dist/star';
  
 
 
-const PriceChart = ({auctionType, startTime, latestEndTime, initialRate, finalRate, initialSupply,soldTokens,historicBids}) => {
+const PriceChart = ({auctionType, currentData,historicData}) => {
 
+
+    console.log(currentData)
+    console.log(auctionType)
+    console.log(historicData)
+
+    const { startTime, currentRate,latestEndTime,currentSupply ,initialRate, finalRate,currentRaise, initialSupply,soldTokens} = currentData;
     const realTime = Date.now();
 
 
@@ -32,7 +38,14 @@ const PriceChart = ({auctionType, startTime, latestEndTime, initialRate, finalRa
 
     console.log("Final Rate", finalRate)
 
-    console.log("Historic Bids", historicBids)
+
+
+  
+ console.log(historicData)
+
+
+
+
 
     ChartJS.register(
         CategoryScale,
@@ -45,6 +58,8 @@ const PriceChart = ({auctionType, startTime, latestEndTime, initialRate, finalRa
         Legend,
     );
 
+    console.log(initialRate)
+
     const options = {
         responsive: true,
         //Create scale with moment.js
@@ -53,7 +68,7 @@ const PriceChart = ({auctionType, startTime, latestEndTime, initialRate, finalRa
             x: {
                 
                 type: 'linear',
-                min : startTime * 1000,
+                min : parseFloat(startTime) * 1000,
                 max : new Date() - new Date(null),
                 ticks : {
                     count : 5,
@@ -64,12 +79,24 @@ const PriceChart = ({auctionType, startTime, latestEndTime, initialRate, finalRa
             },
           
         },
+     
 
         plugins: {
           
             legend: {
                 position: 'top',
             },
+            tooltip: {
+                callbacks: {
+               
+                    title: function(context) {
+                    
+                        if (context[0].parsed !== null) {
+                            return new Date(context[0].parsed.x).toLocaleDateString('en-US', {month:'short', year:'numeric', day:'numeric', hour:'numeric', minute:'numeric'}); 
+                        }
+                    }
+                }
+            }
         },
     };
 
@@ -121,19 +148,19 @@ const PriceChart = ({auctionType, startTime, latestEndTime, initialRate, finalRa
         "StrictDutchAuction":[
             {
                 label: 'Token Price',
-                data: timestamps.map((realTime) => [realTime,Math.max(finalRate,(initialRate - ((initialRate  - finalRate ) * (realTime / 1000 - startTime))  /  (latestEndTime - startTime)))]),
+                data:  Array.from(historicData.get("currentRate")),
                 borderColor: 'rgb(255, 99, 132)',
                 backgroundColor: 'rgba(255, 99, 132, 0.5)',
             },
             {
                 label: 'Total Supply',
-                data: timestamps.map((realTime) => [realTime,Math.max(soldTokens,(initialSupply - (initialSupply) * (realTime / 1000 - startTime)  /  (latestEndTime - startTime)))]),
+                data: Array.from(historicData.get("numberOfTokensToBeDistributed")),
                 borderColor: 'rgb(53, 162, 235)',
                 backgroundColor: 'rgba(53, 162, 235, 0.5)',
             },
             {
             label: 'Total Raised',
-            data: historicBids,
+            data: Array.from(historicData.get("totalDepositedSucoins")),
             borderColor: 'rgb(20, 72, 25)',
             backgroundColor: 'rgba(53, 162, 235, 0.5)',
             },
@@ -152,7 +179,7 @@ const PriceChart = ({auctionType, startTime, latestEndTime, initialRate, finalRa
     //const labels = timestamps.map((timestamp) => timestamp.toLocaleString())
 
     const data = {
-        datasets: auctionTypesForChart[auctionType],
+        datasets: auctionTypesForChart[auctionType]
     };
 
 

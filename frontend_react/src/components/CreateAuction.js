@@ -35,7 +35,7 @@ import { numberToFixedNumber } from '../helpers';
 
 const BiLiraAddress = "0x8f5736aF17F2F071B476Fd9cFD27a1Bd8D7E7F15";
 
-const maestro = { address: "0xFD5C6cEb69cc683F051d4eA5a11eb2FE6DA02A06" }
+const maestro = { address: "0x5C2a9eaA1D87ebdb37c68D0B6a9A139F7b9a9e60" }
 const SUCoin = { address: "0xb6e466F4F0ab1e2dA2E8237F38B2eCf6278894Ce" }
 
 const CreateAuction = () => {

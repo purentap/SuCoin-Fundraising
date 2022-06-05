@@ -34,7 +34,7 @@ import Row from 'react-bootstrap/Row'
 import Col from 'react-bootstrap/Col'
 import Container from 'react-bootstrap/Col'
 
-const maestro = { address: "0xFD5C6cEb69cc683F051d4eA5a11eb2FE6DA02A06" }
+const maestro = { address: "0x5C2a9eaA1D87ebdb37c68D0B6a9A139F7b9a9e60" }
 
 const ProjectInfo = ({ setProject,
   projectId,
@@ -287,6 +287,7 @@ const ProjectInfo = ({ setProject,
 }
 
 
+
 const ownerButtonGroup = (isOwner, isAuctionCreated , project) => {
     return (isOwner ?
         <div style={{ display: "flex", flexDirection: "row", justifyContent: "center" }}>
@@ -295,7 +296,7 @@ const ownerButtonGroup = (isOwner, isAuctionCreated , project) => {
                     Create Tokens
                 </a>
             </button>
-            <button className="button" onClick={() => !project?.isAuctionCreated ? onClickCreateAuction : navigate('/auction/' + projectId, {state:project})}>
+            <button className="button" onClick={() => !project?.isAuctionCreated ? onClickCreateAuction() : navigate('/auction/' + projectId, {state:project})}>
                 
                     {isAuctionCreated ? "Start Auction" : "Create Auction"}
                 
