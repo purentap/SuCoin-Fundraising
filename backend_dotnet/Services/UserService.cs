@@ -460,14 +460,12 @@ namespace SU_COIN_BACK_END.Services
                     return response;
                 }
             }
-            else
-            {
-                user.Role = new_role;    
-                response.Success = true;
-                response.Message = MessageConstants.OK;
-                response.Data = $"User role is switched {user.Role} to {new_role}";
-            }
 
+            user.Role = new_role;    
+            response.Success = true;
+            response.Message = MessageConstants.OK;
+            response.Data = $"User role is switched {user.Role} to {new_role}";
+            
             return response;
         }
 
