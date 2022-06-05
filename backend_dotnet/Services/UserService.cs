@@ -50,15 +50,21 @@ namespace SU_COIN_BACK_END.Services
             try
             {
                 User? user = await _context.Users.FirstOrDefaultAsync(c => c.Id == GetUserId());
+                string userRole = GetUserRole();
 
                 if (user == null)
                 {
                     response.Message = MessageConstants.USER_NOT_FOUND;
                     return response;
                 }
-                if (GetUserRole() == UserRoleConstants.ADMIN)
+                if (userRole == UserRoleConstants.WHITELIST)
                 {
-                    response.Message = "Admin cannot delete himself/herself.";
+                    response.Message = "You cannot delete yourself as a whitelist";
+                    return response;
+                }
+                if (await IsUserRoleRemainOne(user.Address, userRole))
+                {
+                    response.Message = $"In order to delete yourself, there should be at least one more {userRole}";
                     return response;
                 }
                 
@@ -437,11 +443,22 @@ namespace SU_COIN_BACK_END.Services
         {
             ServiceResponse<string> response = new ServiceResponse<string>();
             User? user = await _context.Users.FirstOrDefaultAsync(user => user.Address == address);
-            
+
             if (user == null) // for security reasons
             {
                 response.Message = MessageConstants.USER_NOT_FOUND;
                 return response;
+            }
+
+            string userRole = user.Role;
+
+            if (userRole == UserRoleConstants.ADMIN || userRole == UserRoleConstants.VIEWER)
+            {
+                if (await IsUserRoleRemainOne(address, user.Role))
+                {
+                    response.Message = $"In order to update the role of the {user.Username}, there should be at least one more {userRole}";
+                    return response;
+                }
             }
             else
             {
@@ -454,5 +471,16 @@ namespace SU_COIN_BACK_END.Services
             return response;
         }
 
+        public async Task<bool> IsUserRoleRemainOne(string address, string userRole)
+        {                   
+            List<User>? users = await _context.Users.Where(user => user.Role == userRole).ToListAsync();                   
+            
+            if (users.Count() == 1)
+            {
+                return true;
+            }
+
+            return false;
+        }
     }
 }
