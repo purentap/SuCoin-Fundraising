@@ -59,7 +59,13 @@ contract FCFSAuction is CappedTokenAuction {
 
     //In a normal capped auction rate is constant so this function does nothing
     function setCurrentRate() internal virtual  {
-        currentRate = getCurrentRate();
+        uint tempRate = getCurrentRate();
+        if (tempRate != currentRate)
+        {
+            emit VariableChange("currentRate", tempRate);
+            currentRate = tempRate;
+        }
+        
     }
 
     function getCurrentRate() public virtual view returns(uint current) {

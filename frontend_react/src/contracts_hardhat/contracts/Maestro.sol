@@ -58,7 +58,7 @@ contract Maestro {
 
 
 
-    function getProjectSurfaceByStatus(bytes32[] calldata hashes,Auction.AuctionStatus status,uint selectCount) view external returns(ProjectSurface[] memory){
+    function getProjectSurfaceByStatus(bytes32[] calldata hashes,Auction.AuctionStatus status,uint selectCount,bool ignore) view public returns(ProjectSurface[] memory){
 
       if (selectCount > hashes.length)
             selectCount = hashes.length;
@@ -73,7 +73,7 @@ contract Maestro {
                if (auction == address(0))
                 continue;
 
-               if (Auction(auction).getStatus() == status) {
+               if (ignore || Auction(auction).getStatus() == status) {
                    ERC20 token = ERC20(project.token);
                    wantedProjects[--selectCount] = ProjectSurface(project.auction,token.name(),token.symbol(),project.auctionType,hashes[i]);
                }
@@ -81,6 +81,11 @@ contract Maestro {
             }
         return wantedProjects;
 
+        }
+
+
+        function getAllAuctionsByHashList(bytes32[] calldata hashes) view external returns(ProjectSurface[] memory){
+            return getProjectSurfaceByStatus(hashes,Auction.AuctionStatus.OFF,hashes.length,true);  // ignore status
         }
                 
 

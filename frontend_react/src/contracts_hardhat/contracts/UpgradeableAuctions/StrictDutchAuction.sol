@@ -26,7 +26,15 @@ contract StrictDutchAuction is DutchAuction {
 
      function setCurrentRate() internal virtual override {
          super.setCurrentRate();
-         numberOfTokensToBeDistributed =  getTotalSupply();
+
+         uint tempSupply = getTotalSupply();
+
+         if (tempSupply != numberOfTokensToBeDistributed) {
+             emit VariableChange("numberOfTokensToBeDistributed", tempSupply);
+            numberOfTokensToBeDistributed = tempSupply;
+         }
+
+       
     }
 
     

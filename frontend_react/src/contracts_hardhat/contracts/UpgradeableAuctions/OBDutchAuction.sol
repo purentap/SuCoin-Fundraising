@@ -73,6 +73,8 @@ contract OBDutchAuction is PseudoCappedAuction {
 
         bidCoinBits =  handleRemainder(bidCoinBits, price);
 
+        require(bidCoinBits > 0, "You need to put more bidcoins");
+
         swap(bidCoinBits);
     } 
 
@@ -101,6 +103,7 @@ contract OBDutchAuction is PseudoCappedAuction {
             uint price =  UserOrders[msg.sender].price;
             UserOrders[msg.sender].deposit = bidCoinBits;
             PriceOrders storage orders = ordersForPrice[price];
+            uint tempMinPrice = minPrice;
 
             if (orders.userAddresses.length == 0) 
                 tree.insert(price);
@@ -114,7 +117,7 @@ contract OBDutchAuction is PseudoCappedAuction {
                 uint total = soldProjectTokens + amount;
 
                 if (total >= numberOfTokensToBeDistributed) 
-                    minPrice = getMinPrice(total - numberOfTokensToBeDistributed);
+                    tempMinPrice = getMinPrice(total - numberOfTokensToBeDistributed);
 
                 soldProjectTokens = total >= numberOfTokensToBeDistributed ? numberOfTokensToBeDistributed : total;
                 
@@ -122,7 +125,12 @@ contract OBDutchAuction is PseudoCappedAuction {
             }
             else  {
                 uint total = minPriceTokenCount + amount;
-                minPrice = getMinPrice(total);
+                tempMinPrice = getMinPrice(total);
+            }
+
+            if (tempMinPrice != minPrice) {
+                emit VariableChange("minPrice", tempMinPrice);
+                minPrice = tempMinPrice;
             }
 
        

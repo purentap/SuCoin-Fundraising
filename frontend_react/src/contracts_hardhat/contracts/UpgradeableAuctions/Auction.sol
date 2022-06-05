@@ -45,6 +45,7 @@ abstract contract Auction is AccessControlUpgradeable,Multicall  {              
     event AuctionFinished(uint end, uint finalPrice);                         //Logs ending time and final price of the coin 
     event AuctionStarted(uint start, uint end);                               //Logs beginning and latest ending time of an auction
     event AuctionPaused(uint pauseDuration);                                  //Logs pause duration
+    event VariableChange(string variable,uint value);                         //Logs variable change
 
 
 
@@ -228,6 +229,8 @@ abstract contract Auction is AccessControlUpgradeable,Multicall  {              
        bidCoin.transferFrom(msg.sender, projectWallet, bidCoinBits);
 
        totalDepositedSucoins += bidCoinBits;
+       
+       emit VariableChange("totalDepositedSucoins", totalDepositedSucoins);
 
         //Send project tokens to buyer
        //No need for approval from the contracts side

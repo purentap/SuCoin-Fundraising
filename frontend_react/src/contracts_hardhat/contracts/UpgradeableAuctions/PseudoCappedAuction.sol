@@ -57,7 +57,6 @@ contract PseudoCappedAuction is CappedTokenAuction {
             biddingBook[msg.sender] += bidCoinBits;
             setCurrentRate();
 
-
         }
 
 
