@@ -144,7 +144,7 @@ namespace SU_COIN_BACK_END.Services
             return response;
         }
 
-        public async Task<ServiceResponse<string>> DeleteProject(int id) //If auction started aviod deleting
+        public async Task<ServiceResponse<string>> DeleteProject(int id) // If auction created aviod deleting
         {
             ServiceResponse<string> response = new ServiceResponse<string>();
             try
@@ -166,7 +166,7 @@ namespace SU_COIN_BACK_END.Services
                 }
                 if (project.IsAuctionCreated)
                 {
-                    response.Message = "You have live project on auction. In order to delete this project, you need to end the auction.";
+                    response.Message = $"Auction of project {project.ProjectName} is already created. You cannot delete this project";
                     return response;
                 }
 

@@ -78,7 +78,7 @@ namespace SU_COIN_BACK_END.Controllers
                 }
                 return BadRequest(response);
             }
-            return StatusCode(StatusCodes.Status204NoContent);
+            return NoContent();
         }
 
         [HttpPost]
@@ -158,7 +158,7 @@ namespace SU_COIN_BACK_END.Controllers
                 }
                 return BadRequest(response);
             }
-            return StatusCode(StatusCodes.Status204NoContent);
+            return NoContent();
         }
 
         [HttpPatch]

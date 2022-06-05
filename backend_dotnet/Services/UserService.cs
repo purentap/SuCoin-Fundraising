@@ -172,7 +172,6 @@ namespace SU_COIN_BACK_END.Services
                     return response;
                 }
 
-
                 if (GetUsername() == request.Username)
                 {
                     response.Message = "You cannot give permission to yourself"; 
@@ -225,7 +224,7 @@ namespace SU_COIN_BACK_END.Services
                 /* Retrieve pending permission entity for user&project pair from database. Then include the current user in the related project based on the current user's response. */
                 int requested_projectID = request.ProjectID;
                 ProjectPermission? permission = await _context.ProjectPermissions
-                .FirstOrDefaultAsync(c => c.ProjectID == requested_projectID && c.UserID == GetUserId() && !c.IsAccepted); // pending permissions
+                    .FirstOrDefaultAsync(c => c.ProjectID == requested_projectID && c.UserID == GetUserId() && !c.IsAccepted); // pending permissions
 
                 /* Default value for IsAccepted is false. If the user accepted the invitation, change its value of IsAccepted property as true. */
                 if (permission == null)
@@ -296,43 +295,44 @@ namespace SU_COIN_BACK_END.Services
             try
             {
                 int loggedIn_userID = GetUserId();
-                ProjectPermission? permission = await _context.ProjectPermissions
+                ProjectPermission? loggedInUser_permission = await _context.ProjectPermissions
                     .FirstOrDefaultAsync(c => c.ProjectID == request.ProjectID && c.UserID == loggedIn_userID && c.IsAccepted);
                 
-                if (permission == null)
+                if (loggedInUser_permission == null) // user is not in the project
                 {
                     response.Message = MessageConstants.PROJECT_PERMISSION_MANAGE_DENIED;
                     return response;
                 }
-                    
-                if (permission.Role == UserPermissionRoleConstants.OWNER)
+
+                if (loggedInUser_permission.Role == UserPermissionRoleConstants.OWNER)
                 {
-                    User? user = await _context.Users.FirstOrDefaultAsync(c => c.Username == request.Username);
+                    User? removedCollaborator = await _context.Users.FirstOrDefaultAsync(user => user.Username == request.Username);
                         
-                    if (user == null) // logged in user does not have any permission for any project
+                    if (removedCollaborator == null) // logged in user does not have any permission for any project
                     {
                         response.Message = MessageConstants.USER_NOT_FOUND;
                         return response;
                     }
                         
-                    if (loggedIn_userID == user.Id) // remove yourself
+                    if (loggedIn_userID == removedCollaborator.Id) // remove yourself
                     {
-                        response.Message = "You cannot remove ownership before you transfer it to someone else."; 
+                        response.Message = "You cannot remove your ownership. In order to remove your ownership, you must delete the project";
                         return response;
                     }
                         
-                    ProjectPermission? perm = await _context.ProjectPermissions
-                    .FirstOrDefaultAsync(c => c.ProjectID == request.ProjectID && c.UserID == user.Id && c.IsAccepted);
+                    ProjectPermission? removedCollaborator_permission = await _context.ProjectPermissions
+                        .FirstOrDefaultAsync(c => c.ProjectID == request.ProjectID && c.UserID == removedCollaborator.Id && c.IsAccepted);
 
-                    if (perm == null)
+                    if (removedCollaborator_permission == null)
                     {
-                        response.Message = "User does not have permission to remove";
+                        response.Message = $"Permission of the {request.Username} for project {request.ProjectID} is not found";
                         return response;
                     }
-                        _context.ProjectPermissions.Remove(perm);
-                        await _context.SaveChangesAsync();
-                        response.Success = true;
-                        response.Message = String.Format($"User {request.Username} removed from collabration in project {request.ProjectID}");
+
+                    _context.ProjectPermissions.Remove(removedCollaborator_permission);
+                    await _context.SaveChangesAsync();
+                    response.Success = true;
+                    response.Message = $"User {request.Username} is removed from collaboration in project {request.ProjectID}";
                 }
                 else // Not the owner of the project
                 {
@@ -343,7 +343,7 @@ namespace SU_COIN_BACK_END.Services
                     }
                     
                     /* Remove your own permission */
-                    _context.ProjectPermissions.Remove(permission);
+                    _context.ProjectPermissions.Remove(loggedInUser_permission);
                     await _context.SaveChangesAsync();
                     response.Success = true;
                     response.Message = String.Format($"User {request.Username} removed from collaboration in project {request.ProjectID}");
@@ -384,10 +384,11 @@ namespace SU_COIN_BACK_END.Services
                 {
                     string oldRole = user.Role;
                     user.Role = chainResponse.Data;
+                    string newRole = user.Role;
                      _context.Users.Update(user);
                     await _context.SaveChangesAsync();
 
-                    response.Message = $"User role is switched {oldRole} to {user.Role}";
+                    response.Message = $"User role is switched {oldRole} to {newRole}";
                 }
             }
             catch (Exception e)

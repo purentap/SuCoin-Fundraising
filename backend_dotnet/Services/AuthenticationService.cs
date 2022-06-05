@@ -120,7 +120,7 @@ namespace SU_COIN_BACK_END.Services
                 }
                 else
                 {
-                    if (user.Role != UserRoleConstants.ADMIN)
+                    if (user.Role != UserRoleConstants.ADMIN || user.Role != UserRoleConstants.VIEWER)
                     {
                         user.Role = chainRole;
                     }
