@@ -11,6 +11,23 @@ import "./UpgradeableTokens/ERC20MintableBurnableUpgradeable.sol";
 import "./ProjectRegister.sol";
 
 
+/*
+ Maestro is the contract that handles auctions and token management.
+ Alongside with ProjectRegister it manages the system
+ These 2 contracts can be combined later on.
+ New Auctions and tokens are created using minimal proxies (clones)
+ as this way you only need to deploy actual auction contracts once 
+ so it is cheaper to create new tokens and auctions from them
+
+ Maestro also has functions for admins like changing sucoin address or pausing an auction
+ Some of those functions are  important security wise so they are using 
+ multisig (more than one admin is needed to actually execute the function)
+ to ensure one admin does not destroy the whole system
+
+ Maestro also has function to get auction info to be used on frontend 
+
+*/
+
 contract Maestro {
 
 
@@ -37,6 +54,8 @@ contract Maestro {
         string auctionType;
     }
 
+
+    //Has the information to be used on auction frontend page
     struct ProjectSurface {
         address auction;
         string tokenName;
@@ -57,7 +76,11 @@ contract Maestro {
     }
 
 
-
+    //Gets count amount of auctions with having the Auction status of status
+    //Gets a hash list (likely from database) to not store auction array in contract
+    //Which also enables getting auctions only created from the website
+    //Ignore parameter is used if you want to get all auctions instead 
+    //Used to create a more dynamic auction page for frontend
     function getProjectSurfaceByStatus(bytes32[] calldata hashes,Auction.AuctionStatus status,uint selectCount,bool ignore) view public returns(ProjectSurface[] memory){
 
       if (selectCount > hashes.length)
@@ -92,11 +115,17 @@ contract Maestro {
                 
 
 
-    
+    //Constructor of the contract
+    //Maestro contract should be deployed after sucoin, projectRegister and auction implementation contracts
+    //Because maestro contract is using information from those contracts
+
+    //Name array includes types of auction implementations whiile implementationContracts includes addreses of those implementations
+    //Those two array should be the same length and in same order
+    //It is hard to call the constructor manually so you can use the deployer script from the frontend (if it is implementated by the time you see this)
    
     constructor(address _sucoin,address _projectManager,string[] memory nameArray,address[] memory implementationContracts){
 
-
+        
 
         sucoin = ERC20(_sucoin);
 
@@ -111,16 +140,9 @@ contract Maestro {
         tokenImplementationAddress = address(new ERC20MintableBurnableUpgradeable());
 
         projectManager = ProjectRegister(_projectManager); 
-
-
-
-
-    
-
-
-
         
     }
+    
     event TokenCreation(
         address indexed creator,
         string Name,
@@ -136,6 +158,8 @@ contract Maestro {
     );
 
 
+
+//Multisig is a modifier that makes a function only be executed when it is called by a certain number of accounts having a specific role
 modifier multiSig(bytes32 role,uint walletCount,uint timeLimitInBlocks){
         //Check parameter correctness
         require(walletCount != 0,"Wallet Counter Parameter must be higher than 0");
@@ -201,6 +225,7 @@ modifier multiSig(bytes32 role,uint walletCount,uint timeLimitInBlocks){
         _;
     }
 
+
     modifier managerControl(bytes32 projectHash,address caller) {
         projectManager.isValidToDistribute(caller,projectHash);
         _;
@@ -208,7 +233,10 @@ modifier multiSig(bytes32 role,uint walletCount,uint timeLimitInBlocks){
 
 
 
-    
+    //This functions can be used to pause an existing and started auction for a certain amount of time
+    //This is useful for emergency situations
+    //The function is using multisig if admin count is needed to be changed
+    //Sign time also can be changed if needed
     function pauseAuction(bytes32 projectHash,uint pauseTimeInHours) external multiSig(projectManager.ADMIN_ROLE(),1,1) {         //Admin count / sign time can change
         address auction = projectTokens[projectHash].auction;
         require(auction != address(0),"There are no auctions for this project");
@@ -219,6 +247,9 @@ modifier multiSig(bytes32 role,uint walletCount,uint timeLimitInBlocks){
     }
 
 
+    //CreateAuction creates a new proxy auction contract for a project
+    //Also gives the proposer permission for the auction to the caller
+    //Can only be called by the project owner and after the token is assigned
     function createAuction(
         bytes32 projectHash,
         string memory auctionType,
@@ -234,6 +265,8 @@ modifier multiSig(bytes32 role,uint walletCount,uint timeLimitInBlocks){
         //Create proxy of auction
         Auction clone =  Auction(Clones.clone(auctionImplementationAddress));
 
+        //Sets the parameters fror auctions
+        //Used this way  instead of seperate arguments because of parameter limit on solidity
         Auction.auctionParameters memory aucParams = Auction.auctionParameters({
             token: projectTokens[projectHash].token,
             bidCoin: address(sucoin),
@@ -251,7 +284,7 @@ modifier multiSig(bytes32 role,uint walletCount,uint timeLimitInBlocks){
         clone.grantRole(clone.PROPOSER_ADMIN_ROLE(), msg.sender);
         clone.grantRole(clone.PROPOSER_ROLE(), msg.sender);
 
-        //Where the collected sucıins will go
+        //Where the collected sucoins will go
         clone.setTeamWallet(msg.sender);
 
 
@@ -275,19 +308,30 @@ modifier multiSig(bytes32 role,uint walletCount,uint timeLimitInBlocks){
     }
 
 
-    function createToken(bytes32 projectHash, string memory tokenName, string memory tokenSymbol , uint initialSupply) public  managerControl(projectHash,msg.sender)   returns (address){
+
+    //Creates token for the project which will be later used for auction
+    //Token is created using ERC20MintableBurnableUpgradeable which allows for mints and burns
+    //But that permissions are not given to project proposer so that he can't mint or burn
+    //They are used to mint or burn tokens for auction contract itself and permissions are renounced after auction is finished
+    
+    //Manager control is used to check if the project is already created and approved and creater of token and project is the same
+    function createToken(bytes32 projectHash, string memory tokenName, string memory tokenSymbol , uint initialSupply) public  managerControl(projectHash,msg.sender)   returns (address){    //Currently multiple tokens for a project can't be created
+
+        //Currently multiple tokens for a project can't be created
         require(projectTokens[projectHash].token == address(0),"Some token already assigned to this project");
 
 
-
+        //Create proxy of token
         ERC20MintableBurnableUpgradeable clone =  ERC20MintableBurnableUpgradeable(Clones.clone(tokenImplementationAddress));
 
+        //Initialize the proxy 
         clone.initialize(tokenName,tokenSymbol,initialSupply);
 
+        //Transfer all the tokens  minted to the project proposer (when auction is created new ones will be minted for the auction)
         clone.transfer(msg.sender,clone.totalSupply());
         
 
-
+        //Set the token and proposer
         projectTokens[projectHash].token = address(clone);
         projectTokens[projectHash].proposer = msg.sender;
 
@@ -296,6 +340,7 @@ modifier multiSig(bytes32 role,uint walletCount,uint timeLimitInBlocks){
 
     }
 
+    //Helpr for getting implementation contracts
     function getNonzeroElement(mapping (string => address) storage map,string memory index) internal view returns  (address){
 
         address typeAddress = map[index];
@@ -303,7 +348,11 @@ modifier multiSig(bytes32 role,uint walletCount,uint timeLimitInBlocks){
         return typeAddress;
     }
 
-    //TODO: MULTISIG need 2 admins
+    //Edit implementation makes it possible to change how an auction contract works without redeploying the whole maestro contract
+    //If you want to change the implementation of FCFSAuction you need to deploy a new FCFSAuction Contract then call this function
+    //With the name FCFSAuction and the new address of the FCFSAuction Contract
+    //From now on you can call createAuction with the name FCFSAuction and the new version of the FCFSAuction Contract will be used
+    //Needs at least two admins for security reasons
     function editImplementation(string memory name, address newImplementationAddress) external multiSig(projectManager.ADMIN_ROLE(),2,100)  {
         address addressCurrent = auctionNameAddressSet[name];
         require(addressCurrent != address(0),"This contract type is not specified");

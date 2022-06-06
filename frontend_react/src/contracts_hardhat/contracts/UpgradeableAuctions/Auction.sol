@@ -19,6 +19,22 @@ import "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
 import "../WrapperToken.sol";
 
 
+/*
+    Auction is the base abstract auction for all deployable auction types
+    It is an upgradeable contract, because auctions are created through minimal proxy contracts
+    Which also means it uses initializers insttead of constructors
+
+    Parent child relationship used because it is easier to manage and create similar auctions like dutch and strictDutch
+    Also useful for frontend as it can just use auction contracts as base contract if it is a property existing in base contract
+
+    It has common functions like swaping,bidding,pausing,finalizing
+    It has common events like auctionStarted,auctionFinished,tokenBought
+    It has common variables like auctionStartTime,auctionEndTime,soldProjectTokens and getters for them to be used in frontend
+
+    
+
+
+*/
 
 abstract contract Auction is AccessControlUpgradeable,Multicall  {                       //Abstract Contract for all auction types
 
@@ -31,11 +47,16 @@ abstract contract Auction is AccessControlUpgradeable,Multicall  {              
     enum AuctionStatus{OFF,RUNNING,PAUSED,ENDED} 
     AuctionStatus public status;                                              //Current status of the auction       
 
+
+    //Proposers are the people who are from project team who are proposing the project
     bytes32 public constant PROPOSER_ROLE = keccak256("PROPOSER_ROLE");
+    //Proposer admin is proposer who created the auction and he can add new proposers
     bytes32 public constant PROPOSER_ADMIN_ROLE = keccak256("PROPOSER_ADMIN_ROLE");
     
-
+    //Where the money from the auction is going to be sent
     address public projectWallet;
+
+    //Total sucoin funds in the auction
     uint public totalDepositedSucoins;
 
                      
@@ -45,7 +66,7 @@ abstract contract Auction is AccessControlUpgradeable,Multicall  {              
     event AuctionFinished(uint end, uint finalPrice);                         //Logs ending time and final price of the coin 
     event AuctionStarted(uint start, uint end);                               //Logs beginning and latest ending time of an auction
     event AuctionPaused(uint pauseDuration);                                  //Logs pause duration
-    event VariableChange(string variable,uint value);                         //Logs variable change
+    event VariableChange(string variable,uint value);                         //Logs variable change used for charting
 
 
 
@@ -80,16 +101,20 @@ abstract contract Auction is AccessControlUpgradeable,Multicall  {              
         bidCoin = WrapperToken(params.bidCoin);
     }
 
+    //Proposer admins can change the project wallet
     function setTeamWallet(address wallet) virtual external  onlyRole(PROPOSER_ADMIN_ROLE) {
         projectWallet = wallet;
     }
 
 
+    //Default admin role is not proposer admin but maestro contract itself which can be called by actual admins of the whole system
      function forcedManualFinish() public onlyRole(DEFAULT_ADMIN_ROLE) {
          require(status != AuctionStatus.ENDED,"This Auction already ended");
          finalize();
      }
 
+
+    //Parameters are send as struct  because of parameter limit on solidity
    struct auctionParameters {
        address token;
        address bidCoin;
@@ -99,10 +124,13 @@ abstract contract Auction is AccessControlUpgradeable,Multicall  {              
        uint limit;
     }
 
+
+    //Auction cannot finish itself if there is no user interaction with the auction so this functions just finishes it if time is up
      function manualFinish() public  quietStateUpdate() isFinished(){}
 
 
-
+    //Updates the auction status (can be changed by time) and finalizes if time is up
+    //Does not continue with the function is it finalizes
    modifier stateUpdate() {
         if (status == AuctionStatus.PAUSED  && block.timestamp >= variableStartTime)
             status = AuctionStatus.RUNNING;
@@ -112,6 +140,8 @@ abstract contract Auction is AccessControlUpgradeable,Multicall  {              
         _;
     }
 
+    //Very similar to stateUpdate but continues with the function even if time is up
+    //As there are some functions which can be called only after auction is ended (withDraw)
     modifier quietStateUpdate() {
         if (status == AuctionStatus.PAUSED  && block.timestamp >= variableStartTime)
             status = AuctionStatus.RUNNING;
@@ -132,6 +162,8 @@ abstract contract Auction is AccessControlUpgradeable,Multicall  {              
 
     }
 
+    //Decimal mathematics to fake represent floating numbers
+
        function revertPrice(uint formattedAmount,address token) internal virtual view returns(uint) {
              return formattedAmount / 10 ** ERC20(token).decimals();
         }
@@ -141,6 +173,9 @@ abstract contract Auction is AccessControlUpgradeable,Multicall  {              
         }
 
 
+    //Removes the remaining bidCoins from further calculations
+    //Example if you have 5 bidcoins and rate is 1 token - 3 bidcoins then you will have 2 bidcoins remaining
+    //This function just returns 3 for further calculations
  function handleRemainder(uint bidCoinBits,uint currentRate) internal virtual returns (uint) {
        
         uint remainder = bidCoinBits -  revertPrice((convertPrice(bidCoinBits,address(bidCoin)) / currentRate) * currentRate,address(bidCoin));
@@ -152,7 +187,8 @@ abstract contract Auction is AccessControlUpgradeable,Multicall  {              
         require(status == AuctionStatus.OFF,"Auction already started or already ended");
         require(maximumAuctionTimeInHours > 0,"Auction Time must be longer");
     }
-                                                                            //Create the auction if the auction creator already deposited the coins or have given approval
+
+    //Only proposers can start the auction
     function startAuction(uint maximumAuctionTimeInHours) public virtual onlyRole(PROPOSER_ROLE) {
         
    
@@ -167,18 +203,23 @@ abstract contract Auction is AccessControlUpgradeable,Multicall  {              
     
     }
 
+    //Only general admins can pause an auctions as proposer admins can pause infintely if they are malicious
     function pauseAuction(uint pauseTimeInHours) public virtual stateUpdate() onlyRole(DEFAULT_ADMIN_ROLE)  isRunning() {
         require(pauseTimeInHours > 0,"Pause Time must be longer");
+        //Seconds for easier testing can be changed to hours later
         variableStartTime = block.timestamp + pauseTimeInHours * 1 seconds;
         latestEndTime = variableStartTime + latestEndTime - block.timestamp;
         status = AuctionStatus.PAUSED;
         emit AuctionPaused(pauseTimeInHours);
     }
 
+    //For more complex finalization other auctions override this function
     function finalize() internal virtual  {                                                     
         status = AuctionStatus.ENDED;
     }
 
+    
+    
     function getStatus() external view returns(AuctionStatus){
         AuctionStatus stat = status;
         if (status == AuctionStatus.PAUSED  && block.timestamp >= variableStartTime)
@@ -188,11 +229,13 @@ abstract contract Auction is AccessControlUpgradeable,Multicall  {              
         return stat;
     }
 
+    //To be overrided by child contracts
     function handleValidTimeBid(uint bidCoinBits) internal virtual;
 
 
-
+    //Basic check like time and wallet owner 
      function bid(uint bidCoinBits)  public  virtual stateUpdate() isRunning() {
+
 
          require(projectWallet != address(0),"Project wallet is not set");
 
@@ -209,8 +252,14 @@ abstract contract Auction is AccessControlUpgradeable,Multicall  {              
         handleValidTimeBid(bidCoinBits);
      }
 
+    //To be overrided by child contracts
      function tokenBuyLogic(uint bidCoinBits) internal virtual;
 
+
+
+    //Sends the bidcoins to the project wallet
+    //Tokens can be obtained instantly if the auction does not use orderbooks
+    //If it uses orderbooks it will be added to the orderbook and tokens will be withdrawn after the auction is finished
      function swap(uint bidCoinBits) internal virtual {
         
       

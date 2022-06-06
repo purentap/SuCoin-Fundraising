@@ -3,7 +3,17 @@ pragma solidity ^0.8.0;
 import "./DutchAuction.sol";
 
 
-//Strict Dutch Auction is just Dutch auction with constant decreasing auction token amount 
+/*
+    This auction type is similar to dutch auction
+    But the total supply also goes down by time
+    from initial supply to 0 supply linearly
+    Total supply can't go below soldTokens
+
+
+    Auctions is finished when total supply is equal to soldTokens or time is up
+    If there are tokens remaining when auction is finished they are burnt
+*/
+
 contract StrictDutchAuction is DutchAuction {
 
     uint public initTokens;
@@ -24,8 +34,12 @@ contract StrictDutchAuction is DutchAuction {
         initTokens = numberOfTokensToBeDistributed;
     }
 
+
      function setCurrentRate() internal virtual override {
          super.setCurrentRate();
+
+        //Also sets the current Supply
+
 
          uint tempSupply = getTotalSupply();
 
@@ -41,23 +55,28 @@ contract StrictDutchAuction is DutchAuction {
 
     function getTotalSupply() public view virtual returns(uint timeSupply) {
         uint duration = endTime - startTime;
+
+        //Auction has not started yet
         if (startTime == 0)
             return initTokens;
         
-        else if (block.timestamp >= latestEndTime)
+        //Auction is finished
+        else if (status == AuctionStatus.ENDED || block.timestamp >= latestEndTime)
             return soldProjectTokens;
 
-        else if (block.timestamp < variableStartTime)
+        //Auction is paused
+          else if (block.timestamp < variableStartTime)
             return numberOfTokensToBeDistributed;
         
         
+        //Linear calculation for total supply
         uint timeTokens =  (initTokens - (initTokens) * (duration - (latestEndTime - block.timestamp))  /  (duration));
-        //Number of tokens sold at least must be 1 higher than current sold or auction instnatly ends
+        //todo this calculation is buggy
         return timeTokens < soldProjectTokens ?  soldProjectTokens + 1 : timeTokens;
     }
 
     
-
+    //Burn the remaining tokens instead of sending them to the projectWallet
       function finalize() internal override virtual{
         super.finalize();
         uint remainingBalance = projectToken.balanceOf(address(this));

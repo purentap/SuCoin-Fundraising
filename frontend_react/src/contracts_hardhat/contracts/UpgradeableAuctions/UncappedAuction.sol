@@ -5,6 +5,14 @@ import "../UpgradeableTokens/ERC20MintableBurnableUpgradeable.sol";
 
 
 
+/*
+    This auction type has unlimited amount of tokens which have the same price to be auctioned.
+    Auction ends when  time is up.
+    New tokens are minted whenever a user bids.
+    Minting permission will be renounced when auction finalizes
+*/
+
+
 contract UncappedAuction is Auction {
     ERC20MintableBurnableUpgradeable public projectToken;                                         //Auctioned coin
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");            //Constant for checking minter role
@@ -47,6 +55,7 @@ contract UncappedAuction is Auction {
     function tokenBuyLogic(uint bidCoinBits) internal virtual override {
             uint boughtTokens = (bidCoinBits * (10 ** projectToken.decimals())) / rate;
 
+            //Mints instead of transfer
             projectToken.mint(msg.sender , boughtTokens);
             soldProjectTokens += boughtTokens;
 

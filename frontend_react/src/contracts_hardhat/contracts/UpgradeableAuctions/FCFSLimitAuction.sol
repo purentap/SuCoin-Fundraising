@@ -3,7 +3,13 @@ pragma solidity ^0.8.0;
 import "./OBFCFSAuction.sol";
 
 
-//This is just order book capped auction but users have buy limit
+
+/*
+    This is just order book capped auction but users have buy limit
+    will be removed in the future and instead all orderbook auctions will have optional limits
+*/
+
+
 contract FCFSLimitAuction is OBFCFSAuction {
 
     uint public maxTokensPerUser;

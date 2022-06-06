@@ -3,9 +3,15 @@ pragma solidity ^0.8.0;
 import "./CappedTokenAuction.sol";
 
 
-//This is a contract with fixed token supply but has unlimited sucoin allocation (until the time ends) then tokens are distrubted 
-//with regars to sucoin holdings
-//There is good chance users will get less than normal amount for their sucoin using this auction
+/*
+    This auction type has specific amount of tokens to be auctioned.
+    Auction ends when time is up.
+    When time is up proportional to how many sucoins were invest by users all the tokens will be distributed.
+    More sucoin invested - higher priced token.
+    Unless no one invested in the auction, then all of them are burned.
+
+    There is no actual price in this auction so even if only one user invested miniscule amount of sucoins all tokens will be sold.
+*/
 
 contract PseudoCappedAuction is CappedTokenAuction {
 
@@ -32,6 +38,14 @@ contract PseudoCappedAuction is CappedTokenAuction {
         super.finalize();
 
         soldProjectTokens = numberOfTokensToBeDistributed;
+
+
+        //All tokens are burned if no one invested
+        if (soldProjectTokens == 0) 
+            projectToken.burn(projectToken.balanceOf(address(this)));
+        
+
+
     
         emit AuctionFinished(block.timestamp, currentRate);
     
@@ -60,9 +74,17 @@ contract PseudoCappedAuction is CappedTokenAuction {
         }
 
 
-    function setCurrentRate() internal virtual {
-        currentRate =  getCurrentRate();
+      function setCurrentRate() internal virtual  {
+        uint tempRate = getCurrentRate();
+        if (tempRate != currentRate)
+        {
+            emit VariableChange("currentRate", tempRate);
+            currentRate = tempRate;
+        }
+        
     }
+
+    
 
     function getCurrentRate() public  virtual view returns(uint current) {
         return totalDepositedSucoins * (10 ** projectToken.decimals()) / numberOfTokensToBeDistributed;
