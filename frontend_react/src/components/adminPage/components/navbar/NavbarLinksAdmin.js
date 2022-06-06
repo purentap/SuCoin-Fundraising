@@ -15,17 +15,18 @@ import {
   useColorMode,
 } from "@chakra-ui/react";
 // Custom Components
-import { ItemContent } from "./components/menu/ItemContent";
-import { SearchBar } from "./components/navbar/searchBar/SearchBar";
-import { SidebarResponsive } from "./components/sidebar/Sidebar";
+import { ItemContent } from "../menu/ItemContent.js";
+import { SearchBar } from "./searchBar/SearchBar.js";
+import { SidebarResponsive } from "../sidebar/Sidebar.js";
 import PropTypes from "prop-types";
 import React from "react";
 // Assets
-import navImage from "assets/img/layout/Navbar.png";
+//import navImage from "assets/img/layout/Navbar.png";
 import { MdNotificationsNone, MdInfoOutline } from "react-icons/md";
 import { IoMdMoon, IoMdSunny } from "react-icons/io";
 import { FaEthereum } from "react-icons/fa";
-import routes from "routes.js";
+//import routes from "routes.js";
+import { Routes } from "react-router-dom";
 export default function HeaderLinks(props) {
   const { secondary } = props;
   const { colorMode, toggleColorMode } = useColorMode();
@@ -89,7 +90,7 @@ export default function HeaderLinks(props) {
           </Text>
         </Text>
       </Flex>
-      <SidebarResponsive routes={routes} />
+      {/* <SidebarResponsive routes={routes} /> */}
       <Menu>
         <MenuButton p='0px'>
           <Icon
@@ -169,7 +170,7 @@ export default function HeaderLinks(props) {
           mt='22px'
           minW={{ base: "unset" }}
           maxW={{ base: "360px", md: "unset" }}>
-          <Image src={navImage} borderRadius='16px' mb='28px' />
+          {/* <Image src={navImage} borderRadius='16px' mb='28px' /> */}
           <Flex flexDirection='column'>
             <Link w='100%' href='https://horizon-ui.com/pro'>
               <Button w='100%' h='44px' mb='10px' variant='brand'>

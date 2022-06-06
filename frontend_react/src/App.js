@@ -1,7 +1,8 @@
 import './general.css'
-import React, { Profiler, useContext, useState } from 'react';
+import React, { Profiler, useContext, useState, useLocation } from 'react';
+import { Switch } from '@chakra-ui/react';
 // Routing
-import { BrowserRouter, Routes, Route, HashRouter } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, HashRouter , withRouter,} from 'react-router-dom';
 // Components
 import Header from './components/Header';
 import Home from './components/Home';
@@ -23,40 +24,51 @@ import { WalletSwitcher, UserContext } from './User';
 import { GlobalStyle } from './GlobalStyle';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import AdminPage from './components/adminPage/Admin';
+import WithoutNav from './components/withoutNav';
+import WithNav from './components/withNav';
 
 
-const App = () => {
+const App = (props) => {
   const Router = process.env.REACT_APP_IFS === "True" ? HashRouter : BrowserRouter
   const [address, setAddress] = useState("");
   const value = { address, setAddress };
 
   return (
+    
     <Router>
       <div className="app">
         <UserContext.Provider value={value}>
-          <Header >
 
-          </Header>
+          
+            
 
-          <Routes>
-            <Route path='/' element={<Home />} />
-            <Route path='/projects' element={<ProjectList />} />
-            <Route path='/apply' element={<Apply />} />
-            <Route path='/createTokens' element={<CreateTokens />} />
-            <Route path='/createAuction' element={<CreateAuction />} />
-            <Route path='/auctions' element={<Auctions />} />
-            <Route path='/tokenSwap' element={<TokenSwap />} />
-            <Route path='/projects/:projectId' element={<Project />} />
-            <Route path='/auction/:projectId' element={<Auction />} />
-            <Route path = '/profile' element = {<ProfilePage />} />
-            <Route path = '/tt' element = {<Templates />} />
-            <Route path = '/admin' element = {<AdminPage/>} />
-            <Route path='/*' element={<NotFound />} />
-          </Routes>
+           
+            
+            <Routes>
+              <Route path = '/' element = {<WithNav/> }>
+                <Route index element={<Home />} />
+                <Route path='/projects' element={<ProjectList />} />
+                <Route path='/apply' element={<Apply />} />
+                <Route path='/createTokens' element={<CreateTokens />} />
+                <Route path='/createAuction' element={<CreateAuction />} />
+                <Route path='/auctions' element={<Auctions />} />
+                <Route path='/tokenSwap' element={<TokenSwap />} />
+                <Route path='/projects/:projectId' element={<Project />} />
+                <Route path='/auction/:projectId' element={<Auction />} />
+                <Route path = '/profile' element = {<ProfilePage />} />
+                <Route path = '/tt' element = {<Templates />} />
+                <Route path='/*' element={<NotFound />} />
+              </Route>
+
+              <Route path = '/admin' element = {<AdminPage/>} />
+            </Routes>
+           
+          
           <GlobalStyle />
         </UserContext.Provider>
       </div>
-    </Router>
+      </Router>
+    
   );
 }
 

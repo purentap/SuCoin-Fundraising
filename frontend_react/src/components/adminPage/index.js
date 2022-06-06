@@ -7,7 +7,7 @@ import Sidebar from "./components/sidebar/Sidebar.js";
 import { SidebarContext } from "./contexts/SidebarContext";
 import React, { useState } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
-//import routes from "routes.js";
+import routes from "./routes";
 
 // Custom Chakra theme
 export default function Dashboard(props) {
@@ -118,7 +118,7 @@ export default function Dashboard(props) {
           toggleSidebar,
           setToggleSidebar,
         }}>
-          <Text>ZAAAAAAAAAAAAAAAA</Text>
+          
         <Sidebar routes={routes} display='none' {...rest} />
         <Box
           float='right'
@@ -156,7 +156,7 @@ export default function Dashboard(props) {
               pt='50px'>
               <Routes>
                 {getRoutes(routes)}
-                <Navigate from='/' to='/admin/default' />
+                {/* <Navigate from='/' to='/admin/default' /> */}
               </Routes>
             </Box>
           ) : null}
