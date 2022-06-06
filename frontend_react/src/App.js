@@ -60,7 +60,9 @@ const App = (props) => {
                 <Route path='/*' element={<NotFound />} />
               </Route>
 
-              <Route path = '/admin' element = {<AdminPage/>} />
+              <Route path = '/admin' element = {<WithoutNav/> }>
+                <Route  index element = {<AdminPage/>} />
+              </Route>
             </Routes>
            
           
