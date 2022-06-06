@@ -175,7 +175,7 @@ contract OBDutchAuction is PseudoCappedAuction {
                 //All tokens are alaready bidded
                 uint total = minPriceTokenCount + amount;
                 tempMinPrice = getMinPrice(total);
-                /
+                
             }
 
             //Emit event for frontend usage
