@@ -25,7 +25,7 @@ const routes = [
   {
     name: "Main Dashboard",
     layout: "/admin",
-    path: "/default",
+    path: "/",
     icon: <Icon as={MdHome} width='20px' height='20px' color='inherit' />,
     //component: MainDashboard,
   },
@@ -52,10 +52,10 @@ const routes = [
     //component: DataTables,
   },
   {
-    name: "asdasd",
+    name: "Users",
     layout: "/admin",
     icon: <Icon as={MdDashboard} width='20px' height='20px' color='inherit' />,
-    path: "/kanban",
+    path: "/users",
     //component: Kanban,
   },
   {

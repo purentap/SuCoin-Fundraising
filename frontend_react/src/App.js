@@ -26,6 +26,8 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import AdminPage from './components/adminPage/Admin';
 import WithoutNav from './components/withoutNav';
 import WithNav from './components/withNav';
+import CheckTable from './components/adminPage/components/CheckTable';
+import UserList from './components/adminPage/UserList';
 
 
 const App = (props) => {
@@ -62,7 +64,8 @@ const App = (props) => {
 
               <Route path = '/admin' element = {<WithoutNav/> }>
                 <Route  index element = {<AdminPage/>} />
-              </Route>
+                <Route path = 'users' element = {<UserList />}></Route>
+                </Route>
             </Routes>
            
           
