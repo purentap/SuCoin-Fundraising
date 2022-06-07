@@ -53,6 +53,11 @@ contract OBDutchAuction is PseudoCappedAuction {
         uint totalWanted;
     }
 
+       modifier limitControl(uint bidCoinBits) override {
+        require(fundLimitPerUser == 0 || (UserOrders[msg.sender].deposit + bidCoinBits) <= fundLimitPerUser ,"You are trying to buy more than your limit");
+        _;
+    }
+
 
     mapping(address => UserOrder) public UserOrders;
     mapping(uint => PriceOrders) public ordersForPrice;
@@ -141,7 +146,7 @@ contract OBDutchAuction is PseudoCappedAuction {
     }
 
 
-    function tokenBuyLogic(uint bidCoinBits) internal virtual override {
+    function tokenBuyLogic(uint bidCoinBits) internal virtual override limitControl(bidCoinBits) {
 
             uint price =  UserOrders[msg.sender].price;
             UserOrders[msg.sender].deposit = bidCoinBits;

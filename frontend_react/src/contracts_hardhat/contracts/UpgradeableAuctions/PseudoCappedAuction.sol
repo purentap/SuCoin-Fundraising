@@ -21,7 +21,13 @@ contract PseudoCappedAuction is CappedTokenAuction {
 
     mapping (address => uint) public biddingBook;  //Orderbook
 
+    uint public fundLimitPerUser;
 
+ 
+   modifier limitControl(uint bidCoinBits) virtual {
+        require(fundLimitPerUser == 0 || (biddingBook[msg.sender] + bidCoinBits) <= fundLimitPerUser ,"You are trying to buy more than your limit");
+        _;
+    }
 
    
 
@@ -31,6 +37,7 @@ contract PseudoCappedAuction is CappedTokenAuction {
     }
 
     function __PseudoCappedAuction_init_unchained(auctionParameters calldata params) internal onlyInitializing {
+        fundLimitPerUser = params.limit;
         soldProjectTokens = params.numberOfTokensToBeDistributed;
     }
 
@@ -67,7 +74,7 @@ contract PseudoCappedAuction is CappedTokenAuction {
     }
 
     
-    function tokenBuyLogic(uint bidCoinBits) internal virtual override {
+    function tokenBuyLogic(uint bidCoinBits) internal virtual override limitControl(bidCoinBits) {
             biddingBook[msg.sender] += bidCoinBits;
             setCurrentRate();
 
