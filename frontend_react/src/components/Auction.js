@@ -33,6 +33,7 @@ import PriceChart from './PriceChart';
 
 
 import LoadingIcon from './LoadingIcon';
+import { min } from 'date-fns';
 
 
 
@@ -132,14 +133,16 @@ const Auction = (props) => {
                 new Map()
         )))
 
-        console.log(endTime,"end")
 
-        groupedMap.set("currentRate", [[startTime * 1000 ,parseFloat(startingPrice)] , ...groupedMap.get("currentRate") , [Math.min(new Date(),endTime * 1000),parseFloat(currentPrice)]])
-        groupedMap.set("numberOfTokensToBeDistributed", [[startTime * 1000,parseFloat(initDist)] ,...groupedMap.get("numberOfTokensToBeDistributed") , [Math.min(new Date(),endTime * 1000),parseFloat(tokenDist)]])
-        groupedMap.set("totalDepositedSucoins", [[startTime * 1000,parseFloat(0)] ,...groupedMap.get("totalDepositedSucoins") , [Math.min(new Date(),endTime * 1000),parseFloat(totalDeposit)]])
         
-     
 
+        groupedMap.set("currentRate", [[startTime * 1000 ,parseFloat(startingPrice)] , ...(groupedMap.get("currentRate") ?? []) , [Math.min(new Date(),endTime * 1000),parseFloat(currentPrice)]])
+        groupedMap.set("numberOfTokensToBeDistributed", [[startTime * 1000,parseFloat(initDist)] ,...(groupedMap.get("numberOfTokensToBeDistributed") ?? []) , [Math.min(new Date(),endTime * 1000),parseFloat(tokenDist)]])
+        groupedMap.set("totalDepositedSucoins", [[startTime * 1000,parseFloat(0)] ,...(groupedMap.get("totalDepositedSucoins") ?? []) , [Math.min(new Date(),endTime * 1000),parseFloat(totalDeposit)]])
+        groupedMap.set("minPrice", [[startTime * 1000,parseFloat(fixedNumberToNumber(1))] ,...(groupedMap.get("minPrice") ?? []) , [Math.min(new Date(),endTime * 1000),parseFloat(minimumPrice)]])
+
+
+        console.log(groupedMap)
         return groupedMap;
 
 

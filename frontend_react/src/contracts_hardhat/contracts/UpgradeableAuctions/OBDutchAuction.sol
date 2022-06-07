@@ -69,7 +69,7 @@ contract OBDutchAuction is CappedTokenAuction {
 
     function __OBDutchAuction_init_unchained() internal onlyInitializing {
         projectWallet = address(this);
-        minPrice = 1;
+        currentRate =  minPrice = 1;
     }
 
 

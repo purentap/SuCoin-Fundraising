@@ -51,12 +51,12 @@ const CreateAuction = () => {
         {
             id: 0,
             name: "Uncapped Auction",
-            description: "Fixed price unlimited tokens",
+            description: "Fixed price unlimited tokens only need the first parameter",
         },
         {
             id: 1,
             name: "Pseudo Capped Auction",
-            description: "Fixed number of tokens but unlimited sucoins can be invested",
+            description: "Fixed number of tokens but unlimited sucoins can be invested which will be distributed in the end burns all tokens if no one invests",
         },
         {
             id : 2,
@@ -65,28 +65,23 @@ const CreateAuction = () => {
         },
         {
             id : 3,
-            name: "FCFS Limit Auction",
-            description: "FCFS Auction where there is a limit in terms of sucoins that a user can invest"
+            name: "FCFS Auction",
+            description: "First come first serve, fixed price fixed supply token sale"
         },
         {
             id : 4,
-            name: "FCFS Auction",
-            description: "First come first serve fixed price fixed supply token sale"
+            name: "Dutch Auction",
+            description: "Fixed supply token auction with price going down to finalPrice linearly over the duration last parameter is ignored"
         },
         {
-            id : 5,
-            name: "Dutch Auction",
-            description: "Similar to FCFS but price goes down with time"
+            id:5,
+            name: "Orderbook Dutch Auction",
+            description: "Investors can bid their price to tokens, at the end of the auction tokens will be distributed starting from the highest bid until all sold tokens are distributed, price parameters ignored"
         },
         {
             id:6,
-            name: "Orderbook Dutch Auction",
-            description: "Dutch Auction with ordebook"
-        },
-        {
-            id:7,
             name: "Strict Dutch Auction",
-            description: "Dutch Auction but supply decreases as well, burns the remaining coins instead of giving them to proposer"
+            description: "Dutch Auction but supply decreases linearly as well, burns the remaining coins instead of giving them to proposer"
         }
 
     ]);
@@ -130,7 +125,7 @@ const CreateAuction = () => {
 
         const maestroContract = new ethers.Contract(maestro.address,Maestro.abi,signer)
 
-        const auctionType = ["UncappedAuction","PseudoCappedAuction","OBFCFSAuction","FCFSLimitAuction","FCFSAuction","DutchAuction","OBDutchAuction","StrictDutchAuction"][id]
+        const auctionType = ["UncappedAuction","PseudoCappedAuction","OBFCFSAuction","FCFSAuction","DutchAuction","OBDutchAuction","StrictDutchAuction"][id]
         console.log(auctionType)
         maestroContract.createAuction(hash,auctionType,[tokenDistributedDecimal,priceDecimal,finalRate,limit])        
     }

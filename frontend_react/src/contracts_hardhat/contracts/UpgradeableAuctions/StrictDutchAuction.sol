@@ -56,7 +56,7 @@ contract StrictDutchAuction is DutchAuction {
    modifier stateUpdate() override{
         if (status == AuctionStatus.PAUSED  && block.timestamp >= variableStartTime)
             status = AuctionStatus.RUNNING;
-        if (status == AuctionStatus.RUNNING && (block.timestamp >= latestEndTime || getTotalSupply() == numberOfTokensToBeDistributed))
+        if (status == AuctionStatus.RUNNING && (block.timestamp >= latestEndTime || getTotalSupply() == soldProjectTokens))
             finalize();
         else
         _;
