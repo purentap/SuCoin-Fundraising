@@ -91,7 +91,7 @@ const Auctions = () => {
     const [auctions, setAuctions] = useState([
 
     ]);
-    const [alignment, setAlignment] = useState(radios[1]);
+    const [alignment, setAlignment] = useState(radios[4]);
     const [listedAuctions, setListedAuctions] = useState();
 
     const handleChange = async (newAlignment) => {
