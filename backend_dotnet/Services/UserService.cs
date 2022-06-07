@@ -62,7 +62,7 @@ namespace SU_COIN_BACK_END.Services
                     response.Message = "You cannot delete yourself as a whitelist";
                     return response;
                 }
-                if (await IsUserRoleRemainOne(user.Address, userRole))
+                if (await IsUserRoleRemainOne(userRole))
                 {
                     response.Message = $"In order to delete yourself, there should be at least one more {userRole}";
                     return response;
@@ -365,7 +365,7 @@ namespace SU_COIN_BACK_END.Services
             return response;
         }
 
-        public async Task<ServiceResponse<string>> UpdateUserRole(string address, string new_role)
+        public async Task<ServiceResponse<string>> UpdateUserRole(string address, string newRole)
         {
             ServiceResponse<string> response = new ServiceResponse<string>();
             
@@ -375,10 +375,17 @@ namespace SU_COIN_BACK_END.Services
                 return response;
             }
 
-            User? user = _context.Users.FirstOrDefault(user => user.Address == address);
+            User? user = await _context.Users.FirstOrDefaultAsync(user => user.Address == address);
+
             if (user == null)
             {
                 response.Message = MessageConstants.USER_NOT_FOUND;
+                return response;
+            }
+            
+            if (GetUserId() == user.Id) // admin tries to update his/her role
+            {
+                response.Message = "You cannot update your role as an admin";
                 return response;
             }
 
@@ -386,7 +393,7 @@ namespace SU_COIN_BACK_END.Services
 
             foreach (string dbRole in justInDBRoles)
             {
-                if (new_role == dbRole)
+                if (newRole == dbRole)
                 {
                     isJustInDB = true;
                     break;
@@ -397,19 +404,12 @@ namespace SU_COIN_BACK_END.Services
             {
                 if (user.Role == UserRoleConstants.BLACKLIST || user.Role == UserRoleConstants.WHITELIST)
                 {
-                    response.Message = "You cannot update the roles defined in the chain from the server";
+                    response.Message = "You cannot directly update the roles defined in the chain from the server";
                     return response;
                 }
 
-                response = await UpdateRoleJustInDb(address, new_role);
-
-                if (!response.Success)
-                {
-                    return response;
-                }
-
-                _context.Users.Update(user);
-                await _context.SaveChangesAsync();
+                response = await UpdateRoleJustInDb(address, newRole);
+                return response;
             }
             else // Role is also defined in the chain, so read the updated role from the chain
             {
@@ -424,11 +424,10 @@ namespace SU_COIN_BACK_END.Services
                     {
                         string oldRole = user.Role;
                         user.Role = chainResponse.Data;
-                        string newRole = user.Role;
                         _context.Users.Update(user);
                         await _context.SaveChangesAsync();
 
-                        response.Message = $"User role is switched {oldRole} to {newRole}";
+                        response.Message = $"User role is switched {oldRole} to {user.Role}";
                     }
                 }
                 catch (Exception e)
@@ -439,7 +438,7 @@ namespace SU_COIN_BACK_END.Services
             return response;
         }
 
-        public async Task<ServiceResponse<string>> UpdateRoleJustInDb(string address, string new_role)
+        public async Task<ServiceResponse<string>> UpdateRoleJustInDb(string address, string newRole)
         {
             ServiceResponse<string> response = new ServiceResponse<string>();
             User? user = await _context.Users.FirstOrDefaultAsync(user => user.Address == address);
@@ -452,24 +451,25 @@ namespace SU_COIN_BACK_END.Services
 
             string userRole = user.Role;
 
-            if (userRole == UserRoleConstants.ADMIN || userRole == UserRoleConstants.VIEWER)
+            if ((userRole == UserRoleConstants.ADMIN || userRole == UserRoleConstants.VIEWER) && await IsUserRoleRemainOne(userRole))
             {
-                if (await IsUserRoleRemainOne(address, user.Role))
-                {
-                    response.Message = $"In order to update the role of the {user.Username}, there should be at least one more {userRole}";
-                    return response;
-                }
+                response.Message = $"In order to update the role of the {user.Username}, there should be at least one more {userRole}";
+                return response;
             }
 
-            user.Role = new_role;    
+            string oldRole = user.Role;
+            user.Role = newRole;
             response.Success = true;
             response.Message = MessageConstants.OK;
-            response.Data = $"User role is switched {user.Role} to {new_role}";
+            response.Data = $"User role is switched {oldRole} to {newRole}";
+
+            _context.Users.Update(user);
+            await _context.SaveChangesAsync();
             
             return response;
         }
 
-        public async Task<bool> IsUserRoleRemainOne(string address, string userRole)
+        public async Task<bool> IsUserRoleRemainOne(string userRole) // Indicates whether there is only 1 user left in the particular role
         {                   
             List<User>? users = await _context.Users.Where(user => user.Role == userRole).ToListAsync();                   
             
