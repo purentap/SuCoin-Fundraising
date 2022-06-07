@@ -51,6 +51,28 @@ contract StrictDutchAuction is DutchAuction {
        
     }
 
+     //Also needs supply check
+     //todo find a better way as setCurrentRate also calls getTotalSupply
+   modifier stateUpdate() override{
+        if (status == AuctionStatus.PAUSED  && block.timestamp >= variableStartTime)
+            status = AuctionStatus.RUNNING;
+        if (status == AuctionStatus.RUNNING && (block.timestamp >= latestEndTime || getTotalSupply() == numberOfTokensToBeDistributed))
+            finalize();
+        else
+        _;
+    }
+
+    //Also needs supply check
+    modifier quietStateUpdate() override {
+        if (status == AuctionStatus.PAUSED  && block.timestamp >= variableStartTime)
+            status = AuctionStatus.RUNNING;
+        if (status == AuctionStatus.RUNNING && (block.timestamp >= latestEndTime || getTotalSupply() == soldProjectTokens))
+            finalize();
+        _;
+          
+    }
+
+
     
 
     function getTotalSupply() public view virtual returns(uint timeSupply) {
@@ -72,7 +94,7 @@ contract StrictDutchAuction is DutchAuction {
         //Linear calculation for total supply
         uint timeTokens =  (initTokens - (initTokens) * (duration - (latestEndTime - block.timestamp))  /  (duration));
         //todo this calculation is buggy
-        return timeTokens < soldProjectTokens ?  soldProjectTokens + 1 : timeTokens;
+        return timeTokens < soldProjectTokens ?  soldProjectTokens : timeTokens;
     }
 
     

@@ -131,7 +131,7 @@ abstract contract Auction is AccessControlUpgradeable,Multicall  {              
 
     //Updates the auction status (can be changed by time) and finalizes if time is up
     //Does not continue with the function is it finalizes
-   modifier stateUpdate() {
+   modifier stateUpdate() virtual{
         if (status == AuctionStatus.PAUSED  && block.timestamp >= variableStartTime)
             status = AuctionStatus.RUNNING;
         if (status == AuctionStatus.RUNNING && block.timestamp >= latestEndTime)
@@ -142,7 +142,7 @@ abstract contract Auction is AccessControlUpgradeable,Multicall  {              
 
     //Very similar to stateUpdate but continues with the function even if time is up
     //As there are some functions which can be called only after auction is ended (withDraw)
-    modifier quietStateUpdate() {
+    modifier quietStateUpdate() virtual {
         if (status == AuctionStatus.PAUSED  && block.timestamp >= variableStartTime)
             status = AuctionStatus.RUNNING;
         if (status == AuctionStatus.RUNNING && block.timestamp >= latestEndTime)

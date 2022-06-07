@@ -29,7 +29,7 @@ import { Divider, Grid, TextField } from "@material-ui/core/";
 
 const BiLiraAddress = "0x8f5736aF17F2F071B476Fd9cFD27a1Bd8D7E7F15";
 
-const maestro = { address: "0x5C2a9eaA1D87ebdb37c68D0B6a9A139F7b9a9e60" }
+const maestro = { address: "0x0699c46bf17AE35FAcBFC50D75cD37Ead6Ebe15b" }
 const SUCoin = { address: "0xb6e466F4F0ab1e2dA2E8237F38B2eCf6278894Ce" }
 
 const AuctionInfo = ({ auction, projectId, price, tokenDist, deposit, totalRaise, startingDate, duration, endingDate, remainingTime, auctionType, tokenName }) => {
