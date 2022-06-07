@@ -64,11 +64,11 @@ contract DutchAuction is FCFSAuction {
         //Auction not started yet
           if (startTime == 0)
             return rate;
-          //Auction already ended
-          else if (status == AuctionStatus.ENDED || block.timestamp >= latestEndTime)
+          //Auction just ended
+          else if (block.timestamp >= latestEndTime)
             return finalRate;
-          //Auction is paused
-          else if (block.timestamp < variableStartTime)
+          //Auction is paused or already ended
+          else if (status == AuctionStatus.ENDED || block.timestamp < variableStartTime)
             return currentRate;
           //Linear calculation for current rate
           return (rate - ((rate  - finalRate ) * (duration - (latestEndTime - block.timestamp)))  /  (duration));
