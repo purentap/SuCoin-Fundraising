@@ -38,18 +38,18 @@ contract PseudoCappedAuction is CappedTokenAuction {
 
     function __PseudoCappedAuction_init_unchained(auctionParameters calldata params) internal onlyInitializing {
         fundLimitPerUser = params.limit;
-        soldProjectTokens = params.numberOfTokensToBeDistributed;
     }
 
     function finalize() internal override virtual{
         super.finalize();
 
-        soldProjectTokens = numberOfTokensToBeDistributed;
 
 
         //All tokens are burned if no one invested
         if (soldProjectTokens == 0) 
             projectToken.burn(projectToken.balanceOf(address(this)));
+     
+
         
 
 
@@ -76,6 +76,10 @@ contract PseudoCappedAuction is CappedTokenAuction {
     
     function tokenBuyLogic(uint bidCoinBits) internal virtual override limitControl(bidCoinBits) {
             biddingBook[msg.sender] += bidCoinBits;
+
+            if (soldProjectTokens == 0)
+                soldProjectTokens = numberOfTokensToBeDistributed;
+
             setCurrentRate();
 
         }

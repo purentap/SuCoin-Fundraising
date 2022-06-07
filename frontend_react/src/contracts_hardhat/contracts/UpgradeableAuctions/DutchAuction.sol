@@ -9,6 +9,8 @@ import "./FCFSAuction.sol";
     Auction ends when the number of tokens sold equals the number of tokens to be auctioned or time is up.
 
     OBDutchAuction is more close to original dutch auction
+
+    todo Change timestamps to blocknumber
 */
 
 contract DutchAuction is FCFSAuction {

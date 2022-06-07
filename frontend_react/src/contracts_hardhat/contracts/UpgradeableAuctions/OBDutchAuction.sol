@@ -27,11 +27,14 @@ import "../libraries/BokkyPooBahsRedBlackTreeLibrary.sol";
 
 */
 
-contract OBDutchAuction is PseudoCappedAuction {
+contract OBDutchAuction is CappedTokenAuction {
 
+    uint public currentRate;
     //Tree for orderbook
     using BokkyPooBahsRedBlackTreeLibrary for BokkyPooBahsRedBlackTreeLibrary.Tree;
     address public proposerWallet;
+
+    uint public fundLimitPerUser;
 
     uint public minPrice;
     //How many tokens are excessive on minimum price
@@ -53,10 +56,6 @@ contract OBDutchAuction is PseudoCappedAuction {
         uint totalWanted;
     }
 
-       modifier limitControl(uint bidCoinBits) override {
-        require(fundLimitPerUser == 0 || (UserOrders[msg.sender].deposit + bidCoinBits) <= fundLimitPerUser ,"You are trying to buy more than your limit");
-        _;
-    }
 
 
     mapping(address => UserOrder) public UserOrders;
@@ -103,14 +102,28 @@ contract OBDutchAuction is PseudoCappedAuction {
     } 
 
 
+    function setCurrentRate() internal virtual  {
+        uint tempRate = getCurrentRate();
+        if (tempRate != currentRate)
+        {
+            emit VariableChange("currentRate", tempRate);
+            currentRate = tempRate;
+        }
+        
+    }
 
-    function handleValidTimeBid(uint bidCoinBits,uint price) internal virtual  {  
+
+    function handleValidTimeBid(uint bidCoinBits,uint price) internal virtual  { 
+
 
         require(price >= minPrice,"You need to enter a higher price");
 
         UserOrder storage userOrder = UserOrders[msg.sender];
 
         require(userOrder.price == 0, "You have already bid");
+
+        require(bidCoinBits <= fundLimitPerUser,"You can't bid more than limit"); 
+
 
         userOrder.price = price;
 
@@ -132,7 +145,7 @@ contract OBDutchAuction is PseudoCappedAuction {
 
 
     //Gets the price of the lowest bid which can get tokens when sorted (may change when new bids happen)
-    //todo fix this
+    //todo increment version?
     function getMinPrice(uint total) private returns(uint){
         uint value;
 
@@ -146,7 +159,7 @@ contract OBDutchAuction is PseudoCappedAuction {
     }
 
 
-    function tokenBuyLogic(uint bidCoinBits) internal virtual override limitControl(bidCoinBits) {
+    function tokenBuyLogic(uint bidCoinBits) internal virtual override {
 
             uint price =  UserOrders[msg.sender].price;
             UserOrders[msg.sender].deposit = bidCoinBits;
@@ -198,7 +211,7 @@ contract OBDutchAuction is PseudoCappedAuction {
 
     
     //Last element in tree is the highest bid price which is what used as current rate
-    function getCurrentRate() public virtual view override returns(uint current) {      //todo bad performance
+    function getCurrentRate() public virtual view  returns(uint current) {      //todo bad performance
         return tree.last();
     }
 
@@ -210,7 +223,7 @@ contract OBDutchAuction is PseudoCappedAuction {
 
     //Users can withdraw their tokens if the auction is finished
 
-    function withDraw()  external quietStateUpdate() isFinished() override {    
+    function withDraw()  external quietStateUpdate() isFinished()  {    
 
 
         //This function may cause loss of some sucoins (owner gets more coins then needed)
@@ -285,7 +298,7 @@ contract OBDutchAuction is PseudoCappedAuction {
             //Distribute tokens to min bidders through their bidding time (earlier gets first)
             PriceOrders storage minOrders = ordersForPrice[minPrice-1];
 
-            //Remaining tokens for min biidders
+            //Remaining tokens for min bidders
             uint tempCount =  minOrders.totalWanted - minPriceTokenCount;
 
             address[] storage priceAddreses = minOrders.userAddresses;
@@ -310,6 +323,13 @@ contract OBDutchAuction is PseudoCappedAuction {
 
             
         }
+
+        uint remaining = numberOfTokensToBeDistributed - soldProjectTokens;
+        if (remaining != 0) {
+            //Distribute remaining tokens to the proposer
+            projectToken.transfer(proposerWallet,remaining);
+        }
+
 
         //Clear the remaining tree
         uint current;
