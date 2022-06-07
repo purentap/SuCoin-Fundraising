@@ -39,6 +39,7 @@ contract DutchAuction is FCFSAuction {
     }
 
 
+    //For testing it is actually usings seconds
     function startAuction(uint maximumAuctionTimeInHours) public virtual override {
         super.startAuction(maximumAuctionTimeInHours);
         endTime = latestEndTime;

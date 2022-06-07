@@ -3,7 +3,24 @@
 pragma solidity ^0.8.9;
 
 import "@openzeppelin/contracts/access/AccessControl.sol";
+/*
+ ProjectRegister is the contract that handles and manages projects.
+ Alongside with Maestro it manages the system
+ These 2 contracts can be combined later on.
 
+ ProjectRegister has
+ -A Hashmap to manage permissions.
+ -Voting system to approve and reject projects.
+ -Registering or deleting projects
+ -Hashmap for existing projects
+ -Multisig systems for handling delicate things like deleting a project
+ -Blacklist to prevent malicious users from creating projects
+ -Whitelist to allow voting for project approval
+
+
+
+
+*/
 
 contract ProjectRegister is AccessControl{
     enum USER_STATUS {DEFAULT,WHITELISTED,BLACKLISTED,VIEWER}
@@ -16,7 +33,7 @@ contract ProjectRegister is AccessControl{
 
 
 
-    
+    //Used for multiSig
     struct addressCounterTimed {
         address[] addresses;
         uint beginningBlock;
@@ -166,21 +183,27 @@ contract ProjectRegister is AccessControl{
     }
 
 
+    //Changes non renounceable roles
+    //Only admin can change roles   
+
     function editUserStatus(address user, USER_STATUS newStatus) onlyRole(ADMIN_ROLE) public {
             USER_STATUS currentStatus = statusList[user];
             require(newStatus != currentStatus,"User already has this status");
+            //Handles whitelist count change if whitelist is added or removed
             whitelistedCount = whitelistedCount +  uint(newStatus) % 2  - uint(currentStatus) % 2;
             statusList[user] = newStatus;
 
     }
 
-    //!!! This could be dangerous for now
+    //Removes an existing project
+    //Can only be done by multiple admins
+    ///!!! This could be dangerous for now
     function removeProject(bytes32 fileHash) public multiSig(ADMIN_ROLE,2,100)  {
         require(projectsRegistered[fileHash].proposer != address(0), "Project Does not exist!!!");
         delete projectsRegistered[fileHash];
     }
  
-
+    //Registers a project if it doesn't exist and user is not blacklisted
     function registerProject(bytes32 fileHash) public notBlackListed{
         require(projectsRegistered[fileHash].proposer == address(0), "Project Already Exists!!!");
         projectsRegistered[fileHash].proposer = msg.sender;

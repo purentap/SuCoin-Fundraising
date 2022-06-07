@@ -2,10 +2,16 @@ pragma solidity ^0.8.0;
 // SPDX-License-Identifier: MIT
 import "./CappedTokenAuction.sol";
 
+
+/*
+    This auction type has specific amount of tokens which have the same price to be auctioned.
+    Auction ends when the number of tokens sold equals the number of tokens to be auctioned or time is up.
+*/
+
 contract FCFSAuction is CappedTokenAuction {
 
 
-    uint public currentRate;
+    uint public currentRate;                                                  //To be inherit by child classes
  
     uint public rate;                                                         //How much a  bid coin bit worth project token  bids
 
@@ -27,7 +33,7 @@ contract FCFSAuction is CappedTokenAuction {
     function finalize() internal override virtual{
         super.finalize();
     
-        //Withdraw the tokens if they are not used
+        //Withdraw the tokens if they are not used (can be burned instead depending on the implementation)
         uint remaining = numberOfTokensToBeDistributed - soldProjectTokens;
         if (remaining > 0) {
             projectToken.transfer(projectWallet, remaining);
@@ -36,6 +42,8 @@ contract FCFSAuction is CappedTokenAuction {
         emit AuctionFinished(block.timestamp, currentRate);
     
     }
+
+    //Handles what user gets after user sends sucoins to contract
 
     function tokenBuyLogic(uint  bidCoinBits) virtual internal override{
         uint tokenCount = (bidCoinBits * (10 ** projectToken.decimals())) / currentRate;
@@ -57,7 +65,8 @@ contract FCFSAuction is CappedTokenAuction {
 
 
 
-    //In a normal capped auction rate is constant so this function does nothing
+    //In a normal capped auction rate is constant so this function does nothing but it helps for child classes
+    //Can be removed from here and send to child classes if performance is an issue
     function setCurrentRate() internal virtual  {
         uint tempRate = getCurrentRate();
         if (tempRate != currentRate)
