@@ -119,6 +119,8 @@ const CreateAuction = () => {
         const signer = await provider.getSigner();
         const tokenDistributedDecimal = numberToFixedNumber(TokensToBeDesitributed,sucoinDecimals)
         const priceDecimal = numberToFixedNumber(tokenPrice,sucoinDecimals);
+        const limitDecimal = numberToFixedNumber(limit,sucoinDecimals);
+
         
 
         const finalRate = numberToFixedNumber(finalPrice,sucoinDecimals);
@@ -127,7 +129,7 @@ const CreateAuction = () => {
 
         const auctionType = ["UncappedAuction","PseudoCappedAuction","OBFCFSAuction","FCFSAuction","DutchAuction","OBDutchAuction","StrictDutchAuction"][id]
         console.log(auctionType)
-        maestroContract.createAuction(hash,auctionType,[tokenDistributedDecimal,priceDecimal,finalRate,limit])        
+        maestroContract.createAuction(hash,auctionType,[tokenDistributedDecimal,priceDecimal,finalRate,limitDecimal])        
     }
 
 

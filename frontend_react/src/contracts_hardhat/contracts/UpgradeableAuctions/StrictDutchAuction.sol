@@ -100,10 +100,14 @@ contract StrictDutchAuction is DutchAuction {
     
     //Burn the remaining tokens instead of sending them to the projectWallet
       function finalize() internal override virtual{
-        super.finalize();
+        status = AuctionStatus.ENDED;
+
         uint remainingBalance = projectToken.balanceOf(address(this));
         if (remainingBalance != 0)
             projectToken.burn(remainingBalance);
+
+        emit AuctionFinished(block.timestamp, currentRate);
+
     
     }
 

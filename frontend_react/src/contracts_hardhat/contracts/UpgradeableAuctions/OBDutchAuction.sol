@@ -122,7 +122,7 @@ contract OBDutchAuction is CappedTokenAuction {
 
         require(userOrder.price == 0, "You have already bid");
 
-        require(bidCoinBits <= fundLimitPerUser,"You can't bid more than limit"); 
+        require(fundLimitPerUser == 0 || bidCoinBits <= fundLimitPerUser ,"You can't bid more than limit"); 
 
 
         userOrder.price = price;
@@ -339,6 +339,8 @@ contract OBDutchAuction is CappedTokenAuction {
         }
         //Get current rate should return minPrice - 1
         tree.insert(minPrice - 1);
+
+        emit AuctionFinished(block.timestamp, currentRate);
         
     }
 }

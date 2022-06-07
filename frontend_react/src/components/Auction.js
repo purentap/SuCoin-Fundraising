@@ -55,7 +55,7 @@ const Auction = (props) => {
 
     const provider = new ethers.providers.Web3Provider(window.ethereum);
 
-    const auctionTypesForChart = ["DutchAuction", "OBFCFSAuction", "PseudoCappedAuction", "StrictDutchAuction", "UncappedAuction"];
+    const auctionTypesForChart = ["DutchAuction", "OBFCFSAuction", "PseudoCappedAuction", "StrictDutchAuction", "UncappedAuction","FCFSAuction","OBDutchAuction"];
 
 
     const { startTime, endTime,startingPrice,currentPrice , initDist,finalRate,minimumPrice,tokenDist,totalDeposit,soldTokens} = currentData ??  {}
@@ -77,6 +77,8 @@ const Auction = (props) => {
                 auctionInfo.finalRate = fixedNumberToNumber(finalRate[0])
                 auctionInfo.currentPrice = fixedNumberToNumber(getCurrentRate[0])
                 break;
+            case "FCFSAuction":
+                auctionInfo.tokenDist = (fixedNumberToNumber(numberOfTokensToBeDistributed[0]))
             case "UncappedAuction":
                 auctionInfo.soldTokens = fixedNumberToNumber(soldProjectTokens[0])
                 auctionInfo.startingPrice = fixedNumberToNumber(rate[0])
@@ -89,6 +91,8 @@ const Auction = (props) => {
                 auctionInfo.tokenDist = (fixedNumberToNumber(numberOfTokensToBeDistributed[0]))
                 auctionInfo.soldTokens = (fixedNumberToNumber(soldProjectTokens[0]))
                 auctionInfo.minimumPrice = (fixedNumberToNumber(minPrice[0]))
+                auctionInfo.currentPrice = fixedNumberToNumber(getCurrentRate[0])
+
                 break;
         }
 
@@ -136,7 +140,7 @@ const Auction = (props) => {
 
         
 
-        groupedMap.set("currentRate", [[startTime * 1000 ,parseFloat(startingPrice)] , ...(groupedMap.get("currentRate") ?? []) , [Math.min(new Date(),endTime * 1000),parseFloat(currentPrice)]])
+        groupedMap.set("currentRate", [[startTime * 1000 ,parseFloat(startingPrice ?? 0)] , ...(groupedMap.get("currentRate") ?? []) , [Math.min(new Date(),endTime * 1000),parseFloat(currentPrice)]])
         groupedMap.set("numberOfTokensToBeDistributed", [[startTime * 1000,parseFloat(initDist)] ,...(groupedMap.get("numberOfTokensToBeDistributed") ?? []) , [Math.min(new Date(),endTime * 1000),parseFloat(tokenDist)]])
         groupedMap.set("totalDepositedSucoins", [[startTime * 1000,parseFloat(0)] ,...(groupedMap.get("totalDepositedSucoins") ?? []) , [Math.min(new Date(),endTime * 1000),parseFloat(totalDeposit)]])
         groupedMap.set("minPrice", [[startTime * 1000,parseFloat(fixedNumberToNumber(1))] ,...(groupedMap.get("minPrice") ?? []) , [Math.min(new Date(),endTime * 1000),parseFloat(minimumPrice)]])
@@ -167,7 +171,7 @@ const Auction = (props) => {
 
 
 
-   
+   console.log(currentData)
     
     
 
@@ -269,7 +273,7 @@ const Auction = (props) => {
                                 projectId={projectId}
                                 auction={auction}
                                 tokenName={state.tokenName}
-                                price={currentData?.currentPrice}
+                                price={currentData?.currentPrice ?? startingPrice}
                                 tokenDist={currentData?.tokenDist}
                                 deposit={currentData?.soldTokens}
                                 totalRaise={currentData?.totalDeposit}

@@ -29,6 +29,9 @@ import { useEffect } from 'react';
 import { Divider, Grid } from "@material-ui/core/";
 import { useNavigate } from 'react-router-dom';
 
+import Auction from "../../contracts_hardhat/artifacts/contracts/UpgradeableAuctions/Auction.sol/Auction.json"
+
+
 import Form from 'react-bootstrap/Form'
 import Row from 'react-bootstrap/Row'
 import Col from 'react-bootstrap/Col'
@@ -66,6 +69,17 @@ const ProjectInfo = ({ setProject,
   const navigate = useNavigate();
 
 
+  const startAuction = async(auctionContract)  => {
+    await auctionContract.startAuction(2000);
+  }
+
+  let startAuctionCallback = async () => {
+    const provider = await new ethers.providers.Web3Provider(window.ethereum)
+
+    const signer = await provider.getSigner()
+
+    await startAuction(new ethers.Contract(project.auction, Auction.abi, signer))
+  }
 
     
   useEffect(async () => {
@@ -84,13 +98,16 @@ const ProjectInfo = ({ setProject,
 
 
     var registerContract = new ethers.Contract(abi.address, ethersAbi.abi, signer)
-    var maestroContract = new ethers.Contract(maestro.address, Maestro.abi, provider)
+    var maestroContract = new ethers.Contract(maestro.address, Maestro.abi, signer)
 
     const projectInfo = await maestroContract.projectTokens(fileHash)
 
     project.auction = projectInfo?.auction
 
     project.isAuctionCreated = project.auction != 0
+
+
+
 
     project.auctionType = projectInfo?.auctionType
 
@@ -288,6 +305,7 @@ const ProjectInfo = ({ setProject,
 
 
 
+
 const ownerButtonGroup = (isOwner, isAuctionCreated , project) => {
     return (isOwner ?
         <div style={{ display: "flex", flexDirection: "row", justifyContent: "center" }}>
@@ -296,9 +314,9 @@ const ownerButtonGroup = (isOwner, isAuctionCreated , project) => {
                     Create Tokens
                 </a>
             </button>
-            <button className="button" onClick={() => !project?.isAuctionCreated ? onClickCreateAuction() : navigate('/auction/' + projectId, {state:project})}>
+            <button className="button" onClick={() => !project?.isAuctionCreated ? onClickCreateAuction() : startAuctionCallback() }>
                 
-                    {isAuctionCreated ? "Start Auction" : "Create Auction"}
+                    {project.isAuctionCreated ? "Start Auction" : "Create Auction"}
                 
             </button>
         </div> : null

@@ -30,7 +30,7 @@ const PriceChart = ({auctionType, currentData,historicData}) => {
     console.log(auctionType)
     console.log(historicData)
 
-    const { startTime, currentRate,latestEndTime,currentSupply ,initialRate, finalRate,currentRaise, initialSupply,soldTokens} = currentData;
+    const { startTime, currentRate,latestEndTime,currentSupply ,initialRate, finalRate,startingPrice,currentRaise, initialSupply,soldTokens} = currentData;
     const realTime = Date.now();
 
 
@@ -38,6 +38,7 @@ const PriceChart = ({auctionType, currentData,historicData}) => {
 
     console.log("Final Rate", finalRate)
 
+    console.log(startingPrice)
 
 
   
@@ -111,40 +112,82 @@ const PriceChart = ({auctionType, currentData,historicData}) => {
         "DutchAuction":[
             {
                 label: 'Token Price',
-                data: timestamps.map((realTime) => (Math.max(finalRate,initialRate - ((initialRate  - finalRate ) * (realTime / 1000 - startTime))  /  (latestEndTime - startTime)))),
-                function: function(realTime) {return (initialRate - ((initialRate  - finalRate ) * (realTime / 1000 - startTime))  /  (latestEndTime - startTime))},
+                data:  Array.from(historicData.get("currentRate")),
                 borderColor: 'rgb(255, 99, 132)',
                 backgroundColor: 'rgba(255, 99, 132, 0.5)',
-            }
+            },
+            {
+                label: 'Total Raised',
+                data: Array.from(historicData.get("totalDepositedSucoins")),
+                borderColor: 'rgb(20, 72, 25)',
+                backgroundColor: 'rgba(53, 162, 235, 0.5)',
+                },
         ], 
         "OBFCFSAuction":[
             {
-                label: 'Token Price',
-                function: function(realTime) {return initialRate},
+                label: 'Token Price ',
+                function: function(x) {return startingPrice}, // Update this function later
                 borderColor: 'rgb(255, 99, 132)',
                 backgroundColor: 'rgba(255, 99, 132, 0.5)',
             },
+            
             {
-                label: 'SUCoin Supply',
-                function: function(x) {return x**3}, // Update this function later
-                borderColor: 'rgb(53, 162, 235)',
+                label: 'Total Raised',
+                data: Array.from(historicData.get("totalDepositedSucoins")),
+                borderColor: 'rgb(20, 72, 25)',
                 backgroundColor: 'rgba(53, 162, 235, 0.5)',
-            },
+                },
         ], 
         "PseudoCappedAuction":[
             {
                 label: 'Token Price',
-                function: function(x) {return x**3}, // Update this function laters
+                data:  Array.from(historicData.get("currentRate")),
                 borderColor: 'rgb(255, 99, 132)',
                 backgroundColor: 'rgba(255, 99, 132, 0.5)',
             },
             {
-                label: 'SUCoin Supply',
-                function: function(x) {return x**3}, // Update this function later
+                label: 'Total Raised',
+                data: Array.from(historicData.get("totalDepositedSucoins")),
+                borderColor: 'rgb(20, 72, 25)',
+                backgroundColor: 'rgba(53, 162, 235, 0.5)',
+                },
+        ], 
+        "OBDutchAuction":[
+            {
+                label: 'Token max Price',
+                data:  Array.from(historicData.get("currentRate")),
+                borderColor: 'rgb(255, 99, 132)',
+                backgroundColor: 'rgba(255, 99, 132, 0.5)',
+            },
+            {
+                label: 'Total Raised',
+                data: Array.from(historicData.get("totalDepositedSucoins")),
+                borderColor: 'rgb(20, 72, 25)',
+                backgroundColor: 'rgba(53, 162, 235, 0.5)',
+            },
+            {
+                label: 'Token min Price',
+                data: Array.from(historicData.get("minPrice")),
                 borderColor: 'rgb(53, 162, 235)',
                 backgroundColor: 'rgba(53, 162, 235, 0.5)',
             },
         ], 
+        
+        "FCFSAuction":[
+            {
+                label: 'Token Price',
+                data: [[startTime * 1000,startingPrice],[new Date(),startingPrice]],
+                borderColor: 'rgb(255, 99, 132)',
+                backgroundColor: 'rgba(255, 99, 132, 0.5)',
+            },
+            {
+                label: 'Total Raised',
+                data: Array.from(historicData.get("totalDepositedSucoins")),
+                borderColor: 'rgb(20, 72, 25)',
+                backgroundColor: 'rgba(53, 162, 235, 0.5)',
+                },
+        ], 
+        
         "StrictDutchAuction":[
             {
                 label: 'Token Price',
@@ -168,11 +211,19 @@ const PriceChart = ({auctionType, currentData,historicData}) => {
         ], 
         "UncappedAuction":[
             {
-                label: 'Total ',
-                function: function(x) {return x**3}, // Update this function later
+                label: 'Token Price ',
+                function: function() {return startingPrice}, // Update this function later
+                data: [[startTime * 1000,startingPrice],[new Date(),startingPrice]],
                 borderColor: 'rgb(255, 99, 132)',
                 backgroundColor: 'rgba(255, 99, 132, 0.5)',
-            }
+            },
+            {
+                label: 'Total Raised',
+                data: Array.from(historicData.get("totalDepositedSucoins")),
+                borderColor: 'rgb(20, 72, 25)',
+                backgroundColor: 'rgba(53, 162, 235, 0.5)',
+                },
+            
         ]
     };
 
