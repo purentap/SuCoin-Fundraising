@@ -63,8 +63,8 @@ namespace SU_COIN_BACK_END.Controllers
         }
 
         [HttpPut]
-        [Route("Update")]
-        public async Task<IActionResult> UpdateProject(ProjectDTO project)
+        [Route("[action]")]
+        public async Task<IActionResult> Update(ProjectDTO project)
         {
             ServiceResponse<ProjectDTO> response = await _projectService.UpdateProject(project);
             if (!response.Success)
@@ -107,8 +107,8 @@ namespace SU_COIN_BACK_END.Controllers
         }
 
         [HttpPost]
-        [Route("Add")]
-        public async Task<IActionResult> AddProject(ProjectRequest project)
+        [Route("[action]")]
+        public async Task<IActionResult> Add(ProjectRequest project)
         {
             ServiceResponse<ProjectDTO> response = await _projectService.AddProject(project);
             if (!response.Success)
@@ -135,12 +135,18 @@ namespace SU_COIN_BACK_END.Controllers
                 }
                 return BadRequest(response);
             }
+
+            if (response.Data == null) // Even response is returned successfully, data inside project might not be processed well
+            {
+                return NotFound();
+            }
+
             return Created($"projects/{response.Data.ProjectID}", response);
         }
 
         [HttpPut]
-        [Route("Rate/{id:int}/{rating}")]
-        public async Task<IActionResult> RateProject(int id, double rating)
+        [Route("[action]/{id:int}/{rating}")]
+        public async Task<IActionResult> Rate(int id, double rating)
         {
             ServiceResponse<ProjectDTO> response = await _projectService.RateProject(id, rating);
             if (!response.Success)
@@ -160,9 +166,9 @@ namespace SU_COIN_BACK_END.Controllers
 
         
         [HttpGet]
-        [Route("GetByStatus/{status}")]
+        [Route("[action]/{status}")]
         [AllowAnonymous]
-        public async Task<IActionResult> GetProjectByStatus(string status)
+        public async Task<IActionResult> GetByStatus(string status)
         {
             ServiceResponse<List<ProjectDTO>> response = await _projectService.GetProjectsByStatus(status);
             if (!response.Success)
@@ -174,9 +180,9 @@ namespace SU_COIN_BACK_END.Controllers
 
         [HttpPut]
         [Route("[action]/{id:int}")]
-        public async Task<IActionResult> ChangeStatus(int id) //Only admin or whitelisted can do it or it can be updated directly from blockchain
+        public async Task<IActionResult> ChangeStatus(int id) // Only admin or whitelisted can do it or it can be updated directly from blockchain
         {
-            ServiceResponse<ProjectDTO> response = await _projectService.ChangeStatus(id);
+            ServiceResponse<ProjectDTO> response = await _projectService.ChangeProjectStatus(id);
             if (!response.Success)
             {
                 if (response.Message == MessageConstants.PROJECT_NOT_ACCEPTED_BY_VIEWER || response.Message == MessageConstants.NOT_AUTHORIZED_TO_ACCESS)
@@ -213,8 +219,8 @@ namespace SU_COIN_BACK_END.Controllers
         }
 
         [HttpGet]
-        [Route("GetAllPermissioned/{withHex}")]
-        public async Task<IActionResult> GetAllPermissionedProjects(bool withHex)
+        [Route("[action]/{withHex}")]
+        public async Task<IActionResult> GetAllPermissioned(bool withHex)
         {
             ServiceResponse<List<ProjectDTO>> response = await _projectService.GetAllPermissionedProjects(withHex);
             if (!response.Success)
@@ -225,8 +231,8 @@ namespace SU_COIN_BACK_END.Controllers
         }
 
         [HttpGet]
-        [Route("GetAllInvitations")]
-        public async Task<IActionResult> GetAllInvitedProjects()
+        [Route("[action]")]
+        public async Task<IActionResult> GetAllInvitations()
         {
             ServiceResponse<List<ProjectDTO>> response = await _projectService.GetAllInvitedProjects();
             if (!response.Success)

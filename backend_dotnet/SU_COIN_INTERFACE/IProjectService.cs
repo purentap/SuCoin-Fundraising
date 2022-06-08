@@ -14,7 +14,7 @@ namespace SU_COIN_BACK_END.SU_COIN_INTERFACE
         Task<ServiceResponse<ProjectDTO>> UpdateProject(ProjectDTO project);
         Task<ServiceResponse<ProjectDTO>> RateProject(int id, double rating);
         Task<ServiceResponse<List<ProjectDTO>>> GetProjectsByStatus(string status);
-        Task<ServiceResponse<ProjectDTO>> ChangeStatus(int id);
+        Task<ServiceResponse<ProjectDTO>> ChangeProjectStatus(int id);
         Task<ServiceResponse<ProjectDTO>> UpdateMarkDown(int id, string markdown);
         Task<ServiceResponse<List<ProjectDTO>>> GetAllPermissionedProjects(bool withHex);
         Task<ServiceResponse<List<ProjectDTO>>> GetAllInvitedProjects();    

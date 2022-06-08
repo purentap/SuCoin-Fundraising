@@ -163,7 +163,7 @@ namespace SU_COIN_BACK_END.Controllers
 
         [HttpPatch]
         [Route("[action]/{address}/{role}")]
-        public async Task<IActionResult> UpdateRole(string address, string role)  // Only admin use user's role
+        public async Task<IActionResult> UpdateRole(string address, string role)  // Only admin update user's role
         {
             ServiceResponse<string> response = await _userService.UpdateUserRole(address, role);
             if (!response.Success)

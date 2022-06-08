@@ -452,9 +452,17 @@ namespace SU_COIN_BACK_END.Services
             return response;
         }
 
-        public async Task<ServiceResponse<ProjectDTO>> ChangeStatus(int id) 
+        public async Task<ServiceResponse<ProjectDTO>> ChangeProjectStatus(int id) 
         {
             ServiceResponse<ProjectDTO> response = new ServiceResponse<ProjectDTO>();
+            string userRole = GetUserRole();
+
+            if (userRole != UserRoleConstants.ADMIN && userRole != UserRoleConstants.WHITELIST)
+            {
+                response.Message = MessageConstants.NOT_AUTHORIZED_TO_ACCESS;
+                return response;
+            }
+
             try
             {
                 Project? project = await _context.Projects.FirstOrDefaultAsync(c => c.ProjectID == id);
@@ -476,9 +484,9 @@ namespace SU_COIN_BACK_END.Services
                     response.Message = MessageConstants.CHAIN_INTERACTION_FAIL;
                     return response;
                 }
-                else if (response_chain.Data == null)
+                if (response_chain.Data == null)
                 {
-                    throw new Exception(MessageConstants.CHAIN_INTERACTION_FAIL);
+                    throw new Exception(MessageConstants.PROJECT_NOT_FOUND_IN_CHAIN);
                 }
                 if (project.FileHash == null)
                 {

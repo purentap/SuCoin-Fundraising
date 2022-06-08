@@ -365,7 +365,7 @@ namespace SU_COIN_BACK_END.Services
         {
             ServiceResponse<string> response = new ServiceResponse<string>();
             
-            if (GetUserRole() != UserRoleConstants.ADMIN) // Only admin update user's role
+            if (GetUserRole() != UserRoleConstants.ADMIN)
             {
                 response.Message = MessageConstants.NOT_AUTHORIZED_TO_ACCESS;
                 return response;
