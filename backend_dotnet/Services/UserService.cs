@@ -27,8 +27,6 @@ namespace SU_COIN_BACK_END.Services
         private readonly IChainInteractionService _chainInteractionService;
         private readonly IProjectService _projectService;
         
-        string[] justInDBRoles = {UserRoleConstants.ADMIN, UserRoleConstants.VIEWER, UserRoleConstants.BASE};
-
         private int GetUserId() => int.Parse(_httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier));
         private string GetUsername() => _httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.Name);
         private string GetUserRole() => _httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.Role);
@@ -57,31 +55,29 @@ namespace SU_COIN_BACK_END.Services
                     response.Message = MessageConstants.USER_NOT_FOUND;
                     return response;
                 }
-                if (userRole == UserRoleConstants.WHITELIST)
+                if (userRole == UserRoleConstants.ADMIN || userRole == UserRoleConstants.WHITELIST)
                 {
-                    response.Message = "You cannot delete yourself as a whitelist";
+                    response.Message = $"You cannot delete yourself as {userRole}";
                     return response;
                 }
-                if (await IsUserRoleRemainOne(userRole))
+                if (userRole == UserRoleConstants.VIEWER || await IsUserRoleRemainOne(userRole))
                 {
                     response.Message = $"In order to delete yourself, there should be at least one more {userRole}";
                     return response;
                 }
                 
-                bool anyProject = await _projectService.IsUserOwnerInAnyProject();
+                bool anyProjectAsOwner = await _projectService.IsUserOwnerInAnyProject();
 
-                if (anyProject)
+                if (anyProjectAsOwner)
                 {
-                    response.Message = "You have some active projects as Owner. In order to delete yourself, first you need to delete these projects or change your role.";
+                    response.Message = "You have some active projects as Owner. In order to delete yourself, first you need to delete the projects that your role is owner.";
                     return response;
                 }
-                else
-                {
-                    _context.Remove(user);
-                    await _context.SaveChangesAsync();
-                    response.Message = MessageConstants.OK;
-                    response.Success = true;
-                }
+                
+                _context.Remove(user);
+                await _context.SaveChangesAsync();
+                response.Message = MessageConstants.OK;
+                response.Success = true;
             }
             catch (Exception e)
             {
@@ -369,7 +365,7 @@ namespace SU_COIN_BACK_END.Services
         {
             ServiceResponse<string> response = new ServiceResponse<string>();
             
-            if (GetUserRole() != UserRoleConstants.ADMIN)
+            if (GetUserRole() != UserRoleConstants.ADMIN) // Only admin update user's role
             {
                 response.Message = MessageConstants.NOT_AUTHORIZED_TO_ACCESS;
                 return response;
@@ -383,89 +379,41 @@ namespace SU_COIN_BACK_END.Services
                 return response;
             }
             
-            if (GetUserId() == user.Id) // admin tries to update his/her role
+            if (GetUserId() == user.Id)
             {
                 response.Message = "You cannot update your role as an admin";
                 return response;
             }
 
-            bool isJustInDB = false;
-
-            foreach (string dbRole in justInDBRoles)
-            {
-                if (newRole == dbRole)
-                {
-                    isJustInDB = true;
-                    break;
-                }
-            }
-            
-            if (isJustInDB)
-            {
-                if (user.Role == UserRoleConstants.BLACKLIST || user.Role == UserRoleConstants.WHITELIST)
-                {
-                    response.Message = "You cannot directly update the roles defined in the chain from the server";
-                    return response;
-                }
-
-                response = await UpdateRoleJustInDb(address, newRole);
-                return response;
-            }
-            else // Role is also defined in the chain, so read the updated role from the chain
-            {
-                try
-                {
-                    ServiceResponse<string> chainResponse = await _chainInteractionService.GetChainRole(address);
-                    if (!chainResponse.Success || chainResponse.Data == null)
-                    {
-                        response.Message = chainResponse.Message;
-                    }
-                    else
-                    {
-                        string oldRole = user.Role;
-                        user.Role = chainResponse.Data;
-                        _context.Users.Update(user);
-                        await _context.SaveChangesAsync();
-
-                        response.Message = $"User role is switched {oldRole} to {user.Role}";
-                    }
-                }
-                catch (Exception e)
-                {
-                    response.Message = String.Format(MessageConstants.FAIL_MESSAGE, "change role", e.Message);
-                }
-            }
-            return response;
-        }
-
-        public async Task<ServiceResponse<string>> UpdateRoleJustInDb(string address, string newRole)
-        {
-            ServiceResponse<string> response = new ServiceResponse<string>();
-            User? user = await _context.Users.FirstOrDefaultAsync(user => user.Address == address);
-
-            if (user == null) // for security reasons
-            {
-                response.Message = MessageConstants.USER_NOT_FOUND;
-                return response;
-            }
-
-            string userRole = user.Role;
-
-            if ((userRole == UserRoleConstants.ADMIN || userRole == UserRoleConstants.VIEWER) && await IsUserRoleRemainOne(userRole))
-            {
-                response.Message = $"In order to update the role of the {user.Username}, there should be at least one more {userRole}";
-                return response;
-            }
-
             string oldRole = user.Role;
-            user.Role = newRole;
-            response.Success = true;
-            response.Message = MessageConstants.OK;
-            response.Data = $"User role is switched {oldRole} to {newRole}";
 
-            _context.Users.Update(user);
-            await _context.SaveChangesAsync();
-            
+            if (oldRole == UserRoleConstants.WHITELIST)
+            {
+                response.Message = "You cannot update whitelist's role";
+                return response;
+            }
+
+            try
+            {
+                ServiceResponse<string> chainResponse = await _chainInteractionService.GetChainRole(address);
+                if (!chainResponse.Success || chainResponse.Data == null)
+                {
+                    response.Message = chainResponse.Message;
+                }
+                else
+                {
+                    user.Role = chainResponse.Data;
+                    _context.Users.Update(user);
+                    await _context.SaveChangesAsync();
+
+                    response.Message = $"User role is switched {oldRole} to {user.Role}";
+                }
+            }
+            catch (Exception e)
+            {
+                response.Message = String.Format(MessageConstants.FAIL_MESSAGE, "change role", e.Message);
+            }
+
             return response;
         }
 
