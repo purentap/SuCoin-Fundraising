@@ -159,6 +159,10 @@ namespace SU_COIN_BACK_END.Controllers
                 {
                     return NotFound(response);
                 }
+                if (response.Message == MessageConstants.NOT_AUTHORIZED_TO_ACCESS)
+                {
+                    return Forbid();
+                }
                 return BadRequest(response);
             }
             return Ok(response);

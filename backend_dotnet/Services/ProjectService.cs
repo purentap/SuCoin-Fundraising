@@ -178,10 +178,16 @@ namespace SU_COIN_BACK_END.Services
                 }
                 else
                 {
-                    /* Remove both the current project and the related project permissions */
-                    _context.ProjectPermissions.RemoveRange(_context.ProjectPermissions.Where(c => c.ProjectID == id));
-                    _context.Remove(project);
+                    /* First remove the permissions and ratings, then remove the project */
+                    _context.ProjectPermissions
+                        .RemoveRange(_context.ProjectPermissions
+                            .Where(permission => permission.ProjectID == id)); // remove permissions related to the current project
+                    _context.Ratings
+                        .RemoveRange(_context.Ratings
+                            .Where(rating => rating.ProjectID == id)); // remove ratings related to the current project
+                    _context.Remove(project); // remove the current project
                     await _context.SaveChangesAsync();
+
                     response.Message = MessageConstants.OK;
                     response.Data = "Project is deleted successfully";
                     response.Success = true;
@@ -352,7 +358,7 @@ namespace SU_COIN_BACK_END.Services
                 }
 
                 /* After passing these checks, user may rate the project */
-                int userID = GetUserId();;
+                int userID = GetUserId();
                 Rating? currentRating = await _context.Ratings.FirstOrDefaultAsync(rating => rating.UserID == userID && rating.ProjectID == projectID);
 
                 if (currentRating == null) // User is going to rate this project for the first time
