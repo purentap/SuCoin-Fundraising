@@ -316,14 +316,21 @@ namespace SU_COIN_BACK_END.Services
         public async Task<ServiceResponse<ProjectDTO>> RateProject(int projectID, double rating_value)
         {
             ServiceResponse<ProjectDTO> response = new ServiceResponse<ProjectDTO>();
+
+            if (GetUserRole() == UserRoleConstants.BLACKLIST)
+            {
+                response.Message = MessageConstants.NOT_AUTHORIZED_TO_ACCESS;
+                return response;
+            }
+            
+            if (rating_value < 0 || rating_value > 5) // rating is invalid
+            {
+                response.Message = MessageConstants.INVALID_INPUT;
+                return response;
+            }
+
             try
             {
-                if (rating_value < 0 || rating_value > 10) // rating is invalid
-                {
-                    response.Message = MessageConstants.INVALID_INPUT;
-                    return response;
-                }
-
                 Project? project = await _context.Projects.FirstOrDefaultAsync(c => c.ProjectID == projectID);
 
                 if (project == null)
@@ -331,21 +338,24 @@ namespace SU_COIN_BACK_END.Services
                     response.Message = MessageConstants.PROJECT_NOT_FOUND;
                     return response;
                 }
-                if (!project.ViewerAccepted)
+
+                if (!project.ViewerAccepted) // Users cannot rate the project, unless viewer accept the project
                 {
                     response.Message = MessageConstants.PROJECT_NOT_ACCEPTED_BY_VIEWER;
                     return response;
                 }
-                    
-                int userID = GetUserId();
-                Rating? rating = await _context.Ratings.FirstOrDefaultAsync(c => c.UserID == userID && c.ProjectID == projectID);
 
-                if (rating != null)
+                if (GetUserRole() == UserRoleConstants.BASE && project.Status != ProjectStatusConstants.APPROVED) // Base users may only rate, if project is approved from the committee
                 {
-                    rating.Rate = rating_value;
-                    _context.Ratings.Update(rating);
+                    response.Message = MessageConstants.NOT_AUTHORIZED_TO_ACCESS;
+                    return response;
                 }
-                else
+
+                /* After passing these checks, user may rate the project */
+                int userID = GetUserId();;
+                Rating? currentRating = await _context.Ratings.FirstOrDefaultAsync(rating => rating.UserID == userID && rating.ProjectID == projectID);
+
+                if (currentRating == null) // User is going to rate this project for the first time
                 {
                     Rating new_rating = new Rating 
                     {
@@ -355,9 +365,14 @@ namespace SU_COIN_BACK_END.Services
                     };
                     await _context.Ratings.AddAsync(new_rating);
                 }
+                else // User has already rated this project before, because of that user is going to update the previous rating
+                {
+                    currentRating.Rate = rating_value;
+                    _context.Ratings.Update(currentRating);
+                }
 
                 await _context.SaveChangesAsync();
-                project.Rating = _context.Ratings.Where(c => c.ProjectID == projectID).Average(x => x.Rate);
+                project.Rating = await _context.Ratings.Where(c => c.ProjectID == projectID).AverageAsync(x => x.Rate);
                 _context.Update(project);
                 await _context.SaveChangesAsync();
                 
@@ -390,8 +405,6 @@ namespace SU_COIN_BACK_END.Services
                     response.Message = MessageConstants.PROJECT_NAME_EXISTS;
                     return response;
                 }
-
-
 
                 Project? dbProject = await _context.Projects.FirstOrDefaultAsync(c => c.ProjectID == project.ProjectID);
 
@@ -457,7 +470,7 @@ namespace SU_COIN_BACK_END.Services
             ServiceResponse<ProjectDTO> response = new ServiceResponse<ProjectDTO>();
             string userRole = GetUserRole();
 
-            if (userRole != UserRoleConstants.ADMIN && userRole != UserRoleConstants.WHITELIST)
+            if (userRole != UserRoleConstants.WHITELIST)
             {
                 response.Message = MessageConstants.NOT_AUTHORIZED_TO_ACCESS;
                 return response;

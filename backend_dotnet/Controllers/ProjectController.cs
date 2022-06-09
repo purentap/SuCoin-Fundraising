@@ -153,7 +153,7 @@ namespace SU_COIN_BACK_END.Controllers
             {
                 if (response.Message == MessageConstants.INVALID_INPUT)
                 {
-                    return BadRequest("Rating should be in [0,10]");
+                    return BadRequest("Rating should be in [0, 5]");
                 }
                 if (response.Message == MessageConstants.PROJECT_NOT_FOUND)
                 {
@@ -180,7 +180,7 @@ namespace SU_COIN_BACK_END.Controllers
 
         [HttpPut]
         [Route("[action]/{id:int}")]
-        public async Task<IActionResult> ChangeStatus(int id) // Only admin or whitelisted can do it or it can be updated directly from blockchain
+        public async Task<IActionResult> ChangeStatus(int id) // Only whitelisted user can do it
         {
             ServiceResponse<ProjectDTO> response = await _projectService.ChangeProjectStatus(id);
             if (!response.Success)
