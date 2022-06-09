@@ -200,7 +200,7 @@ namespace SU_COIN_BACK_END.Services
             return response;
         }
 
-        public async Task<ServiceResponse<List<ProjectDTO>>> GetProjects(int count = Int32.MaxValue)
+        public async Task<ServiceResponse<List<ProjectDTO>>> GetProjects(int count = Int32.MaxValue, bool orderByRating = false)
         {
             ServiceResponse<List<ProjectDTO>> response = new ServiceResponse<List<ProjectDTO>>();
             try
@@ -220,6 +220,11 @@ namespace SU_COIN_BACK_END.Services
                     {
                         projects = projects.Where(c => c.Status == ProjectStatusConstants.APPROVED).ToList();
                     }
+                }
+
+                if (orderByRating) 
+                {
+                    projects = projects.OrderByDescending(project => project.Rating).ToList();
                 }
                         
                 /* If there is any project, send the project data to the mapper */                

@@ -249,9 +249,9 @@ namespace SU_COIN_BACK_END.Controllers
         [HttpGet]
         [Route("[action]/{numberOfProjects:int}")]
         [AllowAnonymous]
-        public async Task<IActionResult> GetProjects(int numberOfProjects) 
+        public async Task<IActionResult> GetProjects(int numberOfProjects) // Get Top N rated projects where N is the number of projects as input parameter
         {
-            ServiceResponse<List<ProjectDTO>> response = await _projectService.GetProjects(numberOfProjects: numberOfProjects);
+            ServiceResponse<List<ProjectDTO>> response = await _projectService.GetProjects(numberOfProjects: numberOfProjects, orderByRating: true);
             if (!response.Success)
             {
                 if (response.Message == MessageConstants.PROJECT_NOT_FOUND)
