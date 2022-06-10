@@ -198,6 +198,7 @@ contract ProjectRegister is AccessControl{
     //Removes an existing project
     //Can only be done by multiple admins
     ///!!! This could be dangerous for now
+    //todo voting is broken if removed project added and voted later
     function removeProject(bytes32 fileHash) public multiSig(ADMIN_ROLE,2,100)  {
         require(projectsRegistered[fileHash].proposer != address(0), "Project Does not exist!!!");
         delete projectsRegistered[fileHash];
