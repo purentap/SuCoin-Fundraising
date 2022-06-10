@@ -67,12 +67,39 @@ namespace SU_COIN_BACK_END.Services
                     return response;
                 }
                 
-                bool anyPermission = await _context.ProjectPermissions.AnyAsync(permission => permission.UserID == userID);
+                bool anyPermission = await _context.ProjectPermissions.AnyAsync(permission => permission.UserID == GetUserId());
 
                 if (anyPermission)
                 {
                     response.Message = "You have some active projects as a collaborator. In order to delete yourself, first you need to leave from these projects";
                     return response;
+                }
+
+                List<Project> allProjects = await _context.Projects.ToListAsync();
+                List<Rating> ratings = await _context.Ratings.Where(rating => rating.UserID == userID).ToListAsync();
+                List<Project> projects = new List<Project>();
+
+                foreach (Rating rating in ratings)
+                {
+                    foreach (Project project in allProjects)
+                    {
+                        if (project.ProjectID == rating.ProjectID)
+                        {
+                            projects.Add(project);
+                        }
+                    }
+                }
+
+                _context.Ratings
+                    .RemoveRange(_context.Ratings
+                        .Where(rating => rating.UserID == userID)); // remove ratings related to the current project
+                await _context.SaveChangesAsync();
+
+                foreach (Project project in projects)
+                {
+                    project.Rating = await _context.Ratings.AverageAsync(x => x.Rate);
+                    _context.Update(project);
+                    await _context.SaveChangesAsync();                
                 }
 
                 _context.Remove(user);
