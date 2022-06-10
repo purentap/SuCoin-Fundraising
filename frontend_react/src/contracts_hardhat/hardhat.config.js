@@ -1,4 +1,3 @@
-require("@nomiclabs/hardhat-ethers");
 require("@nomiclabs/hardhat-waffle");
 const fs = require('fs');
 const privateKey = "d14b01a39bfa635db2da87018028676406d2d1684cb500cacfb89b096da1ed8e"
