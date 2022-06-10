@@ -9,7 +9,6 @@ namespace SU_COIN_BACK_END.SU_COIN_INTERFACE
     {
         Task<ServiceResponse<ProjectDTO>> GetProjectById(int id);
         Task<ServiceResponse<ProjectDTO>> AddProject(ProjectRequest project);
-        Task<bool> IsUserOwnerInAnyProject();
         Task<ServiceResponse<string>> DeleteProject(int id);
         Task<ServiceResponse<ProjectDTO>> UpdateProject(ProjectDTO project);
         Task<ServiceResponse<ProjectDTO>> RateProject(int id, double rating);
