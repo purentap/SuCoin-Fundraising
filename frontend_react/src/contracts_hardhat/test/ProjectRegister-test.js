@@ -244,9 +244,9 @@ describe("Project Register cases", () => {
   
     })
 
-    describe("Project / Voting tests",() => {
+    describe("Project tests",() => {
         beforeEach(async () => {
-            console.log("a")
+           
             await projectRegisterInstance.registerProject(temp_project_hash)
         })
 
@@ -260,75 +260,195 @@ describe("Project Register cases", () => {
             await expect(projectRegisterInstance.registerProject(temp_project_hash)).to.be.revertedWith("Project Already Exists!!!")
         })
 
-        describe("Voting tests",() => {
-
-            it("Non whitelisted users can't vote",async () => {
-                const base =  projectRegisterInstance.connect(base1)
-                await expect(base.voteProposal(temp_project_hash,1)).to.be.revertedWith("User is not in whitelist")
-            })
-
-            it("Users Can't vote to non existing projects",async () => {
-                const whitelisted =  projectRegisterInstance.connect(whitelist1)
-                await expect(whitelisted.voteProposal(ethers.utils.keccak256(ethers.utils.toUtf8Bytes("random_something")),1)).to.be.revertedWith("Project does not exist")
-            })
-
-            it("Normal weighted votes increase voting count by 1",async() => {
-                const whitelisted =  projectRegisterInstance.connect(whitelist1)
-                await expect(whitelisted.voteProposal(temp_project_hash,1)).to.be.not.reverted
-                expect((await projectRegisterInstance.projectsRegistered(temp_project_hash)).approved).to.be.equal(1)
-            })
-
-            describe("Delegating Votes",() => {
-          
-
-              
-             
-                it("Users Can't vote to non existing projects",async () => {
-                    const whitelisted =  projectRegisterInstance.connect(whitelist1)
-                    await expect(whitelisted.voteProposal(ethers.utils.keccak256(ethers.utils.toUtf8Bytes("random_something")),1)).to.be.revertedWith("Project does not exist")
-                })
-
-                it("Users can't delegate to themselves",async () => {
-                    const whitelisted =  projectRegisterInstance.connect(whitelist1)
-                    return expect(whitelisted.delegate(addrWhitelist1,temp_project_hash)).to.be.revertedWith("Self-delegation is disallowed.")
-                })
-
-                it("Already voted users can't delegate",async () => {
-                    const whitelisted =  projectRegisterInstance.connect(whitelist1)
-                    await expect(whitelisted.voteProposal(addrWhitelist2,1)).to.be.not.reverted
-                    await expect(whitelisted.delegate(addrWhitelist2,temp_project_hash)).to.be.revertedWith("User already voted")
-                })
-
-                it("Delegating can't be looped",async () => {
-                    const whitelisted1 =  projectRegisterInstance.connect(whitelist1)
-                    const whitelisted2 =  projectRegisterInstance.connect(whitelist2)
-                    const whitelisted3 =  projectRegisterInstance.connect(whitelist3)
-
-                    await expect(whitelisted1.delegate(addrWhitelist2,temp_project_hash)).to.be.not.reverted
-                    await expect(whitelisted2.delegate(addrWhitelist3,temp_project_hash)).to.be.not.reverted
-                    await expect(whitelisted3.delegate(addrWhitelist1,temp_project_hash)).to.be.revertedWith("Found loop in delegation.")
-
-
-
-                })
-            })
+        it("Same project can be added again after being removed",async () => {
+            const adminUser =  projectRegisterInstance.connect(admin)
+            await adminUser.removeProject(temp_project_hash)
+            await projectRegisterInstance.removeProject(temp_project_hash)
+            await projectRegisterInstance.registerProject(temp_project_hash)
 
         })
 
-     
+      
+
+})
 
 
-            
+describe("Voting tests",() => {
 
+    let whitedlisted1,whitelisted2,whitelisdted3
+    let threshold = 70
 
+    //Remove project is not working so start from scracth each time
 
+    beforeEach(async () => {
+        projectRegister = await ethers.getContractFactory("ProjectRegister")
+        projectRegisterInstance = await projectRegister.deploy(threshold)
+        await projectRegisterInstance.deployed()
+        await projectRegisterInstance.editUserStatus(addrWhitelist1,USER_STATUS.WHITELISTED)
+        await projectRegisterInstance.editUserStatus(addrWhitelist2,USER_STATUS.WHITELISTED)
+        await projectRegisterInstance.editUserStatus(addrWhitelist3,USER_STATUS.WHITELISTED)
 
+        whitelisted1 =  projectRegisterInstance.connect(whitelist1)
+        whitelisted2 =  projectRegisterInstance.connect(whitelist2)
+        whitelisted3 =  projectRegisterInstance.connect(whitelist3)
 
-
-
-
+        await projectRegisterInstance.registerProject(temp_project_hash)
 
     })
+ 
+
+    it("Non whitelisted users can't vote",async () => {
+        const base =  projectRegisterInstance.connect(base1)
+        await expect(base.voteProposal(temp_project_hash,1)).to.be.revertedWith("User is not in whitelist")
+    })
+
+    it("Users Can't vote to non existing projects",async () => {
+        await expect(whitelisted1.voteProposal(ethers.utils.keccak256(ethers.utils.toUtf8Bytes("random_something")),1)).to.be.revertedWith("Project does not exist")
+    })
+
+    it("Normal weighted approves increase approve voting count by 1",async() => {
+        await expect(whitelisted1.voteProposal(temp_project_hash,1)).to.be.not.reverted
+        expect((await projectRegisterInstance.projectsRegistered(temp_project_hash)).approved).to.be.equal(1)
+    })
+
+    it("Normal weighted rejects increase reject voting count by 1",async() => {
+        await expect(whitelisted1.voteProposal(temp_project_hash,0)).to.be.not.reverted
+        expect((await projectRegisterInstance.projectsRegistered(temp_project_hash)).rejected).to.be.equal(1)
+    })
+
+    
+    describe("Finalizing Project Voting with weight 70 (3 whitelist users if whitelist count3)", () => {
+        before(async () => {
+            threshold = 70
+        })
+        it("Project is finalized and approved when 3 approve votes are received",async() => {
+            await expect(whitelisted1.voteProposal(temp_project_hash,1)).to.be.not.reverted
+            expect ((await projectRegisterInstance.projectsRegistered(temp_project_hash)).finalized).to.be.false
+    
+            await expect(whitelisted2.voteProposal(temp_project_hash,1)).to.be.not.reverted
+            expect ((await projectRegisterInstance.projectsRegistered(temp_project_hash)).finalized).to.be.false
+    
+            await expect(whitelisted3.voteProposal(temp_project_hash,1)).to.be.not.reverted
+            expect ((await projectRegisterInstance.projectsRegistered(temp_project_hash)).finalized).to.be.true
+            expect ((await projectRegisterInstance.projectsRegistered(temp_project_hash)).decision).to.be.true
+        })
+    
+        it("Project is finalized and rejected when 3 reject votes are received",async() => {
+            await expect(whitelisted1.voteProposal(temp_project_hash,0)).to.be.not.reverted
+            expect ((await projectRegisterInstance.projectsRegistered(temp_project_hash)).finalized).to.be.false
+    
+            await expect(whitelisted2.voteProposal(temp_project_hash,0)).to.be.not.reverted
+            expect ((await projectRegisterInstance.projectsRegistered(temp_project_hash)).finalized).to.be.false
+    
+            await expect(whitelisted3.voteProposal(temp_project_hash,0)).to.be.not.reverted
+            expect ((await projectRegisterInstance.projectsRegistered(temp_project_hash)).finalized).to.be.true
+            expect ((await projectRegisterInstance.projectsRegistered(temp_project_hash)).decision).to.be.false
+        })
+    })
+
+    describe("Finalizing Project Voting with weight 50 (2 whitelist users if whitelist count3)", () => {
+        before(async () => {
+            threshold = 50
+        })
+        it("Project is finalized and approved when 2 approve votes are received",async() => {
+            await expect(whitelisted1.voteProposal(temp_project_hash,1)).to.be.not.reverted
+            expect ((await projectRegisterInstance.projectsRegistered(temp_project_hash)).finalized).to.be.false
+    
+            await expect(whitelisted2.voteProposal(temp_project_hash,1)).to.be.not.reverted
+  
+            expect ((await projectRegisterInstance.projectsRegistered(temp_project_hash)).finalized).to.be.true
+            expect ((await projectRegisterInstance.projectsRegistered(temp_project_hash)).decision).to.be.true
+        })
+    
+        it("Project is finalized and rejected when 2 reject votes are received",async() => {
+            await expect(whitelisted1.voteProposal(temp_project_hash,0)).to.be.not.reverted
+            expect ((await projectRegisterInstance.projectsRegistered(temp_project_hash)).finalized).to.be.false
+    
+            await expect(whitelisted2.voteProposal(temp_project_hash,0)).to.be.not.reverted
+  
+            expect ((await projectRegisterInstance.projectsRegistered(temp_project_hash)).finalized).to.be.true
+            expect ((await projectRegisterInstance.projectsRegistered(temp_project_hash)).decision).to.be.false
+        })
+    })
+
+    describe("Finalizing Project Voting with weight 30 (1 whitelist users if whitelist count3)", () => {
+        before(async () => {
+            threshold = 30
+        })
+        it("Project is finalized and approved when 1 approve votes are received",async() => {
+            await expect(whitelisted1.voteProposal(temp_project_hash,1)).to.be.not.reverted
+    
+           
+            expect ((await projectRegisterInstance.projectsRegistered(temp_project_hash)).finalized).to.be.true
+            expect ((await projectRegisterInstance.projectsRegistered(temp_project_hash)).decision).to.be.true
+        })
+    
+        it("Project is finalized and rejected when 1 reject votes are received",async() => {
+            await expect(whitelisted1.voteProposal(temp_project_hash,0)).to.be.not.reverted
+     
+            expect ((await projectRegisterInstance.projectsRegistered(temp_project_hash)).finalized).to.be.true
+            expect ((await projectRegisterInstance.projectsRegistered(temp_project_hash)).decision).to.be.false
+        })
+    })
+
+    
+
+
+
+
+    describe("Delegating Votes",() => {
+  
+      
+     
+        it("Users Can't vote to non existing projects",async () => {
+            const whitelisted =  projectRegisterInstance.connect(whitelist1)
+            await expect(whitelisted1.voteProposal(ethers.utils.keccak256(ethers.utils.toUtf8Bytes("random_something")),1)).to.be.revertedWith("Project does not exist")
+        })
+
+        it("Users can't delegate to themselves",async () => {
+            const whitelisted =  projectRegisterInstance.connect(whitelist1)
+            return expect(whitelisted1.delegate(addrWhitelist1,temp_project_hash)).to.be.revertedWith("Self-delegation is disallowed.")
+        })
+
+        it("Already voted users can't delegate",async () => {
+            await expect(whitelisted1.voteProposal(temp_project_hash,1)).to.be.not.reverted
+            await expect(whitelisted1.delegate(addrWhitelist2,temp_project_hash)).to.be.revertedWith("User already voted")
+        })
+
+        it("Delegating can't be looped",async () => {
+
+            await expect(whitelisted1.delegate(addrWhitelist2,temp_project_hash)).to.be.not.reverted
+            await expect(whitelisted2.delegate(addrWhitelist3,temp_project_hash)).to.be.not.reverted
+            await expect(whitelisted3.delegate(addrWhitelist1,temp_project_hash)).to.be.revertedWith("Found loop in delegation.")
+
+        })
+
+        it("Vote weight for approve is calculated correctly",async () => {
+
+
+            await expect(whitelisted2.delegate(addrWhitelist1,temp_project_hash)).to.be.not.reverted
+            await expect(whitelisted3.delegate(addrWhitelist1,temp_project_hash)).to.be.not.reverted
+            await expect(whitelisted1.voteProposal(temp_project_hash,1)).to.be.not.reverted
+
+            expect ((await projectRegisterInstance.projectsRegistered(temp_project_hash)).approved).to.be.equal(3)
+
+        })
+
+        it("Vote weight for reject is calculated correctly",async () => {
+
+
+            await expect(whitelisted2.delegate(addrWhitelist1,temp_project_hash)).to.be.not.reverted
+            await expect(whitelisted3.delegate(addrWhitelist1,temp_project_hash)).to.be.not.reverted
+            await expect(whitelisted1.voteProposal(temp_project_hash,0)).to.be.not.reverted
+
+            expect ((await projectRegisterInstance.projectsRegistered(temp_project_hash)).rejected).to.be.equal(3)
+
+        })
+    })
+})
+
+
+
 
 })
 

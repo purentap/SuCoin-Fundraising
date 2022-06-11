@@ -1,0 +1,83 @@
+For Admins:
+Step needed to deploy contracts for sulaunch project
+You can use admin panel (if it is finished) or remix / hardhat
+1. Deploy ProjectRegister contract with your wanted threshold value
+2. If wanted give admin permissions to others using grantRole function or give whitelist / blacklist using editUserStatus function
+3. Except Auction.sol and CappedTokenAuction.sol (they are non deployable) deploy your wanted auction type contracts
+4. Create new or get current sucoin contract from supayment
+5. Create maestro contract entering sucoin address, projectregister address, two arrays auction type name - auction address pair
+
+For Starting an auction:
+Frontend is preferred
+1. Create a project
+2. Wait for whitelisted users to vote on it
+3. If they reject the project try creating another Owner
+4. If project is approved create a project token
+5. After creating a project token select an auction type and create it with your desired parameters
+6. When you want to start the auction call StartAuction with your desired duration
+7. If Auction is not ended even if duration ended call manualFinish
+
+For bidding:
+Frontend is preferred
+1. Enter a running auction 
+2. Enter how much sucoin you want to invest but don't forget to look at current price
+3. If auction is non orderbook type you will  get your tokens instantly so no need to wait the auction
+4. If auction is orderbook after you bid (below limit )you will get your tokens or your sucoins will be refunded after auction finalizes
+
+
+
+Brief summary
+Maestro - Auction and Token management
+ProjectRegister - Permission and Project voting management
+ERC20MintableBurnableUpgradeable - Mintable and Burnable Token Contract Used for creating all auction tokens
+WrapperToken - Used to create sucoin (may change)
+Auction , CappedTokenAuction - Abstract contracts that have properties most child auctions use
+
+
+Owner (created of ProjectRegister) Capabilities
+GrantRole - Creates new admins - 1 Owner
+All Admin Capabilities
+
+Admin Capabilities
+Function - Contract - Description - Needed Admins
+PauseAuction - Maestro - Pauses an auction by specified time  - 1 Admin
+ForceFinishAuction - Maestro - Instantly ends the auction - 1 Admin
+SetSuCoin - Maestro - Changes the Sucoin contract used for Auctions -  2 Admins
+EditImplementation - Maestro - Changes to implementation contract for auction types to be used for future auction creation  - 2 Admins
+RemoveProject - ProjectRegister - Resets and removes the Project (bug: does not reset the votes) - 2 Admins
+EditUserStatus - ProjectRegister - Sets permission of users - 1 Admin
+RenounceRole - Removes admin permission from yourself - 1 admin
+
+All Base Capabilities
+
+Whitelist Capabilities
+Delegate - ProjectRegister - Gives your vote permission to another Whitelisted user - 1 Whitelisted
+VoteProposal - ProjectRegister - Gives your approve or reject vote to Project - 1 Whitelisted
+All Base Capabilities
+
+Project Proposer Admin (Project registerer) Capabilities
+-For that project 
+GrantRole - Auction - Add new Proposers
+SetTeamWallet - Auction - Change where collected sucoins go
+All Project proposer Capabilities
+
+Project Proposer Capabilities
+-For that project
+CreateToken - Maestro - If project is approved creates a project token - 1 Proposer
+CreateAuction - Maestro - Creates an auction if project token is created - 1 Proposer
+StartAuction - Maestro - Starts an auction for specfied amount of time 
+Bid - Maestro - Can't bid
+
+
+Base Capabilities 
+Bid - Auction - Enables to Buy a project token using sucoin
+Withdraw - Auction - For orderbook auctions enables getting tokens after auction finishes
+RegisterProject - ProjectRegister - Creates a project 
+
+Blacklist Bans
+RegisterProject - ProjectRegister  -  Can't create a project  - 1 Blacklist
+Others are same as Base
+
+
+
+
