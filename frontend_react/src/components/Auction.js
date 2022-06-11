@@ -185,8 +185,7 @@ const Auction = (props) => {
     const navigate = useNavigate();
 
 
-    const tokenBoughtFilter = { address: auction, topics: [ethers.utils.id("TokenBought(address,uint256,uint256)")] }
-
+    const variableChangeFilter = { address: auction, topics: [ethers.utils.id("VariableChange(string,uint256)")]}
 
     useEffect(async () => {
         const { abi } = await import(`../contracts_hardhat/artifacts/contracts/UpgradeableAuctions/${auctionType}.sol/${auctionType}.json`)
@@ -202,7 +201,7 @@ const Auction = (props) => {
 
 
 
-        provider.on(tokenBoughtFilter, (log, event) => refreshInfo(abi, auctionContract))
+        provider.on(variableChangeFilter, (log, event) => refreshInfo(abi, auctionContract))
 
         setIsLoading(false);
     }, [])
