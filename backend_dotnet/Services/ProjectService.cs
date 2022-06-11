@@ -55,7 +55,7 @@ namespace SU_COIN_BACK_END.Services
 
         private const int MAXIMUM_ALLOWED_PENDING_PROJECTS = 100;
         private const int MAXIMUM_FILE_SIZE = 10000000; // 10 MB
-       
+
         public async Task<ServiceResponse<ProjectDTO>> AddProject(ProjectRequest request)
         {
             ServiceResponse<ProjectDTO> response = new ServiceResponse<ProjectDTO>();
@@ -80,7 +80,9 @@ namespace SU_COIN_BACK_END.Services
                 response.Message = MessageConstants.PROJECT_NAME_EXISTS;
                 return response;
             }
-            if (await _context.Projects.Where(project => project.Status == ProjectStatusConstants.PENDING).CountAsync() == MAXIMUM_ALLOWED_PENDING_PROJECTS)
+            if (await _context.Projects
+                .Where(project => project.Status == ProjectStatusConstants.PENDING)
+                .CountAsync() == MAXIMUM_ALLOWED_PENDING_PROJECTS)
             {
                 response.Message = "Viewer is busy. Please try again later";
                 return response;
@@ -182,6 +184,8 @@ namespace SU_COIN_BACK_END.Services
                     _context.ProjectPermissions
                         .RemoveRange(_context.ProjectPermissions
                             .Where(permission => permission.ProjectID == id)); // remove permissions related to the current project
+                    await _context.SaveChangesAsync();
+
                     _context.Ratings
                         .RemoveRange(_context.Ratings
                             .Where(rating => rating.ProjectID == id)); // remove ratings related to the current project
@@ -222,7 +226,7 @@ namespace SU_COIN_BACK_END.Services
                     }
                 }
 
-                if (orderByRating) 
+                if (orderByRating) // order the projects by descending according to rating values, if needed
                 {
                     projects = projects.OrderByDescending(project => project.Rating).ToList();
                 }
@@ -788,8 +792,9 @@ namespace SU_COIN_BACK_END.Services
 
         public async Task<bool> HasOwnerPermission(int projectId)
         {
-            if (await _context.ProjectPermissions.AnyAsync(x => x.ProjectID == projectId && x.UserID == GetUserId() 
-            && x.Role == UserPermissionRoleConstants.OWNER && x.IsAccepted))
+            if (await _context.ProjectPermissions
+                .AnyAsync(x => x.ProjectID == projectId && x.UserID == GetUserId() 
+                    && x.Role == UserPermissionRoleConstants.OWNER && x.IsAccepted))
             {
                 return true;
             }
@@ -812,16 +817,6 @@ namespace SU_COIN_BACK_END.Services
                     .Select(u => u.ProjectID)
                     .FirstOrDefaultAsync();
 
-        }
-
-        public async Task<bool> IsUserOwnerInAnyProject()
-        {
-            if (await _context.ProjectPermissions.AnyAsync(permission => permission.UserID == GetUserId()
-            && permission.Role == UserPermissionRoleConstants.OWNER && permission.IsAccepted))
-            {
-                return true;
-            }
-            return false;
         }
 
         public async Task<ServiceResponse<List<ProjectDTO>>> GetAllInvitedProjects()

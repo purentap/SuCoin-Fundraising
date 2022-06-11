@@ -47,7 +47,8 @@ namespace SU_COIN_BACK_END.Services
             ServiceResponse<string> response = new ServiceResponse<string>();
             try
             {
-                User? user = await _context.Users.FirstOrDefaultAsync(c => c.Id == GetUserId());
+                int userID = GetUserId();
+                User? user = await _context.Users.FirstOrDefaultAsync(c => c.Id == userID);
                 string userRole = GetUserRole();
 
                 if (user == null)
@@ -66,14 +67,14 @@ namespace SU_COIN_BACK_END.Services
                     return response;
                 }
                 
-                bool anyProjectAsOwner = await _projectService.IsUserOwnerInAnyProject();
+                bool anyPermission = await _context.ProjectPermissions.AnyAsync(permission => permission.UserID == userID);
 
-                if (anyProjectAsOwner)
+                if (anyPermission)
                 {
-                    response.Message = "You have some active projects as Owner. In order to delete yourself, first you need to delete the projects that your role is owner.";
+                    response.Message = "You have some active projects as a collaborator. In order to delete yourself, first you need to leave from these projects";
                     return response;
                 }
-                
+
                 _context.Remove(user);
                 await _context.SaveChangesAsync();
                 response.Message = MessageConstants.OK;
