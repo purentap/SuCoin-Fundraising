@@ -861,5 +861,54 @@ namespace SU_COIN_BACK_END.Services
             }
             return response;
         }
+
+        public async Task<ServiceResponse<string>> DeleteRatings() // Delete all ratings for the current user
+        {
+            ServiceResponse<string> response = new ServiceResponse<string>();
+            int userID = GetUserId();
+
+            /* Retrieve projects which are rated by the current user */   
+            IEnumerable<Project>? query = from project in await _context.Projects.ToListAsync()
+                                          from rating in _context.Ratings.ToList()
+                                          where rating.UserID == userID && project.ProjectID == rating.ProjectID
+                                          select project;
+                
+            List<Project>? projects = query.ToList();
+
+            foreach (Project project in projects)
+            {
+                Rating? deleted_rating = await _context.Ratings
+                    .FirstOrDefaultAsync(rating => rating.UserID == userID && rating.ProjectID == project.ProjectID);
+                
+                if (deleted_rating == null)
+                {
+                    continue;
+                }
+                else 
+                {
+                    _context.Ratings.Remove(deleted_rating);
+                    await _context.SaveChangesAsync();
+                    project.Rating = await _context.Ratings.AverageAsync(x => x.Rate);
+                    _context.Update(project);
+                    await _context.SaveChangesAsync();
+                }               
+            }
+
+            /* Check whether ratings related to the current user is deleted or not */
+            List<Rating>? deleted_ratings = await _context.Ratings.Where(rating => rating.UserID == userID).ToListAsync();
+            
+            if (deleted_ratings.Count() == 0) 
+            {
+                response.Success = true;
+                response.Message = $"All ratings of {GetUsername()} is succesfully deleted";
+            }
+            else
+            {
+                response.Message = $"Problem occured while deleting ratings of {GetUsername()}";
+            }
+
+            return response;
+        }
+
     }
 }

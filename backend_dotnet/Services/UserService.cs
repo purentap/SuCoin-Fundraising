@@ -75,31 +75,11 @@ namespace SU_COIN_BACK_END.Services
                     return response;
                 }
 
-                /* Retrieve projects which are rated by the current user */                
-                IEnumerable<Project>? query = from project in await _context.Projects.ToListAsync()
-                                              from rating in _context.Ratings.ToList()
-                                              where project.ProjectID == rating.ProjectID && rating.UserID == userID
-                                              select project;
-                
-                List<Project>? projects =  query.ToList();
+                ServiceResponse<string> deleteRatings_response = await _projectService.DeleteRatings();
 
-                /* Remove ratings related to the current user and then delete the user */
-                foreach (Project project in projects)
+                if (!deleteRatings_response.Success)
                 {
-                    Rating? deleted_rating = await _context.Ratings
-                        .FirstOrDefaultAsync(rating => rating.UserID == userID && rating.ProjectID == project.ProjectID);
-                    if (deleted_rating == null)
-                    {
-                        continue;
-                    }
-                    else 
-                    {
-                        _context.Ratings.Remove(deleted_rating);
-                        await _context.SaveChangesAsync();
-                        project.Rating = await _context.Ratings.AverageAsync(x => x.Rate);
-                        _context.Update(project);
-                        await _context.SaveChangesAsync();
-                    }               
+                    throw new Exception(response.Message);
                 }
 
                 _context.Remove(user);

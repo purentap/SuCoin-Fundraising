@@ -12,6 +12,7 @@ namespace SU_COIN_BACK_END.SU_COIN_INTERFACE
         Task<ServiceResponse<string>> DeleteProject(int id);
         Task<ServiceResponse<ProjectDTO>> UpdateProject(ProjectDTO project);
         Task<ServiceResponse<ProjectDTO>> RateProject(int id, double rating);
+        Task<ServiceResponse<string>> DeleteRatings();
         Task<ServiceResponse<List<ProjectDTO>>> GetProjectsByStatus(string status);
         Task<ServiceResponse<ProjectDTO>> ChangeProjectStatus(int id);
         Task<ServiceResponse<ProjectDTO>> UpdateMarkDown(int id, string markdown);
