@@ -67,12 +67,19 @@ namespace SU_COIN_BACK_END.Services
                     return response;
                 }
                 
-                bool anyPermission = await _context.ProjectPermissions.AnyAsync(permission => permission.UserID == userID);
+                bool anyPermission = await _context.ProjectPermissions.AnyAsync(permission => permission.UserID == GetUserId());
 
                 if (anyPermission)
                 {
                     response.Message = "You have some active projects as a collaborator. In order to delete yourself, first you need to leave from these projects";
                     return response;
+                }
+
+                ServiceResponse<string> deleteRatings_response = await _projectService.DeleteRatings();
+
+                if (!deleteRatings_response.Success)
+                {
+                    throw new Exception(response.Message);
                 }
 
                 _context.Remove(user);
