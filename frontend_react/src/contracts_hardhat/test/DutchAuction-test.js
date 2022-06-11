@@ -9,6 +9,7 @@ function numberToBigNumber(amount,decimal) {
 
 
 
+//Not working anymore because switching to proxy based auctions
 
 describe("Auction cases", () => {                                      
 

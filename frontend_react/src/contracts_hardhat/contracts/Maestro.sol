@@ -246,6 +246,14 @@ modifier multiSig(bytes32 role,uint walletCount,uint timeLimitInBlocks){
 
     }
 
+    function forceFinishAuction(bytes32 projectHash) external multiSig(projectManager.ADMIN_ROLE(),1,1) {         //Admin count / sign time can change
+        address auction = projectTokens[projectHash].auction;
+        require(auction != address(0),"There are no auctions for this project");
+        Auction auctionContract = Auction(auction);
+        auctionContract.forcedManualFinish();
+
+    }
+
 
     //CreateAuction creates a new proxy auction contract for a project
     //Also gives the proposer permission for the auction to the caller
