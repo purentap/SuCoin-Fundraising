@@ -136,7 +136,7 @@ const AuctionInfo = ({ auction, status,projectId, price, tokenDist, deposit, tot
             <p style={{ display: "flex", flexDirection: "row", justifyContent: "center" }}>{parseFloat(price).toFixed(4)} SUCoin</p>
           </div>
           <div style={{ display: "flex", flexDirection: "row", justifyContent: "space-around" }}>
-            {status != 3 ? 
+            {status == 1 ? 
             <>
                <FloatingLabel controlId="floatingInputGrid" label={"Enter " + tokens[0]}>
               <Form.Control onChange={handleInput} name="amount" type="text" value={amount} />
@@ -155,7 +155,7 @@ const AuctionInfo = ({ auction, status,projectId, price, tokenDist, deposit, tot
           <br></br>
 
           <div style={{ display: "flex", flexDirection: "row", justifyContent: "center" }}>
-
+              
             {status == 3 ?
             <>
             {limit != null ? <button className="button" onClick={() => withdraw()}>
@@ -165,6 +165,7 @@ const AuctionInfo = ({ auction, status,projectId, price, tokenDist, deposit, tot
             </button> : null }
             </>
             :
+            status ==  1 ?
             <>
             <button className="button" onClick={() => buyTokens(auctionType == "OBDutchAuction"  ? true : false)}>
               <a>
@@ -177,8 +178,8 @@ const AuctionInfo = ({ auction, status,projectId, price, tokenDist, deposit, tot
                 Buy Token(s) From Minimum Price
               </a>
             </button> : null}
-            </>
-          }
+            </> : null}
+          
         
             
        
