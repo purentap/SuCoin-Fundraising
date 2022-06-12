@@ -21,6 +21,9 @@ import FloatingLabel from 'react-bootstrap/FloatingLabel';
 
 import FCFSAuction from "../../contracts_hardhat/artifacts/contracts/UpgradeableAuctions/FCFSAuction.sol/FCFSAuction.json"
 
+import OBFCFSAuction from "../../contracts_hardhat/artifacts/contracts/UpgradeableAuctions/OBFCFSAuction.sol/OBFCFSAuction.json"
+
+
 import WrapperToken from "../../contracts_hardhat/artifacts/contracts/WrapperToken.sol/WrapperToken.json"
 
 import { numberToFixedNumber } from '../../helpers';
@@ -32,7 +35,7 @@ const BiLiraAddress = "0x8f5736aF17F2F071B476Fd9cFD27a1Bd8D7E7F15";
 const maestro = { address: "0x8D75b1988bD233350F61d594b261197DDd7C6425" }
 const SUCoin = { address: "0xb6e466F4F0ab1e2dA2E8237F38B2eCf6278894Ce" }
 
-const AuctionInfo = ({ auction, projectId, price, tokenDist, deposit, totalRaise, startingDate, duration, endingDate, remainingTime, auctionType, tokenName }) => {
+const AuctionInfo = ({ auction, status,projectId, price, tokenDist, deposit, totalRaise, limit, startingDate, duration, endingDate, remainingTime, auctionType, tokenName }) => {
 
   const [tokens, setTokens] = useState(["SUCoin", "BiLira"])
   const [amount, setAmount] = useState();
@@ -73,6 +76,26 @@ const AuctionInfo = ({ auction, projectId, price, tokenDist, deposit, totalRaise
     }
   }
 
+  const withdraw = async () => {
+    try {
+
+      const provider = await new ethers.providers.Web3Provider(window.ethereum);
+      const signer = await provider.getSigner();
+
+
+     var auctionSC = await new ethers.Contract(auction, OBFCFSAuction.abi, signer);
+
+ 
+     await auctionSC.withDraw()
+
+
+
+    } catch (error) {
+      console.log(error)
+      return false;
+    }
+  }
+
 
   const handleInput = e => {
     const name = e.currentTarget.name;
@@ -100,6 +123,9 @@ const AuctionInfo = ({ auction, projectId, price, tokenDist, deposit, totalRaise
           {auctionType != "UncappedAuction" ? <h5>
             Total Supply: <p>{parseFloat(tokenDist).toFixed(3)} {tokenName}</p>{" "}
           </h5> : null}
+          {limit != null ? <h5>
+            Limit: <p>{parseFloat(limit).toFixed(3)} Sucoins</p>{" "}
+          </h5> : null}
           {auctionType != "PseudoCappedAuction" ? <h5>
             Tokens Sold: <p>{parseFloat(deposit).toFixed(3)} {tokenName} </p>{" "}
           </h5> : null}
@@ -110,7 +136,9 @@ const AuctionInfo = ({ auction, projectId, price, tokenDist, deposit, totalRaise
             <p style={{ display: "flex", flexDirection: "row", justifyContent: "center" }}>{parseFloat(price).toFixed(4)} SUCoin</p>
           </div>
           <div style={{ display: "flex", flexDirection: "row", justifyContent: "space-around" }}>
-            <FloatingLabel controlId="floatingInputGrid" label={"Enter " + tokens[0]}>
+            {status != 3 ? 
+            <>
+               <FloatingLabel controlId="floatingInputGrid" label={"Enter " + tokens[0]}>
               <Form.Control onChange={handleInput} name="amount" type="text" value={amount} />
             </FloatingLabel>
             {auctionType == "OBDutchAuction" ?
@@ -120,19 +148,40 @@ const AuctionInfo = ({ auction, projectId, price, tokenDist, deposit, totalRaise
               <FloatingLabel controlId="floatingInputGrid" label={"Project Token"}>
                 <Form.Control onChange={handleInput} name="amount2" type="text" value={((amount / price) || 0)} />
               </FloatingLabel>}
+            </>
+            : null}
+         
           </div>
           <br></br>
+
           <div style={{ display: "flex", flexDirection: "row", justifyContent: "center" }}>
-            <button className="button" onClick={() => buyTokens(auctionType == "OBDutchAuction" ? true : false)}>
+
+            {status == 3 ?
+            <>
+            {limit != null ? <button className="button" onClick={() => withdraw()}>
+              <a>
+                Withdraw Tokens(only orderbook auctions)
+              </a>
+            </button> : null }
+            </>
+            :
+            <>
+            <button className="button" onClick={() => buyTokens(auctionType == "OBDutchAuction"  ? true : false)}>
               <a>
                 Buy Token(s)
               </a>
             </button>
+
             {auctionType == "OBDutchAuction" ? <button className="button" onClick={() => buyTokens(false)}>
               <a>
                 Buy Token(s) From Minimum Price
               </a>
             </button> : null}
+            </>
+          }
+        
+            
+       
           </div>
         </Grid>
         <Divider orientation="vertical" component="line" variant="middle" light={false} flexItem />

@@ -14,7 +14,7 @@ contract OBFCFSAuction is FCFSAuction {
 
     mapping (address => uint) public biddingBook;  //Orderbook
 
-    uint fundLimitPerUser;
+    uint public fundLimitPerUser;
 
    //Instead of swaping it just increases user orderbook size
 

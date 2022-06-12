@@ -62,7 +62,9 @@ const Auction = (props) => {
 
     const refreshInfo = async (abi, auctionContract) => {
 
-        const { rate, soldProjectTokens, numberOfTokensToBeDistributed, minPrice, startTime, latestEndTime, totalDepositedSucoins, getCurrentRate, finalRate,getTotalSupply,initTokens} = await getAllPublicVariables(abi, auctionContract)
+        
+
+        const { rate, soldProjectTokens, numberOfTokensToBeDistributed, minPrice, startTime, latestEndTime, totalDepositedSucoins, getCurrentRate, finalRate,getTotalSupply,initTokens,getStatus,fundLimitPerUser} = await getAllPublicVariables(abi, auctionContract)
         const currentSupply = (getTotalSupply ?? numberOfTokensToBeDistributed)[0]
 
         const auctionInfo = {}
@@ -96,10 +98,15 @@ const Auction = (props) => {
                 break;
         }
 
+
+        auctionInfo.status = getStatus[0]
+
+        if (fundLimitPerUser != null)
+            auctionInfo.fundLimitPerUser = fixedNumberToNumber(fundLimitPerUser[0])
+
         auctionInfo.startTime = startTime[0]
         auctionInfo.endTime = latestEndTime[0]
         auctionInfo.totalDeposit = fixedNumberToNumber(totalDepositedSucoins[0])
-
 
         setHistoricData(await getHistoricalData(auctionContract,auctionInfo))
 
@@ -279,6 +286,8 @@ const Auction = (props) => {
                                 startingDate={currentData?.startTime}
                                 endingDate={currentData?.endTime}
                                 auctionType={auctionType}
+                                status = {currentData?.status}
+                                limit = {currentData?.fundLimitPerUser}
                             />
                         </div>
                     </Grid>
