@@ -909,25 +909,5 @@ namespace SU_COIN_BACK_END.Services
 
             return response;
         }
-
-        public async Task<ServiceResponse<bool>> CheckIsAuctionCreated(ProjectPermission? permission)
-        {
-            ServiceResponse<bool> response = new ServiceResponse<bool>();
-
-            if (permission == null)
-            {
-                response.Message = MessageConstants.PERMISSION_NOT_FOUND;
-                return response;
-            }
-
-            bool isAuctionCreated = await _context.Projects
-                .AnyAsync(project => project.ProjectID == permission.ProjectID && project.IsAuctionCreated);
-
-            response.Success = true;
-            response.Data = isAuctionCreated;
-            response.Message = MessageConstants.OK;
-
-            return response;
-        }
     }
 }

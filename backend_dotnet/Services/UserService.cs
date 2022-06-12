@@ -30,6 +30,7 @@ namespace SU_COIN_BACK_END.Services
         private int GetUserId() => int.Parse(_httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier));
         private string GetUsername() => _httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.Name);
         private string GetUserRole() => _httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.Role);
+        private string GetUserAddress() => (_httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.Surname));
         public UserService(IMapper mapper, DataContext context, IHttpContextAccessor httpContextAccessor, 
             IAuthencticationService authencticationService, IChainInteractionService chainInteractionService, 
             IProjectService projectService)
@@ -75,9 +76,9 @@ namespace SU_COIN_BACK_END.Services
                     return response;
                 }
 
-                ServiceResponse<string> deleteRatings_response = await _projectService.DeleteRatings();
+                ServiceResponse<string> projectService_response = await _projectService.DeleteRatings();
 
-                if (!deleteRatings_response.Success)
+                if (!projectService_response.Success)
                 {
                     throw new Exception(response.Message);
                 }
@@ -173,7 +174,7 @@ namespace SU_COIN_BACK_END.Services
         public async Task<ServiceResponse<int>> GivePermissionToProject(ProjectPermissionRequest request)
         {
             ServiceResponse<int> response = new ServiceResponse<int>();
-            
+
             if (request.Role != UserPermissionRoleConstants.CO_OWNER && request.Role != UserPermissionRoleConstants.EDITOR)
             {
                 response.Message = MessageConstants.INVALID_INPUT;
@@ -372,15 +373,11 @@ namespace SU_COIN_BACK_END.Services
                     {
                         if (loggedIn_userID == removedCollaborator.Id) // owner tries to remove himself/herself from the project
                         {
-                            ServiceResponse<bool> checkIsAuctionCreated_response = await _projectService.CheckIsAuctionCreated(removedCollaborator_permission);
-                            
-                            if (!checkIsAuctionCreated_response.Success)
-                            {
-                                response.Message = checkIsAuctionCreated_response.Message;
-                                return response;
-                            }
 
-                            if (checkIsAuctionCreated_response.Data) 
+                            bool isAuctionCreated = await _context.Projects
+                                .AnyAsync(project => project.ProjectID == removedCollaborator_permission.ProjectID && project.IsAuctionCreated);
+
+                            if (isAuctionCreated) 
                             {
                                 response.Message = "You cannot remove your co-ownership. In order to remove your ownership, you must leave from the auction of that project";
                                 return response;
@@ -473,6 +470,37 @@ namespace SU_COIN_BACK_END.Services
             }
 
             return false;
+        }
+         
+        public async Task<ServiceResponse<List<UserDTO>>> GetCoOwners(int projectID)
+        {
+            ServiceResponse<List<UserDTO>> response = new ServiceResponse<List<UserDTO>>();
+            Project? project = await _context.Projects.FirstOrDefaultAsync(project => project.ProjectID == projectID);
+
+            if (project == null)
+            {
+                response.Message = MessageConstants.PROJECT_NOT_FOUND;
+                return response;
+            }
+
+            if (GetUserAddress() != project.ProposerAddress) // User is not owner of the project
+            {
+                response.Message = MessageConstants.PROJECT_PERMISSION_MANAGE_DENIED;
+                return response;
+            }
+            
+            IEnumerable<User>? query = from user in await _context.Users.ToListAsync()
+                                       from permission in _context.ProjectPermissions.ToList()
+                                       where user.Id == permission.UserID && permission.Role == UserPermissionRoleConstants.CO_OWNER
+                                       select user;
+
+            List<User>? users = query.ToList();
+
+            response.Success = true;
+            response.Data = (users.Select(user => _mapper.Map<UserDTO>(user)).ToList());
+            response.Message = MessageConstants.OK;
+
+            return response;
         }
     }
 }

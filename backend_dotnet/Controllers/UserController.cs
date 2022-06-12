@@ -123,7 +123,7 @@ namespace SU_COIN_BACK_END.Controllers
 
         [HttpGet]
         [Route("GetAll")]
-        public async Task<IActionResult> GetAllUsers() //Only for admin
+        public async Task<IActionResult> GetAllUsers() // Only for admin
         { 
             ServiceResponse<List<UserDTO>> response = await _userService.GetAllUsers();
             if (!response.Success)
@@ -138,6 +138,29 @@ namespace SU_COIN_BACK_END.Controllers
                 }
                 return BadRequest(response);
             }
+            return Ok(response);
+        }
+
+        [HttpGet]
+        [Route("[action]/{projectID:int}")]
+        public async Task<IActionResult> GetCoOwners(int projectID)
+        {
+            ServiceResponse<List<UserDTO>> response = await _userService.GetCoOwners(projectID);
+
+            if (!response.Success)
+            {
+                if (response.Message == MessageConstants.PROJECT_NOT_FOUND)
+                {
+                    return NotFound();
+                }
+                if (response.Message == MessageConstants.PROJECT_PERMISSION_MANAGE_DENIED)
+                {
+                    return Forbid();
+                }
+
+                return BadRequest(response);
+            }
+
             return Ok(response);
         }
 
