@@ -103,6 +103,7 @@ namespace SU_COIN_BACK_END.Services
 
                 Project new_project = new Project 
                 {
+                    ViewerAccepted = true,     //todo temporarily set to true will change later when frontend is implemented
                     ProjectName = request.ProjectName,
                     Date = DateTime.Now,
                     ProposerAddress = GetUserAddress(),

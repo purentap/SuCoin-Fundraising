@@ -37,7 +37,7 @@ import Row from 'react-bootstrap/Row'
 import Col from 'react-bootstrap/Col'
 import Container from 'react-bootstrap/Col'
 
-const maestro = { address: "0x8D75b1988bD233350F61d594b261197DDd7C6425" }
+const maestro = { address: "0x258CF5D2678Db2304eabf02387774Bb6Ca49C424" }
 
 const ProjectInfo = ({ setProject,
   projectId,
