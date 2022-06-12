@@ -1,4 +1,4 @@
-using System.Threading.Tasks;
+using SU_COIN_BACK_END.Models;
 using SU_COIN_BACK_END.Response;
 using SU_COIN_BACK_END.Request;
 using SU_COIN_BACK_END.DTOs;
@@ -12,6 +12,7 @@ namespace SU_COIN_BACK_END.SU_COIN_INTERFACE
         Task<ServiceResponse<string>> DeleteProject(int id);
         Task<ServiceResponse<ProjectDTO>> UpdateProject(ProjectDTO project);
         Task<ServiceResponse<ProjectDTO>> RateProject(int id, double rating);
+        Task<ServiceResponse<bool>> CheckIsAuctionCreated(ProjectPermission? permission);
         Task<ServiceResponse<string>> DeleteRatings();
         Task<ServiceResponse<List<ProjectDTO>>> GetProjectsByStatus(string status);
         Task<ServiceResponse<ProjectDTO>> ChangeProjectStatus(int id);

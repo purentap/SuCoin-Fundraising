@@ -25,6 +25,7 @@ namespace SU_COIN_BACK_END.Constants.MessageConstants
         public const string CONTRACT_NOT_FOUND = "There is no contract for the current ABI";
         public const string AUCTION_NOT_STARTED = "Auction of this project has not been started in the chain yet";
         public const string AUCTION_NOT_FOUND = "Legitimate Auction not found for this project";
+        public const string PERMISSION_NOT_FOUND = "Permission not found";
     }
 }
 

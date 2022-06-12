@@ -173,11 +173,19 @@ namespace SU_COIN_BACK_END.Services
         public async Task<ServiceResponse<int>> GivePermissionToProject(ProjectPermissionRequest request)
         {
             ServiceResponse<int> response = new ServiceResponse<int>();
+            
+            if (request.Role != UserPermissionRoleConstants.CO_OWNER && request.Role != UserPermissionRoleConstants.EDITOR)
+            {
+                response.Message = MessageConstants.INVALID_INPUT;
+                return response;
+            }
+
             try
             {
                 ProjectPermission? permission = await _context.ProjectPermissions
                     .FirstOrDefaultAsync(c => c.ProjectID == request.ProjectID && c.UserID == GetUserId() 
-                    && c.Role == UserPermissionRoleConstants.OWNER && c.IsAccepted);
+                        && (c.Role == UserPermissionRoleConstants.OWNER || c.Role == UserPermissionRoleConstants.CO_OWNER)
+                        && c.IsAccepted);
                         
                 if (permission == null)
                 {
@@ -317,37 +325,9 @@ namespace SU_COIN_BACK_END.Services
                     return response;
                 }
 
-                if (loggedInUser_permission.Role == UserPermissionRoleConstants.OWNER)
-                {
-                    User? removedCollaborator = await _context.Users.FirstOrDefaultAsync(user => user.Username == request.Username);
-                        
-                    if (removedCollaborator == null) // logged in user does not have any permission for any project
-                    {
-                        response.Message = MessageConstants.USER_NOT_FOUND;
-                        return response;
-                    }
-                        
-                    if (loggedIn_userID == removedCollaborator.Id) // remove yourself
-                    {
-                        response.Message = "You cannot remove your ownership. In order to remove your ownership, you must delete the project";
-                        return response;
-                    }
-                        
-                    ProjectPermission? removedCollaborator_permission = await _context.ProjectPermissions
-                        .FirstOrDefaultAsync(c => c.ProjectID == request.ProjectID && c.UserID == removedCollaborator.Id && c.IsAccepted);
+                string loggedIn_userRole = GetUserRole();
 
-                    if (removedCollaborator_permission == null)
-                    {
-                        response.Message = $"Permission of the {request.Username} for project {request.ProjectID} is not found";
-                        return response;
-                    }
-
-                    _context.ProjectPermissions.Remove(removedCollaborator_permission);
-                    await _context.SaveChangesAsync();
-                    response.Success = true;
-                    response.Message = $"User {request.Username} is removed from collaboration in project {request.ProjectID}";
-                }
-                else // Not the owner of the project
+                if (loggedIn_userRole == UserPermissionRoleConstants.EDITOR)
                 {
                     if (GetUsername() != request.Username) // Trying to remove permission of another person
                     {
@@ -360,6 +340,64 @@ namespace SU_COIN_BACK_END.Services
                     await _context.SaveChangesAsync();
                     response.Success = true;
                     response.Message = String.Format($"User {request.Username} removed from collaboration in project {request.ProjectID}");
+                }
+                else
+                {
+                    User? removedCollaborator = await _context.Users.FirstOrDefaultAsync(user => user.Username == request.Username);
+                        
+                    if (removedCollaborator == null) // removed collaborator does not exist
+                    {
+                        response.Message = MessageConstants.USER_NOT_FOUND;
+                        return response;
+                    }
+
+                    ProjectPermission? removedCollaborator_permission = await _context.ProjectPermissions
+                        .FirstOrDefaultAsync(c => c.ProjectID == request.ProjectID && c.UserID == removedCollaborator.Id && c.IsAccepted);
+                    
+                    if (removedCollaborator_permission == null)
+                    {
+                        response.Message = MessageConstants.PERMISSION_NOT_FOUND;
+                        return response;
+                    }
+
+                    if (loggedIn_userRole == UserPermissionRoleConstants.OWNER)
+                    {
+                        if (loggedIn_userID == removedCollaborator.Id) // owner tries to remove himself/herself from the project
+                        {
+                            response.Message = "You cannot remove your ownership. In order to remove your ownership, you must delete the project";
+                            return response;
+                        }
+                    }
+                    else // role of the user is Co-Owner
+                    {
+                        if (loggedIn_userID == removedCollaborator.Id) // owner tries to remove himself/herself from the project
+                        {
+                            ServiceResponse<bool> checkIsAuctionCreated_response = await _projectService.CheckIsAuctionCreated(removedCollaborator_permission);
+                            
+                            if (!checkIsAuctionCreated_response.Success)
+                            {
+                                response.Message = checkIsAuctionCreated_response.Message;
+                                return response;
+                            }
+
+                            if (checkIsAuctionCreated_response.Data) 
+                            {
+                                response.Message = "You cannot remove your co-ownership. In order to remove your ownership, you must leave from the auction of that project";
+                                return response;
+                            }
+                            
+                        }
+                        if (removedCollaborator_permission.Role == UserPermissionRoleConstants.OWNER) // Co-Owner tries to remove owner
+                        {
+                            response.Message = $"You cannot remove the owner as {loggedIn_userRole}";
+                        }
+                    }
+                    
+
+                    _context.ProjectPermissions.Remove(removedCollaborator_permission);
+                    await _context.SaveChangesAsync();
+                    response.Success = true;
+                    response.Message = $"User {request.Username} is removed from collaboration in project {request.ProjectID}";
                 }
             }
             catch (Exception e)
