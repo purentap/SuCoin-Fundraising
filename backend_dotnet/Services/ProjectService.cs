@@ -701,7 +701,7 @@ namespace SU_COIN_BACK_END.Services
                     return response;
                 }
                 
-                if (permission.Role != UserPermissionRoleConstants.OWNER)
+                if (permission.Role == UserPermissionRoleConstants.EDITOR) // Only owner and co-owners may start the auction
                 {
                     response.Message = MessageConstants.NOT_AUTHORIZED_TO_ACCESS;
                     return response;
@@ -760,7 +760,7 @@ namespace SU_COIN_BACK_END.Services
                     response.Message = MessageConstants.PROJECT_PERMISSION_MANAGE_DENIED;
                     return response;
                 }
-                if (permission.Role != UserPermissionRoleConstants.OWNER)
+                if (permission.Role != UserPermissionRoleConstants.OWNER) // Only owner may create the auction
                 {
                     response.Message = MessageConstants.NOT_AUTHORIZED_TO_ACCESS;
                     return response;
@@ -910,5 +910,24 @@ namespace SU_COIN_BACK_END.Services
             return response;
         }
 
+        public async Task<ServiceResponse<bool>> CheckIsAuctionCreated(ProjectPermission? permission)
+        {
+            ServiceResponse<bool> response = new ServiceResponse<bool>();
+
+            if (permission == null)
+            {
+                response.Message = MessageConstants.PERMISSION_NOT_FOUND;
+                return response;
+            }
+
+            bool isAuctionCreated = await _context.Projects
+                .AnyAsync(project => project.ProjectID == permission.ProjectID && project.IsAuctionCreated);
+
+            response.Success = true;
+            response.Data = isAuctionCreated;
+            response.Message = MessageConstants.OK;
+
+            return response;
+        }
     }
 }
