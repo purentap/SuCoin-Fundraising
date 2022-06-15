@@ -478,7 +478,7 @@ function ProjectsCard(props) {
 
                       <FormLabel>
                         Please enter the role of the user. Your team member can
-                        be either Editor or Owner:{" "}
+                        be either Editor or Co-Owner:{" "}
                       </FormLabel>
                       <Input
                         name="role"

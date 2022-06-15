@@ -106,7 +106,7 @@ namespace SU_COIN_BACK_END.Services
                     ViewerAccepted = true,     //todo temporarily set to true will change later when frontend is implemented
                     ProjectName = request.ProjectName,
                     Date = DateTime.Now,
-                    ProposerAddress = GetUserAddress(),
+                    ProposerAddress = GetUserAddress(), // address of the owner
                     FileHash = ipfsHash,
                     ProjectDescription = request.ProjectDescription,
                     MarkDown = request.MarkDown                    
@@ -753,18 +753,10 @@ namespace SU_COIN_BACK_END.Services
                     return response;
                 }
 
-                ProjectPermission? permission = await _context.ProjectPermissions
-                .FirstOrDefaultAsync(permission => permission.ProjectID == projectID && permission.UserID == GetUserId());
-
-                if (permission == null)
-                {
-                    response.Message = MessageConstants.PROJECT_PERMISSION_MANAGE_DENIED;
-                    return response;
-                }
-                if (permission.Role != UserPermissionRoleConstants.OWNER) // Only owner may create the auction
+                if (GetUserAddress() != project.ProposerAddress) // Only owner may create the auction
                 {
                     response.Message = MessageConstants.NOT_AUTHORIZED_TO_ACCESS;
-                    return response;
+                    return response;                    
                 }
 
                 project.IsAuctionCreated = true;
@@ -793,9 +785,7 @@ namespace SU_COIN_BACK_END.Services
 
         public async Task<bool> HasOwnerPermission(int projectId)
         {
-            if (await _context.ProjectPermissions
-                .AnyAsync(x => x.ProjectID == projectId && x.UserID == GetUserId() 
-                    && x.Role == UserPermissionRoleConstants.OWNER && x.IsAccepted))
+            if (await _context.Projects.AnyAsync(project => project.ProjectID == projectId && project.ProposerAddress == GetUserAddress()))
             {
                 return true;
             }

@@ -326,9 +326,14 @@ namespace SU_COIN_BACK_END.Services
                     return response;
                 }
 
-                string loggedIn_userRole = GetUserRole();
+                string? loggedIn_userPermissionRole = loggedInUser_permission.Role;
 
-                if (loggedIn_userRole == UserPermissionRoleConstants.EDITOR)
+                if (loggedIn_userPermissionRole == null) // Unexpected condition
+                {
+                    response.Message = MessageConstants.PERMISSION_NOT_FOUND;
+                }
+
+                if (loggedIn_userPermissionRole == UserPermissionRoleConstants.EDITOR)
                 {
                     if (GetUsername() != request.Username) // Trying to remove permission of another person
                     {
@@ -361,7 +366,7 @@ namespace SU_COIN_BACK_END.Services
                         return response;
                     }
 
-                    if (loggedIn_userRole == UserPermissionRoleConstants.OWNER)
+                    if (loggedIn_userPermissionRole == UserPermissionRoleConstants.OWNER)
                     {
                         if (loggedIn_userID == removedCollaborator.Id) // owner tries to remove himself/herself from the project
                         {
@@ -386,7 +391,7 @@ namespace SU_COIN_BACK_END.Services
                         }
                         if (removedCollaborator_permission.Role == UserPermissionRoleConstants.OWNER) // Co-Owner tries to remove owner
                         {
-                            response.Message = $"You cannot remove the owner as {loggedIn_userRole}";
+                            response.Message = $"You cannot remove the owner as {loggedIn_userPermissionRole}";
                         }
                     }
                     
