@@ -267,7 +267,7 @@ namespace SU_COIN_BACK_END.Controllers
         [Route("[action]/{areOnlyAuctionsStarted}")]
         public async Task<IActionResult> GetAllHashes(bool areOnlyAuctionsStarted)
         {
-            ServiceResponse<List<string>> response = await _projectService.GetAllFileHashes(areOnlyAuctionsStarted);
+            ServiceResponse<List<string?>> response = await _projectService.GetAllFileHashes(areOnlyAuctionsStarted);
             if (!response.Success)
             {
                 if (response.Message == MessageConstants.NOT_AUTHORIZED_TO_ACCESS)

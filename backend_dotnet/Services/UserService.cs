@@ -223,7 +223,7 @@ namespace SU_COIN_BACK_END.Services
                             IsAccepted = false
                         };
 
-                        _context.ProjectPermissions.AddAsync(new_permission);
+                        await _context.ProjectPermissions.AddAsync(new_permission);
                         await _context.SaveChangesAsync();
 
                         response.Success = true;
@@ -488,7 +488,7 @@ namespace SU_COIN_BACK_END.Services
                 return response;
             }
 
-            if (GetUserAddress() != project.ProposerAddress) // User is not owner of the project
+            if (await _projectService.HasOwnerPermission(projectID)) // User is not owner of the project
             {
                 response.Message = MessageConstants.PROJECT_PERMISSION_MANAGE_DENIED;
                 return response;

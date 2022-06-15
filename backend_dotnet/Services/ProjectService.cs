@@ -106,7 +106,7 @@ namespace SU_COIN_BACK_END.Services
                     ViewerAccepted = true,     //todo temporarily set to true will change later when frontend is implemented
                     ProjectName = request.ProjectName,
                     Date = DateTime.Now,
-                    ProposerAddress = GetUserAddress(), // address of the owner
+                    ProposerAddress = GetUserAddress(),
                     FileHash = ipfsHash,
                     ProjectDescription = request.ProjectDescription,
                     MarkDown = request.MarkDown                    
@@ -290,16 +290,19 @@ namespace SU_COIN_BACK_END.Services
             return response;
         }
 
-        public async Task<ServiceResponse<List<string>>> GetAllFileHashes(bool areOnlyAuctionsStarted = false)
+        public async Task<ServiceResponse<List<string?>>> GetAllFileHashes(bool areOnlyAuctionsStarted = false)
         {
-            ServiceResponse<List<string>> response = new ServiceResponse<List<string>>();
+            ServiceResponse<List<string?>> response = new ServiceResponse<List<string?>>();
             try 
             {
-                List<string> hashes = new List<string>();
+                List<string?> hashes = new List<string?>();
 
                 if (areOnlyAuctionsStarted)
                 {
-                    hashes = await _context.Projects.Where(project => project.IsAuctionStarted).Select(project => project.FileHash).ToListAsync();
+                    hashes = await _context.Projects
+                        .Where(project => project.IsAuctionStarted)
+                        .Select(project => project.FileHash)
+                        .ToListAsync();
                 }
                 else // all projects
                 {
@@ -308,6 +311,7 @@ namespace SU_COIN_BACK_END.Services
                         response.Message = MessageConstants.NOT_AUTHORIZED_TO_ACCESS;
                         return response;
                     }
+
                     hashes = await _context.Projects.Select(project => project.FileHash).ToListAsync();
                 }
                         
@@ -317,7 +321,7 @@ namespace SU_COIN_BACK_END.Services
                     response.Success = true;
                     return response;
                 }
-                            
+                
                 response.Data = hashes;
                 response.Message = MessageConstants.OK;
                 response.Success = true;
@@ -604,18 +608,22 @@ namespace SU_COIN_BACK_END.Services
                 {
                     /* First fetch all the projects. Then, filter the permissioned projects */
                     Project? project = await _context.Projects
-                    .Select(p => withHex ? p : new Project 
+                        .Select(p => withHex ? p : new Project 
+                        {
+                            ProjectID = p.ProjectID, 
+                            ProjectName = p.ProjectName, 
+                            Date = p.Date, 
+                            FileHash = p.FileHash,
+                            ProjectDescription = p.ProjectDescription, 
+                            Rating = p.Rating, 
+                            Status = p.Status
+                        })
+                        .FirstOrDefaultAsync(c => c.ProjectID == projectPermissions[i].ProjectID);
+                    
+                    if (project != null) 
                     {
-                        ProjectID = p.ProjectID, 
-                        ProjectName = p.ProjectName, 
-                        Date = p.Date, 
-                        FileHash = p.FileHash,
-                        ProjectDescription = p.ProjectDescription, 
-                        Rating = p.Rating, 
-                        Status = p.Status
-                    })
-                    .FirstOrDefaultAsync(c => c.ProjectID == projectPermissions[i].ProjectID);
-                    allProjects.Add(project);
+                        allProjects.Add(project);
+                    }
                 }
                 
                 response.Data = (allProjects.Select(c => _mapper.Map<ProjectDTO>(c))).ToList();
@@ -694,7 +702,7 @@ namespace SU_COIN_BACK_END.Services
                 }
 
                 ProjectPermission? permission = await _context.ProjectPermissions
-                .FirstOrDefaultAsync(permission => permission.ProjectID == projectID && permission.UserID == GetUserId());
+                    .FirstOrDefaultAsync(permission => permission.ProjectID == projectID && permission.UserID == GetUserId());
 
                 if (permission == null)
                 {
@@ -753,7 +761,7 @@ namespace SU_COIN_BACK_END.Services
                     return response;
                 }
 
-                if (GetUserAddress() != project.ProposerAddress) // Only owner may create the auction
+                if (await HasOwnerPermission(projectID)) // Only owner may create the auction
                 {
                     response.Message = MessageConstants.NOT_AUTHORIZED_TO_ACCESS;
                     return response;                    
@@ -785,7 +793,9 @@ namespace SU_COIN_BACK_END.Services
 
         public async Task<bool> HasOwnerPermission(int projectId)
         {
-            if (await _context.Projects.AnyAsync(project => project.ProjectID == projectId && project.ProposerAddress == GetUserAddress()))
+            if (await _context.ProjectPermissions
+                .AnyAsync(permission => permission.ProjectID == projectId && permission.UserID == GetUserId() 
+                    && permission.Role == UserPermissionRoleConstants.OWNER))
             {
                 return true;
             }
@@ -829,17 +839,21 @@ namespace SU_COIN_BACK_END.Services
                 {
                     /* First fetch all the projects. Then, filter the invited projects */
                     Project? project = await _context.Projects
-                    .Select(p => new Project 
+                        .Select(p => new Project 
+                        {
+                            ProjectID = p.ProjectID, 
+                            ProjectName = p.ProjectName, 
+                            Date = p.Date, 
+                            ProjectDescription = p.ProjectDescription, 
+                            Rating = p.Rating, 
+                            Status = p.Status
+                        })
+                        .FirstOrDefaultAsync(c => c.ProjectID == projectPermissions[i].ProjectID);
+                    
+                    if (project != null)
                     {
-                        ProjectID = p.ProjectID, 
-                        ProjectName = p.ProjectName, 
-                        Date = p.Date, 
-                        ProjectDescription = p.ProjectDescription, 
-                        Rating = p.Rating, 
-                        Status = p.Status
-                    })
-                    .FirstOrDefaultAsync(c => c.ProjectID == projectPermissions[i].ProjectID);
-                    allProjects.Add(project);
+                        allProjects.Add(project);
+                    }
                 }
 
                 response.Data = (allProjects.Select(c => _mapper.Map<ProjectDTO>(c))).ToList();
