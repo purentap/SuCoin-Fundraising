@@ -218,7 +218,9 @@ namespace SU_COIN_BACK_END.Services
 
                     if (HexBigIntegerConvertorExtensions.HexToBigInteger(project.proposerAddress, IsHexLittleEndian) == 0)
                     {
-                        throw new Exception($"Project does not exist for {projectHash}");
+                        response.Message = MessageConstants.AUCTION_NOT_FOUND;
+                        response.Data = $"Project does not exist for {projectHash}";
+                        return response;
                     }
                     else
                     {
@@ -244,17 +246,27 @@ namespace SU_COIN_BACK_END.Services
         {
             var projectResponse = await GetAuctionFromHash(projectHash);
             ServiceResponse<bool> auctionResponse = new ServiceResponse<bool>();
-            var projectFound = projectResponse.Success;
+            var projectFound = projectResponse.Success; // project who has an auction
 
             if (projectFound) 
             {
                 auctionResponse.Message = MessageConstants.OK;
-                auctionResponse.Success = true;
+                auctionResponse.Success = projectFound;
+                auctionResponse.Data = true;
             }
 
             else 
             {
+                /* If everything goes fine in the GetAuctionFromHash method and result is auction is not created 
+                  then it means that method successfully worked and determined that the auction for the current project
+                  has not been created yet * */
+                string? projectResponse_message = projectResponse.Message;
+                if (projectResponse_message == MessageConstants.AUCTION_NOT_FOUND)
+                {
+                    auctionResponse.Success = true;
+                }
                 auctionResponse.Message = projectResponse.Message;
+                                        
             }
 
             return auctionResponse;
@@ -268,7 +280,6 @@ namespace SU_COIN_BACK_END.Services
 
             if (!projectFound) 
             {
-                auctionStartedResponse.Success = projectFound;
                 auctionStartedResponse.Message = projectResponse.Message;
                 return auctionStartedResponse;
             }
@@ -279,13 +290,17 @@ namespace SU_COIN_BACK_END.Services
                 var contract = _web3.Eth.GetContract(auctionABI, address);
                 var auctionStatus = await contract.GetFunction("status").CallAsync<int>();
 
+                /* If everything goes fine in the until there 
+                  method works successfully, then determine whether the auction has been started or not * */
+
+                auctionStartedResponse.Success = true;
+
                 if (auctionStatus == 0)
                 {
                     auctionStartedResponse.Message = MessageConstants.AUCTION_NOT_STARTED;
                 }
                 else
                 {
-                    auctionStartedResponse.Success = true;
                     auctionStartedResponse.Data = true;
                     auctionStartedResponse.Message = MessageConstants.OK;
                 }

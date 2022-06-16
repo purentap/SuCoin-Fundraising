@@ -305,7 +305,7 @@ namespace SU_COIN_BACK_END.Controllers
                 if (response.Message == MessageConstants.PROJECT_NOT_FOUND || response.Message == MessageConstants.CONTRACT_NOT_FOUND 
                     || response.Message == MessageConstants.PROJECT_NOT_FOUND_IN_CHAIN)
                 {
-                    return NotFound(response);
+                    return NotFound();
                 }
                 if (response.Message == MessageConstants.PROJECT_NOT_ACCEPTED_BY_VIEWER || response.Message == MessageConstants.PROJECT_PERMISSION_MANAGE_DENIED)
                 {
@@ -331,9 +331,9 @@ namespace SU_COIN_BACK_END.Controllers
                     || response.Message == MessageConstants.PROJECT_NOT_FOUND_IN_CHAIN || response.Message == MessageConstants.AUCTION_NOT_FOUND
                     || response.Message == MessageConstants.AUCTION_NOT_STARTED)
                 {
-                    return NotFound(response);
+                    return NotFound();
                 }
-                if (response.Message == MessageConstants.PROJECT_PERMISSION_MANAGE_DENIED)
+                if (response.Message == MessageConstants.PROJECT_PERMISSION_MANAGE_DENIED || response.Message == MessageConstants.NOT_AUTHORIZED_TO_ACCESS)
                 {
                     return Forbid();
                 }

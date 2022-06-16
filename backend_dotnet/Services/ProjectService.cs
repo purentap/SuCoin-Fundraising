@@ -682,11 +682,28 @@ namespace SU_COIN_BACK_END.Services
                     response.Message = MessageConstants.PROJECT_NOT_FOUND;
                     return response;
                 }
+
+                ProjectPermission? permission = await _context.ProjectPermissions
+                    .FirstOrDefaultAsync(permission => permission.ProjectID == projectID && permission.UserID == GetUserId());
+
+                if (permission == null)
+                {
+                    response.Message = MessageConstants.PROJECT_PERMISSION_MANAGE_DENIED;                  
+                    return response;
+                }
+                
+                if (permission.Role == UserPermissionRoleConstants.EDITOR) // Only owner and co-owners may start the auction
+                {
+                    response.Message = MessageConstants.NOT_AUTHORIZED_TO_ACCESS;
+                    return response;
+                }
+
                 if (!project.IsAuctionCreated)
                 {
                     response.Message = "Auction of this project has not been created yet";
                     return response;
                 }
+
                 if (project.IsAuctionStarted)  // User tries to re-start an auction
                 {
                     response.Message = $"Auction of project {projectID} has already been started";
@@ -701,18 +718,9 @@ namespace SU_COIN_BACK_END.Services
                     return response;
                 }
 
-                ProjectPermission? permission = await _context.ProjectPermissions
-                    .FirstOrDefaultAsync(permission => permission.ProjectID == projectID && permission.UserID == GetUserId());
-
-                if (permission == null)
+                if (!chainResponse.Data)
                 {
-                    response.Message = MessageConstants.PROJECT_PERMISSION_MANAGE_DENIED;                  
-                    return response;
-                }
-                
-                if (permission.Role == UserPermissionRoleConstants.EDITOR) // Only owner and co-owners may start the auction
-                {
-                    response.Message = MessageConstants.NOT_AUTHORIZED_TO_ACCESS;
+                    response.Message = MessageConstants.AUCTION_NOT_STARTED;
                     return response;
                 }
                                 
@@ -742,6 +750,11 @@ namespace SU_COIN_BACK_END.Services
                     response.Message = MessageConstants.PROJECT_NOT_FOUND;
                     return response;
                 }
+                if (await HasOwnerPermission(projectID)) // Only owner may create the auction
+                {
+                    response.Message = MessageConstants.PROJECT_PERMISSION_MANAGE_DENIED;
+                    return response;                    
+                }
                 if (project.Status != ProjectStatusConstants.APPROVED)
                 {
                     response.Message = "Project is not approved. Therefore, not ready to be auctioned";
@@ -760,11 +773,11 @@ namespace SU_COIN_BACK_END.Services
                     response.Message = chainResponse.Message;
                     return response;
                 }
-
-                if (await HasOwnerPermission(projectID)) // Only owner may create the auction
+                
+                if (!chainResponse.Data) // Auction is not created in the chain
                 {
-                    response.Message = MessageConstants.NOT_AUTHORIZED_TO_ACCESS;
-                    return response;                    
+                    response.Message = MessageConstants.AUCTION_NOT_FOUND;
+                    return response;
                 }
 
                 project.IsAuctionCreated = true;
