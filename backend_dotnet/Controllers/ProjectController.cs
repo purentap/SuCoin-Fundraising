@@ -300,6 +300,8 @@ namespace SU_COIN_BACK_END.Controllers
         public async Task<IActionResult> CreateAuction(int id)
         {
             ServiceResponse<string> response = await _projectService.CreateAuction(id);
+
+            Console.WriteLine(response.Message);
             if (!response.Success)
             {
                 if (response.Message == MessageConstants.PROJECT_NOT_FOUND || response.Message == MessageConstants.CONTRACT_NOT_FOUND 

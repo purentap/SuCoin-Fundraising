@@ -750,7 +750,7 @@ namespace SU_COIN_BACK_END.Services
                     response.Message = MessageConstants.PROJECT_NOT_FOUND;
                     return response;
                 }
-                if (await HasOwnerPermission(projectID)) // Only owner may create the auction
+                if (!await HasOwnerPermission(projectID)) // Only owner may create the auction
                 {
                     response.Message = MessageConstants.PROJECT_PERMISSION_MANAGE_DENIED;
                     return response;                    
@@ -807,9 +807,10 @@ namespace SU_COIN_BACK_END.Services
         public async Task<bool> HasOwnerPermission(int projectId)
         {
             if (await _context.ProjectPermissions
-                .AnyAsync(permission => permission.ProjectID == projectId && permission.UserID == GetUserId() 
-                    && permission.Role == UserPermissionRoleConstants.OWNER))
+                .AnyAsync(permission => (permission.ProjectID == projectId) && (permission.UserID == GetUserId() )
+                    && (permission.Role == UserPermissionRoleConstants.OWNER)))
             {
+                
                 return true;
             }
             return false;

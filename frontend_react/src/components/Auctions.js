@@ -47,7 +47,7 @@ const options = [
     { value: 'fman', label: 'FMAN' }
 ]
 
-const MaestroAddress = "0x258CF5D2678Db2304eabf02387774Bb6Ca49C424";
+const MaestroAddress = "0x90Cb7bD657d3a79a4E70E0458078dab56B9c9Fca";
 
 const IDs = []
 
@@ -75,7 +75,9 @@ export const getAuctionByStatus = async (status, count) => {
     })
     let result = await response2
 
-    const hashToProject = Object.fromEntries(result.data.data.map(project => [("0x" + project.fileHash).toLowerCase(), project]))
+    const projectsWithAuctions = result.data.data.filter(project => project.isAuctionCreated)
+
+    const hashToProject = Object.fromEntries(projectsWithAuctions.map(project => [("0x" + project.fileHash).toLowerCase(), project]))
     const auctionData = await MAESTRO.getProjectSurfaceByStatus(Object.keys(hashToProject), status % 4, count ?? result.data.data.length,status == 4)
     const auctionDataCombined = auctionData.filter(auction => auction.auctionType != "").map(auction => {
 
