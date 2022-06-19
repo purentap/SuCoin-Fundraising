@@ -15,6 +15,7 @@ import CreateTokens from './components/CreateTokens';
 import CreateAuction from './components/CreateAuction';
 import TokenSwap from './components/TokenSwap';
 import ProfilePage from './components/ProfilePage';
+
 import Templates from "./templates"; // CAN BE DELETED
 
 // Context
@@ -22,6 +23,7 @@ import { WalletSwitcher, UserContext } from './User';
 // Styles
 import { GlobalStyle } from './GlobalStyle';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import NotAuthorized from './components/NotAuthorized';
 
 
 const App = () => {
@@ -49,6 +51,7 @@ const App = () => {
             <Route path='/auction/:projectId' element={<Auction />} />
             <Route path = '/profile' element = {<ProfilePage />} />
             <Route path = '/tt' element = {<Templates />} />
+            <Route path = "/notAuthorized" element = {<NotAuthorized />} />
             <Route path='/*' element={<NotFound />} />
           </Routes>
           <GlobalStyle />

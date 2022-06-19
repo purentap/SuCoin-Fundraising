@@ -26,6 +26,8 @@ import abi from '../abi/project.json'
 import { ethers } from 'ethers';
 import ethersAbi from '../contracts_hardhat/artifacts/contracts/ProjectRegister.sol/ProjectRegister.json'
 
+import { useEffect } from 'react';
+
 const options = [
 	{ value: 'fens', label: 'FENS' },
 	{ value: 'fass', label: 'FASS' },
@@ -33,6 +35,37 @@ const options = [
 ]
 
 const Apply = () => {
+
+	const navigate = useNavigate()
+
+	useEffect(async () => {
+		try {
+		  const apiInstance = axios.create({
+			baseURL: "https://localhost:5001",
+		  });
+		  apiInstance.defaults.headers.common[
+			"Authorization"
+		  ] = `Bearer ${Cookies.get("token")}`;
+		  let response2 = new Promise((resolve, reject) => {
+			apiInstance
+			  .get("/User/Get")
+			  .then((res) => {
+				console.log("response: ", res.data);
+				resolve(res);
+			  })
+			  .catch((e) => {
+				const err = "Unable to  get the user";
+				navigate("/notAuthorized"); 
+
+				reject(err);
+			  });
+		  });
+		
+		} catch (error) {
+		  console.log(error);
+		}
+	  }, []);
+
 	const user = useContext(UserContext);
 	const [projectName, setName] = useState('');
 	const [projectDescription, setDescription] = useState('');

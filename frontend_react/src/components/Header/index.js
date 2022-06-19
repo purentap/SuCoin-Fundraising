@@ -150,7 +150,7 @@ const Header = () => {
               <Nav.Link onClick={() => { navigate('/'); }}>Home</Nav.Link>
               <Nav.Link onClick={() => { navigate('/projects'); }}>Projects</Nav.Link>
               <Nav.Link onClick={() => { navigate('/auctions'); }}>Auctions</Nav.Link>
-              {logged ? <Nav.Link onClick={() => { navigate('/tokenSwap'); }}>Swap</Nav.Link> : null}
+              <Nav.Link onClick={() => { navigate('/tokenSwap'); }}>Swap</Nav.Link>
               {logged ? <Nav.Link onClick={() => { navigate('/apply'); }}>Apply</Nav.Link> : null}
             </Nav>
             <Nav>

@@ -9,6 +9,7 @@ import abi from "../abi/project.json";
 import { ethers } from "ethers";
 import { hexToHash } from "../helpers";
 import ProjectInvitationCard from "./ProfilePageUI/ProjectInvitationCard";
+import { useNavigate } from 'react-router-dom';
 
 import LoadingIcon from './LoadingIcon';
 
@@ -26,6 +27,7 @@ const apiInstance = axios.create({
 
 
 const ProfilePage = () => {
+  const navigate = useNavigate();
   const [User, setUser] = useState(user);
 
   const [isLoading, setIsLoading] = useState(true);
@@ -55,6 +57,9 @@ const ProfilePage = () => {
       setUser(result.data.data);
     } catch (error) {
       console.log(error);
+      navigate("/notAuthorized");
+
+      
     }
   }, []);
 
