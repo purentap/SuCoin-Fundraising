@@ -19,7 +19,7 @@ import { numberToFixedNumber } from '../helpers';
 import Maestro from "../contracts_hardhat/artifacts/contracts/Maestro.sol/Maestro.json"
 
 
-const maestro = { address: "0x258CF5D2678Db2304eabf02387774Bb6Ca49C424" }
+const maestro = { address: "0x90Cb7bD657d3a79a4E70E0458078dab56B9c9Fca" }
 
 
 const CreateTokens = () => {
@@ -83,7 +83,11 @@ const CreateTokens = () => {
     return (
         <>
             <Wrapper>
-                <Container  >
+
+                <Container>
+                    {!hash ? "Please enter from project details page" : 
+                    <>
+                    
                     <Row className="g-2">
                         <Col md>
                             <FloatingLabel controlId="floatingInputGrid" label="Token Name">
@@ -114,7 +118,10 @@ const CreateTokens = () => {
                             <Button variant="dark" onClick={() => { action1() }}> Create</Button>
                         </Col>
                     </Row>
-                </Container>
+                    </>
+                }
+                </Container> 
+        
             </Wrapper >
 
         </>

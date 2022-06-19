@@ -14,7 +14,8 @@ import Col from 'react-bootstrap/Col'
 import Container from 'react-bootstrap/Col'
 import FloatingLabel from 'react-bootstrap/FloatingLabel'
 import Card from 'react-bootstrap/Card'
-
+import axios from 'axios'
+import Cookies from 'js-cookie'
 
 
 // Styles
@@ -35,12 +36,16 @@ import { numberToFixedNumber } from '../helpers';
 
 const BiLiraAddress = "0x8f5736aF17F2F071B476Fd9cFD27a1Bd8D7E7F15";
 
-const maestro = { address: "0x258CF5D2678Db2304eabf02387774Bb6Ca49C424" }
+const maestro = { address: "0x90Cb7bD657d3a79a4E70E0458078dab56B9c9Fca" }
 const SUCoin = { address: "0xb6e466F4F0ab1e2dA2E8237F38B2eCf6278894Ce" }
 
 const CreateAuction = () => {
 
+
     const hash = useLocation()?.state?.hash
+    const projectId =  useLocation()?.state?.id
+
+    console.log(hash,projectId)
 
 
 
@@ -86,6 +91,8 @@ const CreateAuction = () => {
 
     ]);
 
+    
+
     const [auction, setAuction] = useState("")
     const [tokenPrice, setTokenPrice] = useState();
     const [finalPrice,setFinalPrice] = useState();
@@ -95,21 +102,41 @@ const CreateAuction = () => {
 
 
 
-    const action1 = async () => {
-        const provider = await new ethers.providers.Web3Provider(window.ethereum);
 
-        const signer = await provider.getSigner();
+    const updateDatabase = async () => {
 
-        const MAESTRO = new ethers.Contract(maestro, Maestro.abi, signer);
+ try {
 
-        const maestroContract = MAESTRO.attach(maestro.address)
-
-        const address = await signer.getAddress()
-
-        await maestroContract.assignToken(tokenAddress,hash)
-
-
+    console.log("w")
+    
+          const apiInstance = axios.create({
+            baseURL: "https://localhost:5001",
+          })
+          apiInstance.defaults.headers.common["Authorization"] = `Bearer ${Cookies.get('token')}`
+          let response2 = new Promise((resolve, reject) => {
+            apiInstance
+              .put(`/Project/CreateAuction/${projectId}`)
+              .then((res) => {
+                console.log("response: ", res.data)
+                resolve(res)
+              })
+              .catch((e) => {
+                const err = "Unable to create an auction in database"
+                reject(err)
+    
+              })
+          })
+          let result = await response2
+          console.log(result)
+    
+    
+        } catch (error) {
+          console.log(error)
+        }
     }
+
+
+   
 
 
 
@@ -128,8 +155,13 @@ const CreateAuction = () => {
         const maestroContract = new ethers.Contract(maestro.address,Maestro.abi,signer)
 
         const auctionType = ["UncappedAuction","PseudoCappedAuction","OBFCFSAuction","FCFSAuction","DutchAuction","OBDutchAuction","StrictDutchAuction"][id]
-        console.log(auctionType)
-        maestroContract.createAuction(hash,auctionType,[tokenDistributedDecimal,priceDecimal,finalRate,limitDecimal])        
+        
+        const tx = await maestroContract.createAuction(hash,auctionType,[tokenDistributedDecimal,priceDecimal,finalRate,limitDecimal])  
+        await tx.wait(1)
+        console.log("x")
+        await updateDatabase()  
+
+
     }
 
 
@@ -150,6 +182,8 @@ const CreateAuction = () => {
         <>
 
             <Wrapper>
+            {(projectId && hash) ? 
+            
 
 
                 <Container  >
@@ -215,7 +249,8 @@ const CreateAuction = () => {
 
                     }
 
-                </Container>
+                </Container> : "Please enter from project details page"
+            } 
             </Wrapper >
 
         </>

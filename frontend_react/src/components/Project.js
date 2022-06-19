@@ -171,6 +171,7 @@ const Project = ({ navigation }) => {
     }
   }
 
+
   const getFile = async () => {
 
     console.log(project.fileHash)
@@ -254,7 +255,7 @@ const Project = ({ navigation }) => {
               tokenPrice={"N/A"}
               isAuctionCreated={false}
               onClickCreateToken={() => navigate("/createTokens", { state: { hash: hash } })}
-              onClickCreateAuction={() => navigate("/createAuction", { state: { hash: hash } })}
+              onClickCreateAuction={() => navigate("/createAuction", { state: { hash: hash,id:projectId } })}
             />
           </Grid>
         </Grid>
