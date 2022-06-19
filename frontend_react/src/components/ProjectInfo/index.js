@@ -29,15 +29,16 @@ import { useEffect } from 'react';
 import { Divider, Grid } from "@material-ui/core/";
 import { useNavigate } from 'react-router-dom';
 
-import Auction from "../../contracts_hardhat/artifacts/contracts/UpgradeableAuctions/Auction.sol/Auction.json"
+import Auction from "../../contracts_hardhat/artifacts/contracts/UpgradeableAuctions/CappedTokenAuction.sol/CappedTokenAuction.json"
 
 
 import Form from 'react-bootstrap/Form'
 import Row from 'react-bootstrap/Row'
 import Col from 'react-bootstrap/Col'
 import Container from 'react-bootstrap/Col'
+import { fixedNumberToNumber, numberToFixedNumber } from '../../helpers';
 
-const maestro = { address: "0x258CF5D2678Db2304eabf02387774Bb6Ca49C424" }
+const maestro = { address: "0x90Cb7bD657d3a79a4E70E0458078dab56B9c9Fca" }
 
 const ProjectInfo = ({ setProject,
   projectId,
@@ -54,6 +55,7 @@ const ProjectInfo = ({ setProject,
   isAuctionCreated,
   onClickCreateToken,
   onClickCreateAuction }) => {
+
 
   const [approveVotes, setApprove] = useState()
   const [rejectVotes, setReject] = useState()
@@ -91,6 +93,7 @@ const ProjectInfo = ({ setProject,
 
     setHash(fileHash)
 
+
     const provider = await new ethers.providers.Web3Provider(window.ethereum)
 
 
@@ -102,11 +105,30 @@ const ProjectInfo = ({ setProject,
 
     const projectInfo = await maestroContract.projectTokens(fileHash)
 
+    const {tokenName} = (await maestroContract.getAllAuctionsByHashList([fileHash]))[0]
+
+    project.tokenName = tokenName
+
+
+
+
     project.auction = projectInfo?.auction
 
     project.isAuctionCreated = project.auction != 0
 
+    if (project.isAuctionCreated) {
+      var cappedContract =  new ethers.Contract(project.auction, Auction.abi, signer)
+      try {
+        const tokenSupply  = await cappedContract.numberOfTokensToBeDistributed()
+        project.tokenSupply =  fixedNumberToNumber(tokenSupply)
+        console.log(tokenSupply)
+      }
+      catch {}
 
+    }
+
+
+    
 
 
     project.auctionType = projectInfo?.auctionType
@@ -120,25 +142,15 @@ const ProjectInfo = ({ setProject,
     var wlCount = await registerContract.whitelistedCount()
     const votes = await registerContract.projectsRegistered(fileHash)
 
-    setApprove(await votes.approved.toString())
-    setReject(await votes.rejected.toString())
-    setVotesneeded(Math.ceil(wlCount.toString() * threshold.toString() / 100))
+
+    setApprove(parseInt(await votes.approved))
+    setReject(parseInt(await votes.rejected))
+    setVotesneeded(Math.ceil(parseInt(wlCount) * parseInt(threshold)  / 100))
     //changeProjectStatus()
   })
 
 
 
-  const addWhitelist = async () => {
-    const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-    const account = accounts[0];
-    console.log(account)
-    var web3 = new Web3(Web3.givenProvider);
-    console.log(await web3.eth.getChainId());
-
-    var carContractAddress = ProjectRegister.address;
-    var carAbi = ProjectRegister.abi;
-    var carContract = await new web3.eth.Contract(carAbi, carContractAddress);
-  }
 
 
 
@@ -188,7 +200,7 @@ const ProjectInfo = ({ setProject,
       var receipt = await registerTx.wait(1);
       const votes = await registerContract.projectsRegistered(hash)
       
-      setApprove(approveVotes + 1)
+      setApprove(parseInt(approveVotes) + 1)
       if (votes.finalized) {
         changeProjectStatus()
       }
@@ -323,6 +335,7 @@ const ownerButtonGroup = (isOwner, isAuctionCreated , project) => {
     )
 }
 
+
   return (
     <Wrapper>
             <Grid container spacing={0}>
@@ -334,7 +347,7 @@ const ownerButtonGroup = (isOwner, isAuctionCreated , project) => {
                         Project Status: <p>{projectStatus}</p>{" "}
                     </h5>
                     <h5>
-                        Approval Ratio: <p>{(parseInt(approveVotes) / (parseInt(approveVotes) + parseInt(rejectVotes)))* 100}% approval from professors</p>{" "}
+                        Approval Ratio: <p>{(parseInt(approveVotes) / (parseInt(votesNeeded)))* 100}% approval from professors</p>{" "}
                     </h5>
                     <h5>
                         Approved Votes Count: <p>{approveVotes} vote{approveVotes>1 ? "s" : null} out of {parseInt(approveVotes) + parseInt(rejectVotes)} votes</p>{" "}
@@ -347,14 +360,12 @@ const ownerButtonGroup = (isOwner, isAuctionCreated , project) => {
                 <Divider orientation="vertical" component="line" variant="middle" light={false} flexItem />
                 <Grid item xs style={{ display: "flex", flexDirection: "column", alignItems: "stretch", justifyContent: 'space-between' }}>
                     <h5>
-                        Tokens to be Distributed: <p>{tokenCount}</p>{" "}
+                        Tokens to be Distributed: <p>{project?.tokenSupply ?? "N/A"}</p>{" "}
                     </h5>
                     <h5>
-                        Token Name: <p>{tokenName}</p>{" "}
+                        Token Name: <p>{project.tokenName == "" ? "N/A" : project.tokenName}</p>{" "}
                     </h5>
-                    <h5>
-                        Latest Token Price: <p>{tokenPrice}</p>{" "}
-                    </h5>
+           
                     {ownerButtonGroup(isOwner, isAuctionCreated,project)}
                 </Grid>
             </Grid>
