@@ -16,7 +16,8 @@ module.exports = {
     },
     avalanhe: {
       url: "https://speedy-nodes-nyc.moralis.io/7918f6b4c7b9adebcdeb036e/avalanche/testnet",
-      accounts: [privateKey]
+      accounts: ["937b9f86829801bb4f498fd83bf71cf3af239d783c8494b24e81d4fffa4c568e"],
+      timeout: 100000
     }
   },
   solidity: {
