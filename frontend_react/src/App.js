@@ -24,6 +24,9 @@ import { WalletSwitcher, UserContext } from './User';
 import { GlobalStyle } from './GlobalStyle';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import NotAuthorized from './components/NotAuthorized';
+import WithNav from './WithNav';
+import WithoutNav from './WithoutNav';
+import AdminPage from './components/AdminPage/AdminPage';
 
 
 const App = () => {
@@ -35,26 +38,30 @@ const App = () => {
     <Router>
       <div className="app">
         <UserContext.Provider value={value}>
-          <Header >
-
-          </Header>
 
           <Routes>
-            <Route path='/' element={<Home />} />
-            <Route path='/projects' element={<ProjectList />} />
-            <Route path='/apply' element={<Apply />} />
-            <Route path='/createTokens' element={<CreateTokens />} />
-            <Route path='/createAuction' element={<CreateAuction />} />
-            <Route path='/auctions' element={<Auctions />} />
-            <Route path='/tokenSwap' element={<TokenSwap />} />
-            <Route path='/projects/:projectId' element={<Project />} />
-            <Route path='/auction/:projectId' element={<Auction />} />
-            <Route path = '/profile' element = {<ProfilePage />} />
-            <Route path = '/tt' element = {<Templates />} />
-            <Route path = "/notAuthorized" element = {<NotAuthorized />} />
-            <Route path='/*' element={<NotFound />} />
-          </Routes>
-          <GlobalStyle />
+            <Route path='/' element={<WithNav/>}>
+              <Route index element = {<Home />} />
+              <Route path='/projects' element={<ProjectList />} />
+              <Route path='/apply' element={<Apply />} />
+              <Route path='/createTokens' element={<CreateTokens />} />
+              <Route path='/createAuction' element={<CreateAuction />} />
+              <Route path='/auctions' element={<Auctions />} />
+              <Route path='/tokenSwap' element={<TokenSwap />} />
+              <Route path='/projects/:projectId' element={<Project />} />
+              <Route path='/auction/:projectId' element={<Auction />} />
+              <Route path = '/profile' element = {<ProfilePage />} />
+              <Route path = '/tt' element = {<Templates />} />
+              <Route path = "/notAuthorized" element = {<NotAuthorized />} />
+              <Route path='/*' element={<NotFound />} />
+            </Route>
+          
+
+          <Route path='/admin' element= {<WithoutNav/>}>
+            <Route  index element = {<AdminPage/>} />
+          </Route>
+        </Routes>
+        <GlobalStyle />
         </UserContext.Provider>
       </div>
     </Router>

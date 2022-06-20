@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "react-pro-sidebar": "^0.7.1",
     "react-rating-stars-component": "^2.2.0"
   }
 }
