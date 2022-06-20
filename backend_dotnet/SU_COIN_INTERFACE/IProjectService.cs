@@ -19,6 +19,7 @@ namespace SU_COIN_BACK_END.SU_COIN_INTERFACE
         Task<ServiceResponse<List<ProjectDTO>>> GetAllPermissionedProjects(bool withHex);
         Task<ServiceResponse<List<ProjectDTO>>> GetAllInvitedProjects();
         Task<ServiceResponse<List<ProjectDTO>>> GetProjects(int numberOfProjects = Int32.MaxValue, bool orderByRating = false);
+        Task<ServiceResponse<List<ProjectDTO>>> GetProjectsForViewerPage();
         Task<ServiceResponse<List<string?>>> GetAllFileHashes(bool areOnlyAuctionsStarted = true);
         Task<ServiceResponse<string>> ReplyProjectPreview(int id, bool reply);
         Task<ServiceResponse<string>> CreateAuction(int id);

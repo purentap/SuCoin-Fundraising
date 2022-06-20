@@ -343,5 +343,23 @@ namespace SU_COIN_BACK_END.Controllers
             }
             return Ok(response);
         }
+
+        [HttpGet]
+        [Route("ViewerPage/GetAll")]
+        public async Task<IActionResult> GetProjectsForViewerPage()
+        {
+            ServiceResponse<List<ProjectDTO>> response = await _projectService.GetProjectsForViewerPage();
+            if (!response.Success)
+            {
+                if (response.Message == MessageConstants.NOT_AUTHORIZED_TO_ACCESS)
+                {
+                    return Forbid();
+                }
+                return BadRequest(response);
+            }
+
+            return Ok(response);
+        }
+
     }
 }

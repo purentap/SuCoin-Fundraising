@@ -220,7 +220,7 @@ namespace SU_COIN_BACK_END.Services
                }
                else 
                {
-                   projects = await _context.Projects.Where(project => project.ViewerAccepted).ToListAsync(); 
+                    projects = await _context.Projects.Where(project => project.ViewerAccepted).ToListAsync(); 
                     if (userRole != UserRoleConstants.ADMIN && userRole != UserRoleConstants.WHITELIST)
                     {
                         projects = projects.Where(c => c.Status == ProjectStatusConstants.APPROVED).ToList();
@@ -248,6 +248,24 @@ namespace SU_COIN_BACK_END.Services
             {
                 response.Message = String.Format(MessageConstants.FAIL_MESSAGE, "get projects", e.Message);
             }
+
+            return response;
+        }
+
+        public async Task<ServiceResponse<List<ProjectDTO>>> GetProjectsForViewerPage()
+        {
+            ServiceResponse<List<ProjectDTO>> response = new ServiceResponse<List<ProjectDTO>>();
+            
+            if (GetUserRole() != UserRoleConstants.VIEWER)
+            {
+                response.Message = MessageConstants.NOT_AUTHORIZED_TO_ACCESS;
+                return response;
+            }
+
+            List<Project> projects = await _context.Projects.Where(project => !project.ViewerAccepted).ToListAsync();
+            response.Success = true;
+            response.Data = (projects.Select(project => _mapper.Map<ProjectDTO>(project))).ToList();
+            response.Message = MessageConstants.OK;
 
             return response;
         }
@@ -613,8 +631,9 @@ namespace SU_COIN_BACK_END.Services
                             ProjectID = p.ProjectID, 
                             ProjectName = p.ProjectName, 
                             Date = p.Date, 
-                            FileHash = p.FileHash,
+                            FileHash = p.FileHash, 
                             ProjectDescription = p.ProjectDescription, 
+                            ProposerAddress = p.ProposerAddress, 
                             Rating = p.Rating, 
                             Status = p.Status
                         })
@@ -859,6 +878,7 @@ namespace SU_COIN_BACK_END.Services
                             ProjectName = p.ProjectName, 
                             Date = p.Date, 
                             ProjectDescription = p.ProjectDescription, 
+                            ProposerAddress = p.ProposerAddress, 
                             Rating = p.Rating, 
                             Status = p.Status
                         })
