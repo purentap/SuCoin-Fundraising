@@ -659,6 +659,13 @@ namespace SU_COIN_BACK_END.Services
         public async Task<ServiceResponse<string>> ReplyProjectPreview(int id, bool reply)
         {
             ServiceResponse<string> response = new ServiceResponse<string>();
+
+            if (GetUserRole() != UserRoleConstants.VIEWER)
+            {
+                response.Message = MessageConstants.NOT_AUTHORIZED_TO_ACCESS;
+                return response;
+            }
+
             try
             {
                 Project? project = await _context.Projects.FirstOrDefaultAsync(project => project.ProjectID == id);
