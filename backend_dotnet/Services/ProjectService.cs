@@ -672,6 +672,7 @@ namespace SU_COIN_BACK_END.Services
                 if (reply)
                 {
                     project.ViewerAccepted = true;
+                    project.ViewerAcceptedAddress = GetUserAddress();
                     response.Message = MessageConstants.OK;
                     response.Data = "Project preview is approved by the viewer";
                     response.Success = true;

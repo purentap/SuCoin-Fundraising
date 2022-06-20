@@ -16,5 +16,6 @@ namespace SU_COIN_BACK_END.Models
         public string? Status { get; set; } = ProjectStatusConstants.PENDING;
         public string? MarkDown { get; set; }
         public string? ProposerAddress { get; set; } = null;
+        public string? ViewerAcceptedAddress { get; set; } = null;
     }
 }

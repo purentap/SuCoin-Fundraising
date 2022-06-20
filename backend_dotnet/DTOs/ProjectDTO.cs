@@ -15,5 +15,6 @@ namespace SU_COIN_BACK_END.DTOs
         public string MarkDown { get; set; } = "";
         public string FileHash { get; set; } = "";
         public string? ProposerAddress { get; set; } = null;
+        public string? ViewerAcceptedAddress { get; set; } = null;
     }
 }
