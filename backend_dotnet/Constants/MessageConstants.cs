@@ -8,7 +8,7 @@ namespace SU_COIN_BACK_END.Constants.MessageConstants
         public const string PROJECT_NAME_EXISTS = "Project name already exists please choose another name";
         public const string USER_NOT_FOUND = "User does not exist";
         public const string USER_IS_BLACKLISTED = "Blacklisted users do not have permission for this action";
-        public const string USER_NAME_EXIST = "Username already in use choose other username.";
+        public const string USER_NAME_EXIST = "Username already in use choose other username";
         public const string PROJECT_PERMISSION_MANAGE_DENIED = "You do not have permission to manage access on this project";
         public const string EVENT_NOT_FOUND = "No event has found";
         public const string NOT_AUTHORIZED_TO_ACCESS = "You are not authorized to access this resource";
@@ -21,6 +21,7 @@ namespace SU_COIN_BACK_END.Constants.MessageConstants
         public const string PROJECT_NOT_FOUND_IN_CHAIN = "Project not found in the chain";
         public const string USER_ROLE_NOT_FOUND_IN_CHAIN = "User role not found in the chain";
         public const string PROPOSAL_FILE_NOT_FOUND = "Proposal file is not found";
+        public const string PROPOSAL_FILE_EXISTS = "Proposal file already exists in the ipfs";
         public const string PROJECT_NOT_ACCEPTED_BY_VIEWER = "Project has not been accepted by the viewer yet";
         public const string CONTRACT_NOT_FOUND = "There is no contract for the current ABI";
         public const string AUCTION_NOT_STARTED = "Auction of this project has not been started in the chain yet";

@@ -90,20 +90,31 @@ namespace SU_COIN_BACK_END.Services
 
             try
             {
-                /* Project has not been created in the database. Create the new project */
-                ServiceResponse<string> ipfs_response = await _ipfsInteractionService.UploadToIpfs(request.FileHex, request.ImageUrl);
+                ServiceResponse<string> ipfs_response_to_upload = await _ipfsInteractionService.UploadToIpfs(request.FileHex, request.ImageUrl);
 
-                if (!ipfs_response.Success) 
+                if (!ipfs_response_to_upload.Success) 
                 {
-                    response.Message = ipfs_response.Message;
+                    response.Message = ipfs_response_to_upload.Message;
                     return response;
                 }
 
-                string ipfsHash = Convert.ToHexString(SimpleBase.Base58.Bitcoin.Decode(ipfs_response.Data).ToArray()).Substring(4);
+                string ipfsHash = Convert.ToHexString(SimpleBase.Base58.Bitcoin.Decode(ipfs_response_to_upload.Data).ToArray()).Substring(4);
+                bool proposalExists = await _context.Projects.AnyAsync(project => project.FileHash == ipfsHash);
 
+                // If it is uploaded previously, do not add the proposal file into the database
+                if (proposalExists)
+                {
+                    /* After that method terminates, 
+                       one of the viewers must remove the duplicated (current) proposal file manually from the ipfs
+                       to prevent ambiguity **/
+                    response.Message = MessageConstants.PROPOSAL_FILE_EXISTS;
+                    return response;
+                }
+                
+                /* Project has not been created in the database. Create the new project */
                 Project new_project = new Project 
                 {
-                    ViewerAccepted = true,     //todo temporarily set to true will change later when frontend is implemented
+                    ViewerAccepted = true,     // todo temporarily set to true will change later when frontend is implemented
                     ProjectName = request.ProjectName,
                     Date = DateTime.Now,
                     ProposerAddress = GetUserAddress(),
@@ -120,6 +131,14 @@ namespace SU_COIN_BACK_END.Services
 
                 if (dbProject == null)  // The project was not added, because some operations were applied to the project while adding the project to the database.
                 {
+                    /* In that case, remove the proposal from the ipfs */                    
+                    ServiceResponse<bool> ipfs_response_to_remove = await _ipfsInteractionService.RemoveFromIpfs(ipfsHash);
+                    if (!ipfs_response_to_remove.Success)
+                    {
+                        response.Message = ipfs_response_to_remove.Message;
+                        return response;
+                    }
+
                     response.Message = MessageConstants.PROJECT_ADD_FAIL;
                     return response;
                 }
