@@ -1,4 +1,5 @@
 import styled from 'styled-components';
+import { Button, Text,Textarea, FormLabel, FormControl } from "@chakra-ui/react";
 
 export const Wrapper = styled.div`
   color: var(--black);
@@ -92,4 +93,9 @@ export const Wrapper = styled.div`
       width: auto;
       object-fit: cover;
     }
+
+    rating-stars{
+      margin-top: 25px;
+      margin-bottom: 25px;
+  }
 `;
