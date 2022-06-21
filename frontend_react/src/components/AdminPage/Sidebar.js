@@ -1,6 +1,7 @@
 import { Container } from 'react-bootstrap';
 import { ProSidebar, Menu, MenuItem, SubMenu } from 'react-pro-sidebar';
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import 'react-pro-sidebar/dist/css/styles.css';
 
 const Sidebar = () => {
@@ -30,10 +31,9 @@ const Sidebar = () => {
     <ProSidebar style={{height:windowDimenion.winHeight}}>
     <Menu iconShape="square">
     <MenuItem >Dashboard</MenuItem>
-    <SubMenu title="Components" >
-      <MenuItem>Component 1</MenuItem>
-      <MenuItem>Component 2</MenuItem>
-    </SubMenu>
+    <MenuItem >Users
+    <Link to="/admin/users" /></MenuItem>
+
   </Menu>
 </ProSidebar>
 

@@ -27,7 +27,8 @@ import NotAuthorized from './components/NotAuthorized';
 import WithNav from './WithNav';
 import WithoutNav from './WithoutNav';
 import AdminPage from './components/AdminPage/AdminPage';
-
+import Users from './components/AdminPage/Users';
+import Sidebar from './components/AdminPage/Sidebar';
 
 const App = () => {
   const Router = process.env.REACT_APP_IFS === "True" ? HashRouter : BrowserRouter
@@ -56,9 +57,10 @@ const App = () => {
               <Route path='/*' element={<NotFound />} />
             </Route>
           
-
+          
           <Route path='/admin' element= {<WithoutNav/>}>
             <Route  index element = {<AdminPage/>} />
+            <Route  path = "/admin/users" element = {<Users/>} />
           </Route>
         </Routes>
         <GlobalStyle />
