@@ -205,6 +205,7 @@ const Project = ({ navigation }) => {
   }, [project])
 
   const navigate = useNavigate();
+
   return (
     isLoading ?
       <div>
@@ -243,6 +244,7 @@ const Project = ({ navigation }) => {
               isWhitelisted={isWhitelisted}
               imageUrl={project.imageURL}
               projectName={project.projectName}
+              rating={project.rating}
               projectDescription={project.projectDescription}
               proposalDate={project.date}
               projectStatus={project.status}

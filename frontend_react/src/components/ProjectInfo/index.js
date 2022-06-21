@@ -61,6 +61,7 @@ const ProjectInfo = ({ setProject,
   projectId,
   project,
   status,
+  rating,
   isOwner,
   isWhitelisted,
   fileHash,
@@ -108,6 +109,7 @@ const ProjectInfo = ({ setProject,
   const [projectName, setName] = useState('');
   const [projectDescription, setDescription] = useState('');
   const [projectImg, setImg] = useState('');
+  const [projectRating,setProjectRating] = useState(0);
 
   const navigate = useNavigate();
 
@@ -127,6 +129,8 @@ const ProjectInfo = ({ setProject,
 
   useEffect(async () => {
     const CryptoJS = require('crypto-js');
+
+
 
     if (fileHash == hash)
       return
@@ -171,10 +175,11 @@ const ProjectInfo = ({ setProject,
 
 
 
-
     project.auctionType = projectInfo?.auctionType
 
     setProject(project)
+    setProjectRating(rating)
+
 
 
 
@@ -189,6 +194,10 @@ const ProjectInfo = ({ setProject,
     setVotesneeded(Math.ceil(parseInt(wlCount) * parseInt(threshold) / 100))
     //changeProjectStatus()
   })
+
+
+
+
 
 
 
@@ -339,8 +348,43 @@ const ProjectInfo = ({ setProject,
   };
 
   const ratingChanged = (newRating) => {
-    console.log(newRating)
+    project.tempRating = newRating
   }
+
+  const updateDatabase = async (event) => {
+
+    try {
+
+      event.preventDefault();
+
+   
+       
+             const apiInstance = axios.create({
+               baseURL: "https://localhost:5001",
+             })
+             apiInstance.defaults.headers.common["Authorization"] = `Bearer ${Cookies.get('token')}`
+             let response2 = new Promise((resolve, reject) => {
+               apiInstance
+                 .put(`/Project/Rate/${projectId}/${project.tempRating}`)
+                 .then((res) => {
+                   console.log("response: ", res.data)
+                   resolve(res)
+                 })
+                 .catch((e) => {
+                   const err = "Unable to rate the project"
+                   reject(err)
+       
+                 })
+             })
+             let result = await response2
+             setProject(result.data.data)
+             setProjectRating(result.data.data.rating)
+       
+       
+           } catch (error) {
+             console.log(error)
+           }
+       }
 
   const whitelistesButtonGroup = (isWhiteListed) => {
 
@@ -380,7 +424,6 @@ const ProjectInfo = ({ setProject,
     )
   }
 
-
   return (
     <Wrapper>
       <Grid container spacing={0}>
@@ -405,11 +448,12 @@ const ProjectInfo = ({ setProject,
         </Grid>
         <Divider orientation="vertical" component="line" variant="middle" light={false} flexItem />
         <Grid item xs style={{ display: "flex", flexDirection: "column", alignItems: "stretch", justifyContent: 'space-between' }}>
+          
         <h5>
-            Project Rating: <p>{<div className="rating-stars">
+            Project Rating: <p>{<div key = {projectRating} className="rating-stars">
                     <ReactStars
                         count={5}
-                        value={project?.rating}
+                        value={projectRating}
                         edit={false}
                         size={35}
                         isHalf={true}
@@ -456,7 +500,7 @@ const ProjectInfo = ({ setProject,
               <ModalContent>
                 <ModalHeader>Enter Your Rating</ModalHeader>
                 <ModalCloseButton />
-                <form onSubmit={editHandler}>
+                <form onSubmit={updateDatabase}>
                   <ModalBody>
                     <FormControl isRequired >
                       <div style={{margin:"auto", flex:"row"}}>
