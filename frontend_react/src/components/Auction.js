@@ -101,6 +101,8 @@ const Auction = (props) => {
 
         auctionInfo.status = getStatus[0]
 
+        console.log(auctionInfo.status)
+
         if (fundLimitPerUser != null)
             auctionInfo.fundLimitPerUser = fixedNumberToNumber(fundLimitPerUser[0])
 
@@ -145,13 +147,16 @@ const Auction = (props) => {
         )))
 
 
+
         
+        if (state != 0) {
 
         groupedMap.set("currentRate", [[startTime * 1000 ,parseFloat(startingPrice ?? 0)] , ...(groupedMap.get("currentRate") ?? []) , [Math.min(new Date(),endTime * 1000),parseFloat(currentPrice)]])
         groupedMap.set("numberOfTokensToBeDistributed", [[startTime * 1000,parseFloat(initDist)] ,...(groupedMap.get("numberOfTokensToBeDistributed") ?? []) , [Math.min(new Date(),endTime * 1000),parseFloat(tokenDist)]])
         groupedMap.set("totalDepositedSucoins", [[startTime * 1000,parseFloat(0)] ,...(groupedMap.get("totalDepositedSucoins") ?? []) , [Math.min(new Date(),endTime * 1000),parseFloat(totalDeposit)]])
         groupedMap.set("minPrice", [[startTime * 1000,parseFloat(fixedNumberToNumber(1))] ,...(groupedMap.get("minPrice") ?? []) , [Math.min(new Date(),endTime * 1000),parseFloat(minimumPrice)]])
-
+        
+        }
 
         console.log(groupedMap)
         return groupedMap;
@@ -212,6 +217,22 @@ const Auction = (props) => {
 
         setIsLoading(false);
     }, [])
+
+    const getCircularValue = (auctionStatus) => {
+
+        switch(auctionStatus) {
+            
+            case 1:
+            case 2: //Not really accurate
+                return Math.round(Math.min(100, (Date.now() / 1000 - startTime) / (endTime - startTime) * 100))    
+
+            case 3:
+                return 100
+            default:
+                return 0
+        }
+        
+    }
 
 
     
@@ -303,8 +324,8 @@ const Auction = (props) => {
                         <Grid item xs>
                             <div style={{ width: "50%", margin: "auto" }}>
                                 <CircularProgressbar
-                                    value={(Date.now() / 1000 - startTime) / (endTime - startTime) * 100}
-                                    text={Math.round(Math.min(100, (Date.now() / 1000 - startTime) / (endTime - startTime) * 100)) + '% time elapsed'}
+                                    value={getCircularValue(currentData?.status)}
+                                    text={getCircularValue(currentData?.status) + '% time elapsed'}
                                     background={true}
                                     backgroundPadding={6}
                                     styles={buildStyles({

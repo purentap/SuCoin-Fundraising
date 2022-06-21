@@ -194,10 +194,10 @@ const AuctionInfo = ({ auction, status,projectId, price, tokenDist, deposit, tot
             Auction Mechanism: <p>Price will drop by the time goes. Try to be enter SUCoin amount according to your token price/supply strategy.</p>{" "}
           </h5>
           <h5>
-            Starting Date: <p>{new Date(startingDate * 1000).toString()}</p>{" "}
+            Starting Date: <p> {startingDate == 0 ? "Not started" : new Date(startingDate * 1000).toString()}</p>{" "}
           </h5>
           <h5>
-            Ending Date: <p>{new Date(endingDate * 1000).toString()}</p>{" "}
+            Ending Date: <p>{startingDate == 0 ? "Not started" : new Date(endingDate * 1000).toString()}</p>{" "}
           </h5>
         </Grid>
       </Grid>
