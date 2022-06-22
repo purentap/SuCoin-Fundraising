@@ -169,26 +169,31 @@ namespace SU_COIN_BACK_END.Services
                     int status = await contract.GetFunction("statusList").CallAsync<int>(address);
                     bool isAdmin = await contract.GetFunction("hasRole").CallAsync<bool>(ADMIN_ROLE.HexToByteArray(),address);
                     
-
                     Console.WriteLine($"Status: {status}"); // Debuging
 
-                    switch (status)
+                    if (isAdmin)
                     {
-                        case 1:
-                            chainRole = UserRoleConstants.WHITELIST;
-                            break;
-                        case 2:
-                            chainRole = UserRoleConstants.BLACKLIST;
-                            break;
-                        case 3:
-                            chainRole = UserRoleConstants.VIEWER;
-                            break;
-                        default:
-                            chainRole = UserRoleConstants.BASE;
-                            break;
+                        chainRole = UserRoleConstants.ADMIN;
+                    }
+                    else 
+                    {
+                        switch (status)
+                        {
+                            case 1:
+                                chainRole = UserRoleConstants.WHITELIST;
+                                break;
+                            case 2:
+                                chainRole = UserRoleConstants.BLACKLIST;
+                                break;
+                            case 3:
+                                chainRole = UserRoleConstants.VIEWER;
+                                break;
+                            default:
+                                chainRole = UserRoleConstants.BASE;
+                                break;
+                        }
                     }
 
-                    chainRole = isAdmin ? UserRoleConstants.ADMIN : chainRole;
                     response.Message = $"User Role: {chainRole}";
                     response.Data = chainRole;
                     response.Success = true;

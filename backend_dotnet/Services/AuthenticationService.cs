@@ -120,11 +120,6 @@ namespace SU_COIN_BACK_END.Services
                 }
                 else
                 {
-                    if (user.Role != UserRoleConstants.ADMIN)
-                    {
-                        user.Role = chainRole;
-                    }
-
                     response.Success = true;
                     response.Message = MessageConstants.OK;
                     response.Data = GenerateToken(user);
