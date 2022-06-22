@@ -22,7 +22,7 @@ import { Container,
   Checkbox,
 Stack,
 useCheckbox} from "@chakra-ui/react";
-import {ProjectRegisterAddress} from "../../contracts_hardhat/Constants"
+import {address} from '../../abi/project.json'
 
 
 const Users = () => {
@@ -44,7 +44,7 @@ const Users = () => {
     const provider = new ethers.providers.Web3Provider(window.ethereum);
     await provider.send("eth_requestAccounts", []);
     const signer = provider.getSigner();
-    const ProjectRegisterContract = new ethers.Contract(ProjectRegisterAddress, projectRegisterAbi, signer);
+    const ProjectRegisterContract = new ethers.Contract(address, projectRegisterAbi, signer);
 
     ProjectRegisterContract.editUserStatus()
     var editRequest = {
