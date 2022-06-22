@@ -155,8 +155,7 @@ const Apply = () => {
 						resolve(res)
 					})
 					.catch((e) => {
-						console.log(e.message)
-						const err = e.message
+						const err = e.response.data
 						reject(err)
 
 					})
