@@ -163,13 +163,8 @@ namespace SU_COIN_BACK_END.Services
                 try
                 {
                     string chainRole; // role of user in the chain
-
-
-                    Console.WriteLine(address);
-                    int status = await contract.GetFunction("statusList").CallAsync<int>(address);
+                    Console.WriteLine(address); // Debuging
                     bool isAdmin = await contract.GetFunction("hasRole").CallAsync<bool>(ADMIN_ROLE.HexToByteArray(),address);
-                    
-                    Console.WriteLine($"Status: {status}"); // Debuging
 
                     if (isAdmin)
                     {
@@ -177,6 +172,9 @@ namespace SU_COIN_BACK_END.Services
                     }
                     else 
                     {
+                        int status = await contract.GetFunction("statusList").CallAsync<int>(address);
+                        Console.WriteLine($"Status: {status}"); // Debuging
+
                         switch (status)
                         {
                             case 1:
