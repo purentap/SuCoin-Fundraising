@@ -9,6 +9,7 @@ namespace SU_COIN_BACK_END.DTOs
         public string? Address {get; set;} = null;
         public string? MailAddress {get; set;}
         public string? Username {get; set;}
+        public string? Role { get; set; }
         public List<ProjectPermission>? Invitations {get; set;} = null;
     }
 }
