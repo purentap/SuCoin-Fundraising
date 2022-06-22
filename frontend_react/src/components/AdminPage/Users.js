@@ -22,7 +22,7 @@ import { Container,
   Checkbox,
 Stack,
 useCheckbox} from "@chakra-ui/react";
-import {ProjectRegisterAddress} from "../../contracts_hardhat/Constants"
+import {address} from '../../abi/project.json'
 
 
 const Users = () => {
@@ -34,25 +34,24 @@ const Users = () => {
 
 
   const [role, setRole] = useState("");
-  const [surname, setSurname] = useState("");
-  const [email, setEmail] = useState("");
+
  
   const editHandler = async (event) => {
     event.preventDefault();
 
     console.log(role);
+    console.log(userAddress);
     const provider = new ethers.providers.Web3Provider(window.ethereum);
     await provider.send("eth_requestAccounts", []);
     const signer = provider.getSigner();
-    const ProjectRegisterContract = new ethers.Contract(ProjectRegisterAddress, projectRegisterAbi, signer);
+    const ProjectRegisterContract = new ethers.Contract(address, projectRegisterAbi, signer);
 
-    ProjectRegisterContract.editUserStatus()
+    await ProjectRegisterContract.editUserStatus(userAddress,role );
     var editRequest = {
       
     };
 
-    console.log(editRequest);
-
+    
   };
 
 
@@ -67,7 +66,7 @@ const Users = () => {
       });
     
     const [users, setUsers] = useState([]);
-    const [userAddress, setUserAddress] = useState([]);
+    const [userAddress, setUserAdress] = useState("");
     
     useEffect(async () => {
         try {
@@ -105,7 +104,7 @@ const Users = () => {
       };
 
     return(   
-        <Container maxW={"13xl"} marginTop={100} >  
+        <Container maxW={"13xl"} marginTop={5} >  
         <Table responsive bordered = {true} bgcolor = "lightGray" hover= {true} >
   <thead>
     <tr>
@@ -135,9 +134,10 @@ const Users = () => {
                       
                       <FormLabel>Change User Role:</FormLabel>
                       <Select id= 'userrole' placeholder='Select User Role' onChange={handleInput}>
-                      <option  value='Whitelist'>Whitelisted</option>
-                      <option value='Viewer'>Viewer</option>
-                      <option value='Base'>Base</option>
+                      <option  value='WHITELISTED'>Whitelisted</option>
+                      <option value='VIEWER'>Viewer</option>
+                      <option value='DEFAULT'>Base</option>
+                      <option value='BLACKLIST'>Blacklist</option>
                       </Select>
                     </FormControl>
                   </ModalBody>
@@ -164,10 +164,10 @@ const Users = () => {
   <tbody>
   {users.map((index) => (
      <tr onClick={()=>{
+      setUserAdress(index.address);
       
       onEditOpen();
-      setUserAddress(index.address);
-      console.log("hello world my name is eren");
+      
      }}>
      <td key={index}>{index.id}</td>
      <td key={index}>{index.name}</td>

@@ -114,7 +114,7 @@ namespace SU_COIN_BACK_END.Services
                 /* Project has not been created in the database. Create the new project */
                 Project new_project = new Project 
                 {
-                    ViewerAccepted = true,     // todo temporarily set to true will change later when frontend is implemented
+                    ViewerAccepted = false,     // todo temporarily set to true will change later when frontend is implemented
                     ProjectName = request.ProjectName,
                     Date = DateTime.Now,
                     ProposerAddress = GetUserAddress(),

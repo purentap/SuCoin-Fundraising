@@ -44,19 +44,20 @@ const Viewer = () => {
         }
       }, []);
       
+      console.log(projects);
 return(
 <Container maxW={"13xl"}  marginTop={100} >  
         <Table responsive bordered = {true} bgcolor = "lightGray" hover= {true} >
   <thead>
     <tr>
       <th>#</th>
-      <th>Name</th>
-      <th>Surname</th>
-      <th>Username</th>
-      <th>Email</th>
-      <th>Wallet Address</th>
-      <th>Change Role</th>
-      <th>Delete</th>
+      <th>Project Name</th>
+      <th>Description</th>
+      <th>Status</th>
+      <th>Rating</th>
+      <th>Proposer Address</th>
+      <th>File Hash</th>
+      <th>Date</th>
     
     </tr>
   </thead>
