@@ -121,17 +121,21 @@ namespace SU_COIN_BACK_END.Controllers
                 {
                     return Forbid();
                 }
+                if (response.Message != null && response.Message.StartsWith(MessageConstants.UPLOAD_FILE_TOO_LARGE)) {
+                    return StatusCode(StatusCodes.Status400BadRequest,response.Message);
+                }
+                
                 if (response.Message == MessageConstants.IPFS_INTERACTION_FAIL)
                 {
-                    return StatusCode(StatusCodes.Status408RequestTimeout, response);
+                    return StatusCode(StatusCodes.Status408RequestTimeout, response.Message);
                 }
                 if (response.Message == "Viewer is busy. Please try again later")
                 {
-                    return StatusCode(StatusCodes.Status503ServiceUnavailable, response);
+                    return StatusCode(StatusCodes.Status503ServiceUnavailable, response.Message);
                 }
                 if (response.Message == MessageConstants.PROJECT_ADD_FAIL)
                 {
-                    return StatusCode(StatusCodes.Status500InternalServerError, response);
+                    return StatusCode(StatusCodes.Status500InternalServerError, response.Message);
                 }
                 return BadRequest(response);
             }
