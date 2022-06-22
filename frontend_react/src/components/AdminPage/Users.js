@@ -2,11 +2,51 @@ import React, { useState, useContext, useEffect } from "react";
 import axios from "axios";
 import Cookies from "js-cookie";
 import Table from 'react-bootstrap/Table'
-import { Container } from "@chakra-ui/react";
+import { Container,
+  Select ,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalFooter,
+  ModalBody,
+  ModalCloseButton,
+  Input, 
+  useDisclosure,
+  Button, 
+  FormLabel, 
+  FormControl,
+  Checkbox,
+Stack,
+useCheckbox} from "@chakra-ui/react";
 
 
 
 const Users = () => {
+  const {
+    isOpen: isEditOpen,
+    onOpen: onEditOpen,
+    onClose: onEditClose,
+  } = useDisclosure();  
+
+
+  const [role, setRole] = useState("");
+  const [surname, setSurname] = useState("");
+  const [email, setEmail] = useState("");
+
+  const editHandler = async (event) => {
+    event.preventDefault();
+
+    console.log(role);
+
+    var editRequest = {
+      
+    };
+
+    console.log(editRequest);
+
+  };
+
 
     const config = {
         headers: {
@@ -47,9 +87,16 @@ const Users = () => {
         }
       }, []);
       
+      const handleInput = (e) => {
+        const input_name = e.currentTarget.name;
+        const value = e.currentTarget.value;
+    
+        setRole(value);
+       
+      };
 
     return(   
-        <Container  marginTop={100} >  
+        <Container maxW={"13xl"} marginTop={100} >  
         <Table responsive bordered = {true} bgcolor = "lightGray" hover= {true} >
   <thead>
     <tr>
@@ -59,14 +106,58 @@ const Users = () => {
       <th>Username</th>
       <th>Email</th>
       <th>Wallet Address</th>
-      <th>Change Role</th>
-      <th>Delete</th>
+
     
     </tr>
   </thead>
+  <Modal
+              isCentered
+              onClose={onEditClose}
+              isOpen={isEditOpen}
+              motionPreset="slideInBottom"
+            >
+              <ModalOverlay />
+              <ModalContent>
+              <form onSubmit={editHandler}>
+                <ModalHeader>Edit user information</ModalHeader>
+                <ModalCloseButton />
+                  <ModalBody>
+                    <FormControl isRequired>
+                      
+                      <FormLabel>Change User Role:</FormLabel>
+                      <Select id= 'userrole' placeholder='Select User Role' onChange={handleInput}>
+                      <option  value='Whitelist'>Whitelisted</option>
+                      <option value='Viewer'>Viewer</option>
+                      <option value='Base'>Base</option>
+                      </Select>
+                    </FormControl>
+                  </ModalBody>
+                  <ModalFooter>
+                    <Button
+                      onClick={onEditClose}
+                      color = 'white'
+                      backgroundColor={'red'}
+                    >
+                      Delete User
+                    </Button>
+                    <Button
+                      type="submit"
+                      color = 'white'
+                      backgroundColor={'green'}
+
+                    >
+                      Change Role
+                    </Button>
+                  </ModalFooter>
+                  </form>
+              </ModalContent>
+            </Modal>
   <tbody>
   {users.map((index) => (
-     <tr>
+     <tr onClick={()=>{
+      onEditOpen();
+      console.log("hello world my name is eren");
+     }}>
      <td key={index}>{index.id}</td>
      <td key={index}>{index.name}</td>
      <td key={index}>{index.surname}</td>

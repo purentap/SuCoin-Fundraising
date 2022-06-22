@@ -28,8 +28,7 @@ import WithNav from './WithNav';
 import WithoutNav from './WithoutNav';
 import AdminPage from './components/AdminPage/AdminPage';
 import Users from './components/AdminPage/Users';
-import Sidebar from './components/AdminPage/Sidebar';
-
+import Viewer from './Viewer';
 const App = () => {
   const Router = process.env.REACT_APP_IFS === "True" ? HashRouter : BrowserRouter
   const [address, setAddress] = useState("");
@@ -54,10 +53,11 @@ const App = () => {
               <Route path = '/profile' element = {<ProfilePage />} />
               <Route path = '/tt' element = {<Templates />} />
               <Route path = "/notAuthorized" element = {<NotAuthorized />} />
+              <Route path = "/Viewer" element = {<Viewer />} />
               <Route path='/*' element={<NotFound />} />
             </Route>
           
-          
+
           <Route path='/admin' element= {<WithoutNav/>}>
             <Route  index element = {<AdminPage/>} />
             <Route  path = "/admin/users" element = {<Users/>} />

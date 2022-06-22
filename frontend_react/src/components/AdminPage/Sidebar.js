@@ -33,6 +33,7 @@ const Sidebar = () => {
     <MenuItem >Dashboard</MenuItem>
     <MenuItem >Users
     <Link to="/admin/users" /></MenuItem>
+    <MenuItem>Projects</MenuItem>
 
   </Menu>
 </ProSidebar>
