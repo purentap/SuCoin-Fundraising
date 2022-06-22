@@ -1,7 +1,10 @@
 import React, { useState, useContext, useEffect } from "react";
+import { ethers } from "ethers";
 import axios from "axios";
 import Cookies from "js-cookie";
 import Table from 'react-bootstrap/Table'
+import projectRegisterAbi from "../../contracts_hardhat/artifacts/contracts/ProjectRegister.sol/ProjectRegister.json"
+
 import { Container,
   Select ,
   Modal,
@@ -19,7 +22,7 @@ import { Container,
   Checkbox,
 Stack,
 useCheckbox} from "@chakra-ui/react";
-
+import {ProjectRegisterAddress} from "../../contracts_hardhat/Constants"
 
 
 const Users = () => {
@@ -33,12 +36,17 @@ const Users = () => {
   const [role, setRole] = useState("");
   const [surname, setSurname] = useState("");
   const [email, setEmail] = useState("");
-
+ 
   const editHandler = async (event) => {
     event.preventDefault();
 
     console.log(role);
+    const provider = new ethers.providers.Web3Provider(window.ethereum);
+    await provider.send("eth_requestAccounts", []);
+    const signer = provider.getSigner();
+    const ProjectRegisterContract = new ethers.Contract(ProjectRegisterAddress, projectRegisterAbi, signer);
 
+    ProjectRegisterContract.editUserStatus()
     var editRequest = {
       
     };
@@ -59,6 +67,7 @@ const Users = () => {
       });
     
     const [users, setUsers] = useState([]);
+    const [userAddress, setUserAddress] = useState([]);
     
     useEffect(async () => {
         try {
@@ -155,7 +164,9 @@ const Users = () => {
   <tbody>
   {users.map((index) => (
      <tr onClick={()=>{
+      
       onEditOpen();
+      setUserAddress(index.address);
       console.log("hello world my name is eren");
      }}>
      <td key={index}>{index.id}</td>
