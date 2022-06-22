@@ -108,12 +108,13 @@ const Users = () => {
         <Table responsive bordered = {true} bgcolor = "lightGray" hover= {true} >
   <thead>
     <tr>
-      <th>#</th>
+      <th>#Role</th>
       <th>Name</th>
       <th>Surname</th>
       <th>Username</th>
       <th>Email</th>
       <th>Wallet Address</th>
+      
 
     
     </tr>
@@ -169,12 +170,13 @@ const Users = () => {
       onEditOpen();
       
      }}>
-     <td key={index}>{index.id}</td>
+     <td key={index}>{index.role}</td>
      <td key={index}>{index.name}</td>
      <td key={index}>{index.surname}</td>
      <td key={index}>{index.username}</td>
      <td key={index}>{index.mailAddress}</td>
      <td key={index}>{index.address}</td>
+     
      
         </tr>
         
