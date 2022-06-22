@@ -104,9 +104,6 @@ namespace SU_COIN_BACK_END.Services
                 // If it is uploaded previously, do not add the proposal file into the database
                 if (proposalExists)
                 {
-                    /* After that method terminates, 
-                       one of the viewers must remove the duplicated (current) proposal file manually from the ipfs
-                       to prevent ambiguity **/
                     response.Message = MessageConstants.PROPOSAL_FILE_EXISTS;
                     return response;
                 }
