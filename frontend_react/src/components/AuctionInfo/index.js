@@ -41,6 +41,16 @@ const AuctionInfo = ({ auction, status,projectId, price, tokenDist, deposit, tot
   const [amount, setAmount] = useState();
   const [userPrice, setUserPrice] = useState();
 
+  var auctionMechanism = {
+    "UncappedAuction": "Fixed price unlimited tokens only need the first parameter",
+    "PseudoCappedAuction": "Fixed number of tokens but unlimited sucoins can be invested which will be distributed in the end burns all tokens if no one invests",
+    "OBFCFSAuction": "FCFS Auction where users get their tokens at the end of auction",
+    "FCFSAuction": "First come first serve, fixed price fixed supply token sale",
+    "DutchAuction": "Fixed supply token auction with price going down to finalPrice linearly over the duration last parameter is ignored",
+    "OBDutchAuction": "Investors can bid their price to tokens, at the end of the auction tokens will be distributed starting from the highest bid until all sold tokens are distributed, price parameters ignored",
+    "StrictDutchAuction": "Dutch Auction but supply decreases linearly as well, burns the remaining coins instead of giving them to proposer"
+  };
+
 
 
   const buyTokens = async (priceEntered) => {
@@ -191,7 +201,7 @@ const AuctionInfo = ({ auction, status,projectId, price, tokenDist, deposit, tot
             Auction Type: <p>{auctionType}</p>{" "}
           </h5>
           <h5>
-            Auction Mechanism: <p>Price will drop by the time goes. Try to be enter SUCoin amount according to your token price/supply strategy.</p>{" "}
+            Auction Mechanism: <p>{auctionMechanism[auctionType]}</p>{" "}
           </h5>
           <h5>
             Starting Date: <p> {startingDate == 0 ? "Not started" : new Date(startingDate * 1000).toString()}</p>{" "}
