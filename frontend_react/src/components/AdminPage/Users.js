@@ -24,6 +24,14 @@ Stack,
 useCheckbox} from "@chakra-ui/react";
 import {address} from '../../abi/project.json'
 
+const roleAsInteger = {
+  "DEFAULT":0,
+  "WHITELISTED":1,
+  "BLACKLIST":2,
+  "VIEWER":3,
+}
+
+
 
 const Users = () => {
   const {
@@ -44,9 +52,9 @@ const Users = () => {
     const provider = new ethers.providers.Web3Provider(window.ethereum);
     await provider.send("eth_requestAccounts", []);
     const signer = provider.getSigner();
-    const ProjectRegisterContract = new ethers.Contract(address, projectRegisterAbi, signer);
+    const ProjectRegisterContract = new ethers.Contract(address, projectRegisterAbi.abi, signer);
 
-    await ProjectRegisterContract.editUserStatus(userAddress,role );
+    await ProjectRegisterContract.editUserStatus(userAddress,role);
     var editRequest = {
       
     };
@@ -98,8 +106,7 @@ const Users = () => {
       const handleInput = (e) => {
         const input_name = e.currentTarget.name;
         const value = e.currentTarget.value;
-    
-        setRole(value);
+        setRole(roleAsInteger[value]);
        
       };
 
