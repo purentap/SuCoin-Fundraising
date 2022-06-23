@@ -79,6 +79,7 @@ const Auction = (props) => {
                 auctionInfo.finalRate = fixedNumberToNumber(finalRate[0])
                 auctionInfo.currentPrice = fixedNumberToNumber(getCurrentRate[0])
                 break;
+            case "OBFCFSAuction":
             case "FCFSAuction":
                 auctionInfo.tokenDist = (fixedNumberToNumber(numberOfTokensToBeDistributed[0]))
             case "UncappedAuction":
