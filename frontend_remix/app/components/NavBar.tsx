@@ -12,11 +12,11 @@ export default function NavBar() {
     ]
 
     return (
-        <div className="flex space-x-10 items-center  bg-blue-300 px-32">
+        <div className="flex space-x-10 items-center  bg-[#074F57] px-32 py-2">
             <p className="text-xl text-white font-semibold">SULaunch</p>
            <NavList routes={routes}/>
            <div className="flex justify-end flex-grow">
-            <ChevronDownIcon className="cursor-pointer" height={20} width={20}/>
+            <ChevronDownIcon className="cursor-pointer text-white"  height={20} width={20}/>
            </div>
         </div>
     );

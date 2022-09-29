@@ -5,7 +5,7 @@ import About from '../components/About'
 
 export default function Index() {
   return (
-    <div className="p-10">
+    <div className="p-10 bg-[#D9D8E1]">
       <p className="font-semibold text-lg">Welcome SULaunch</p>
       <ProjectList/>
       <AuctionList/>

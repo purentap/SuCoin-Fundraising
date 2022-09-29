@@ -6,11 +6,7 @@ export type RouteNav = {
 }
 
 export function NavList({routes}: {routes: RouteNav[]}) {
-  // This styling will be applied to a <NavLink> when the
-  // route that it links to is currently selected.
-  const activeStyle = {
-    textDecoration: "underline",
-  };
+
   const activeClassName = "underline";
   const nonActiveClassName = "hover:text-xl";
   return (
@@ -22,7 +18,7 @@ export function NavList({routes}: {routes: RouteNav[]}) {
           <NavLink
             to={route.to}
             className={({ isActive }) =>
-              isActive ? activeClassName : nonActiveClassName
+              (isActive ? activeClassName : nonActiveClassName) +  " text-gray-100 hidden lg:block"
             }
           >
             {route.text}
