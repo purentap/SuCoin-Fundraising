@@ -1,7 +1,7 @@
 //Needs around 2 avax for deployment or else it can fail horribly
 
-const currentRegisterContract = "0x5aAd7987008f0B6E52cA40ca01651055A90673e2"
-const currentSucoin = "0xb6e466F4F0ab1e2dA2E8237F38B2eCf6278894Ce"
+const currentRegisterContract = "0xCdb985203dc70C6A8D3a1A5D583D57d2Fce383AE"
+const currentSucoin = "0x142E19B79A0101Dd5B382793D6D377Fd7df6365D"
 let libAddress = "0xfc7cde313ed56eff607a3d79c6f565111ee074a6"
 
 
@@ -25,6 +25,9 @@ async function deployMaestro(sucoinAddress,projectManagerAddress,    wantedAucti
     const [deployer] = await ethers.getSigners();
 
     const baseNonce = await deployer.getTransactionCount()
+
+
+    console.log("Deploying Maestro with the account:", deployer.address);
 
     
 

@@ -21,7 +21,7 @@ import { ethers } from 'ethers';
 import wrapperTokenABI from '../contracts_hardhat/artifacts/contracts/WrapperToken.sol/WrapperToken.json';
 import TokenABI from '../contracts_hardhat/artifacts/contracts/Token.sol/Token.json';
 
-const wrapperTokenAddress = "0xb6e466F4F0ab1e2dA2E8237F38B2eCf6278894Ce";
+const wrapperTokenAddress = "0x142E19B79A0101Dd5B382793D6D377Fd7df6365D";
 const BiLiraAddress = "0x8f5736aF17F2F071B476Fd9cFD27a1Bd8D7E7F15";
 
 function sleep(ms) {

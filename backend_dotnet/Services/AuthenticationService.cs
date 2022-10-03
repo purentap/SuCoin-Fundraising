@@ -125,6 +125,7 @@ namespace SU_COIN_BACK_END.Services
                     response.Data = GenerateToken(user);
 
                     user.Nonce = null; // to provide security
+                    user.Role = chainRole;
                     _context.Users.Update(user);
                     await _context.SaveChangesAsync();
                 }

@@ -16,7 +16,7 @@ module.exports = {
     },
     avalanhe: {
       url: "https://nd-363-962-610.p2pify.com/e561a44aeaec63c0ab48af257d3352fe/ext/bc/C/rpc",
-      accounts: ["49c917e57b2cc5ed71e673ee8ccdd094306ed4d39e43bc3a6b21e74396b05293"],
+      accounts: ["937b9f86829801bb4f498fd83bf71cf3af239d783c8494b24e81d4fffa4c568e"],
       timeout: 100000
     }
   },

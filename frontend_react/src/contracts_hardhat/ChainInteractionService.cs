@@ -47,7 +47,7 @@ namespace SU_COIN_BACK_END.Services
             _mapper = mapper;
             _context = context;
             _httpContextAccessor = httpContextAccessor;
-            var url = "https://nd-363-962-610.p2pify.com/e561a44aeaec63c0ab48af257d3352fe/ext/bc/C/rpc";
+            var url = "https://chaotic-fittest-pond.avalanche-testnet.discover.quiknode.pro/38f3ee01da0a88275c79a908b9925696bdd3d4f4/";
             _web3 = new Web3(url);
         }
 

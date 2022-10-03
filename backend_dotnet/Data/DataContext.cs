@@ -19,7 +19,7 @@ namespace SU_COIN_BACK_END.Data
         {
             optionsBuilder
                 .UseMySql(
-                    "server=remotemysql.com;port=3306;user=rTc38f9eAa;password=Zchjjg34kW;database=rTc38f9eAa;",
+                    "server=remotemysql.com;port=3306;user=OZoBcWk8c4;password=A12VxFs2fm;database=OZoBcWk8c4;",
                     new MySqlServerVersion(new Version(8, 0, 11)))
                 .UseLoggerFactory(
                     LoggerFactory.Create(b => b

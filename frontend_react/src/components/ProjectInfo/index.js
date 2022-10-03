@@ -55,7 +55,7 @@ import {
 
 import { useDisclosure } from "@chakra-ui/react";
 
-const maestro = { address: "0x90Cb7bD657d3a79a4E70E0458078dab56B9c9Fca" }
+const maestro = { address: "0xce64DF42adcD1bd615bBc8404D4E104b782a6B84" }
 
 const ProjectInfo = ({ setProject,
   projectId,
