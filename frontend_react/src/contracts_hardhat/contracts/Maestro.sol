@@ -300,7 +300,7 @@ modifier multiSig(bytes32 role,uint walletCount,uint timeLimitInBlocks){
 
         ERC20MintableBurnableUpgradeable tokenContract = ERC20MintableBurnableUpgradeable(projectTokens[projectHash].token);
 
-        if (userParams.numberOfTokensToBeDistributed != 0) //Capped Auction
+        if (userParams.numberOfTokensToBeDistributed != 0 && keccak256(bytes(auctionType)) != keccak256(bytes("UncappedAuction"))) //Capped Auction
             tokenContract.mint(address(clone),userParams.numberOfTokensToBeDistributed);   
         else                                               //Uncapped Auction
             tokenContract.grantRole(keccak256("MINTER_ROLE"),address(clone));

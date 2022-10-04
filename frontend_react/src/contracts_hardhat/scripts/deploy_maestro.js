@@ -39,6 +39,7 @@ async function deployMaestro(sucoinAddress,projectManagerAddress,    wantedAucti
                         type == "OBDutchAuction" ? {libraries:{"BokkyPooBahsRedBlackTreeLibrary" : libAddress}} : {})
                         const auction = await Auction.deploy({gasPrice: ethers.utils.parseUnits('50.0', 'gwei'),nonce: baseNonce + wantedAuctionTypes.indexOf(type)})
                         await auction.deployed()
+                        console.log(type + " deployed to:", auction.address);
                         return [type,auction.address]
                     }))
     

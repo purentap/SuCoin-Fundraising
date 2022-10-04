@@ -47,7 +47,7 @@ const options = [
     { value: 'fman', label: 'FMAN' }
 ]
 
-const MaestroAddress = "0xce64DF42adcD1bd615bBc8404D4E104b782a6B84";
+const MaestroAddress = "0x9B4900cf2c9417282a204440b2C6d4764963fbd8";
 
 const IDs = []
 
@@ -159,6 +159,7 @@ const Auctions = () => {
     const navigate = useNavigate();
 
 
+
     return (
         isLoading ?
             <div className={'home-page'}>
@@ -170,7 +171,7 @@ const Auctions = () => {
                 <div className="sectionName" style={{ paddingLeft: "50px", paddingTop: "25px", paddingBottom: "25px" }}>Auctions</div>
                 <div style={{ display: "flex", justifyContent: "center", marginTop: "1rem" }}>
                     <ButtonGroup aria-label="Basic example"
-                        exclusive
+                        exclusive="true"
                     >
                         <Button className="simpletext" onClick={() => { handleChange(4) }} variant="outline-secondary" value={radios[3].value} > {radios[4].name} </Button >
                         <Button className="simpletext" onClick={() => { handleChange(0) }} variant="outline-secondary" value={radios[0].value} >{radios[0].name} </Button>
@@ -184,7 +185,7 @@ const Auctions = () => {
                 <br></br>
 
                 <div style={{ width: "90%", textAlign: "center", margin: "auto" }}>
-                    <div class="grid-container" style={{ display: 'grid' }}>
+                    <div className="grid-container" style={{ display: 'grid' }}>
                         {listedAuctions.map((project, index) => (
                             <div>
                                 <AuctionCard
