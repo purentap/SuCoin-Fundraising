@@ -168,7 +168,7 @@ const Apply = () => {
 			setLoading(false)
 			setToastshow(true)
 			setToastheader("Failure")
-			setToasttext(error)
+			setToasttext(error.data)
 		}
 	}
 
