@@ -16,6 +16,7 @@ export function NavList({routes}: {routes: RouteNav[]}) {
 
 
           <NavLink
+          key={route.to}
             to={route.to}
             className={({ isActive }) =>
               (isActive ? activeClassName : nonActiveClassName) +  " text-gray-100 hidden lg:block"

@@ -4,9 +4,11 @@ import SwapInput from "~/components/SwapInput";
 
 export default function Swap() {
 
+  const defaultSwap = ["Bilira","Sucoin"]
+
     const [reverse,setReverse]= useState(false);
 
-    const [firstCoin,secondCoin] = reverse ? ["Bilira","Sucoin"] : ["Sucoin","Bilira"];
+    const [firstCoin,secondCoin] = reverse ? defaultSwap.reverse() : defaultSwap
 
     const [amount,setAmount] = useState(0);
 
@@ -17,7 +19,7 @@ export default function Swap() {
 
         <form className="flex flex-col justify-center items-center space-y-4 mt-10">
 
-            <input hidden name="reverse" value={reverse.toString()}/>
+            <input hidden name="reverse" readOnly value={reverse.toString()}/>
 
 
    
