@@ -10,7 +10,7 @@ export default function Apply() {
     return (
 
   
-      <div className='swap-page px-8 py-4  bg-custom-gray'>
+      <div className='swap-page px-8 py-4  bg-custom-gray flex-grow'>
         <p className="font-semibold text-lg">Apply For Project</p>
 
         <form className="flex flex-col justify-center items-center space-y-4 mt-10 w-full">
